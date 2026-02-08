@@ -1,0 +1,166 @@
+package com.hodastar.photosreview.mappers;
+
+import com.hodastar.photosreview.entities.EntityReviewUsers;
+import com.hodastar.photosreview.utils.CryptUtil;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import java.util.*;
+
+/**
+ * 用户数据访问对象
+ * error code:
+ * 1: 有空值
+ * 2: 密码错误
+ * 3: uid已占用
+ * 4: Token无效
+ * 5: 注册权限不足
+ * -1: 数据库操作失败
+ */
+@Repository
+public class UserMapper {
+    private final JdbcTemplate jdbcTemplate;
+
+    public UserMapper(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    /**
+     * 通过用户 ID 获取用户信息
+     * @param uid 用户 ID
+     * @return 用户信息
+     */
+    public Optional<EntityReviewUsers> getUserByUid(int uid) {
+        List<EntityReviewUsers> list = jdbcTemplate.query(
+                "SELECT * FROM review_users WHERE uid = ?",
+                (rs, rowNum) -> {
+                    return new EntityReviewUsers(
+                            rs.getInt("uid"),
+                            rs.getString("password"),
+                            rs.getLong("login_time"),
+                            rs.getString("allname"),
+                            rs.getInt("status")
+                    );
+                },
+                uid);
+        return list.stream().findFirst();
+    }
+
+    /**
+     * 登录功能
+     * @param uid 用户 ID
+     * @param password 原始密码
+     * @return 登录结果map
+     */
+    public Map<String, Object> login(int uid, String password) {
+        Map<String, Object> map = new HashMap<>();
+        // 获取用户
+        Optional<EntityReviewUsers> user = getUserByUid(uid);
+        if (user.isEmpty()) {
+            map.put("result", false);
+            map.put("msg", "1");
+            return map;
+        }
+
+        // 验证密码
+        if (!CryptUtil.checkBCEcrypt(password, user.get().password)) {
+            map.put("result", false);
+            map.put("msg", "2");
+            return map;
+        }
+
+        long currentTime = System.currentTimeMillis() / 1000;
+        // 更新登录时间
+        int rowsAffected = jdbcTemplate.update(
+                "UPDATE review_users SET login_time = ? WHERE uid = ?",
+                currentTime, uid
+        );
+        if (rowsAffected == 0) {
+            map.put("result", false);
+            map.put("msg", "-1");
+            return map;
+        }
+
+        // 构造token原
+        String originToken = String.valueOf(uid) + String.valueOf(user.get().password) + String.valueOf(currentTime);
+        // 加密token
+        String token = CryptUtil.nBCrypt(originToken);
+        map.put("result", true);
+        map.put("msg", "success");
+        map.put("token", token);
+        return map;
+    }
+
+    /**
+     * 检查token
+     * @param uid 用户 ID
+     * @param token token
+     * @return 是否有效
+     */
+    public Boolean checkToken(int uid, String token) {
+        Optional<EntityReviewUsers> user = getUserByUid(uid);
+        if (user.isEmpty()) {
+            return false;
+        }
+        String originToken = String.valueOf(uid) + String.valueOf(user.get().password) + String.valueOf(user.get().login_time);
+        String dbToken = CryptUtil.nBCrypt(originToken);
+        return dbToken.equals(token);
+    }
+
+    /**
+     * 注册功能
+     * @param uid 用户 ID
+     * @param password 原始密码
+     * @param allname 用户全名
+     * @return 注册结果map
+     */
+    public Map<String, Object> register(int uid, String password, String allname) {
+
+        Map<String, Object> map = new HashMap<>();
+
+        // 非空检查
+        if (password == null || password.isEmpty() || allname == null || allname.isEmpty()) {
+            map.put("result", false);
+            map.put("msg", "1");
+            return map;
+        }
+
+        // 检查uid是否占用
+        Boolean isExist = jdbcTemplate.queryForObject(
+                "SELECT EXISTS(SELECT 1 FROM review_users WHERE uid = ?)",
+                Boolean.class,
+                uid
+        );
+        if (Boolean.TRUE.equals(isExist)) {
+            map.put("result", false);
+            map.put("msg", "3");
+            return map;
+        }
+
+        // 获取当前秒级时间戳
+        long currentTime = System.currentTimeMillis() / 1000;
+        // 加密密码
+        String ppassword = CryptUtil.BCEcrypt(password);
+
+        // 插入新用户
+        int rowsAffected = jdbcTemplate.update(
+                "INSERT INTO review_users (uid, password, login_time, allname, status) VALUES (?, ?, ?, ?, ?)",
+                uid, ppassword, currentTime, allname, 1
+        );
+        if (rowsAffected == 0) {
+            map.put("result", false);
+            map.put("msg", "-1");
+            // 数据库插入失败：立即返回，避免继续构造和返回成功 token
+            return map;
+        }
+
+        // 构造token原
+        String originToken = String.valueOf(uid) + String.valueOf(ppassword) + String.valueOf(currentTime);
+        // 加密token
+        String token = CryptUtil.nBCrypt(originToken);
+        map.put("result", true);
+        map.put("msg", "success");
+        map.put("token", token);
+        return map;
+    }
+}
