@@ -1,6 +1,5 @@
 package com.hodastar.photosreview.mappers;
 
-import com.hodastar.photosreview.config.SqliteInitiate;
 import com.hodastar.photosreview.entities.EntityReviewConfig;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -25,5 +24,29 @@ public class SystemMapper {
             String.class
         );
         return name;
+    }
+
+    /**
+     * 获取网站图标路径
+     * @return 网站图标路径
+     */
+    public String getWebsiteIcon() {
+        String icon = jdbcTemplate.queryForObject(
+                "SELECT value FROM review_config WHERE id = 1",
+                String.class
+        );
+        return icon;
+    }
+
+    /**
+     * 获取网站url
+     * @return 网站url
+     */
+    public String getWebsiteUrl() {
+        String url = jdbcTemplate.queryForObject(
+                "SELECT value FROM review_config WHERE id = 2",
+                String.class
+        );
+        return url;
     }
 }

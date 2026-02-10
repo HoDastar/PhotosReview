@@ -2,9 +2,8 @@ package com.hodastar.photosreview.controllers;
 
 import com.hodastar.photosreview.mappers.SystemMapper;
 import com.hodastar.photosreview.utils.Respond;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,11 +15,6 @@ public class TestAPI {
 
     public TestAPI(SystemMapper systemMapper) {
         this.systemMapper = systemMapper;
-    }
-
-    @GetMapping("/test1")
-    public Respond<String> test1() {
-        return new Respond<>(true, "测试成功", "Hello, World!");
     }
 
     @GetMapping("/test2")
@@ -36,4 +30,13 @@ public class TestAPI {
     public Respond<String> test3() {
         return new Respond<>(true, "测试成功", systemMapper.getWebsiteName());
     }
+
+    @PostMapping("/test4")
+    public Respond<String> test4(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("json") String json
+    ) {
+        return new Respond<>(true, "测试成功", "This is a POST request");
+    }
+
 }

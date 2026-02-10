@@ -40,6 +40,14 @@ public class UserAPI {
         int adminUid = (Integer) body.get("adminUid");
         String adminToken = (String) body.get("adminToken");
 
+        // 检查长度
+        if (allname.length() > 255 || password.length() > 255) {
+            return new Respond<>(false, "6", null);
+        }
+        if (uid > 9999999 || uid < 0) {
+            return new Respond<>(false, "7", null);
+        }
+
         // 检查token
         if (!userMapper.checkToken(adminUid, adminToken)) {
             return new Respond<>(false, "4", null);
@@ -52,7 +60,7 @@ public class UserAPI {
             return new Respond<>(false, "5", null);
         }
         if (user.get().status != 0) {
-            return new Respond<>(false, "6", null);
+            return new Respond<>(false, "5", null);
         }
 
         // 注册

@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,5 +29,25 @@ public class Utilities {
             // 解析失败，返回空 Map；如果需要可在此处记录日志
             return new HashMap<>();
         }
+    }
+
+    public static String nowTimeString() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return now.format(fmt);
+    }
+
+    // 生成uuid
+    public static String generateUUID() {
+        return java.util.UUID.randomUUID().toString();
+    }
+
+    // gain the extension of a filename string (eg. "example.jpg" -> "jpg")
+    public static String getFileExtension(String filename) {
+        int lastDotIndex = filename.lastIndexOf('.');
+        if (lastDotIndex == -1 || lastDotIndex == filename.length() - 1) {
+            return ""; // 没有扩展名或扩展名为空
+        }
+        return filename.substring(lastDotIndex + 1);
     }
 }

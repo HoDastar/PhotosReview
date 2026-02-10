@@ -78,6 +78,22 @@ public class SqliteInitiate {
                         SELECT 1 FROM review_config WHERE id = 0
                     );
                 """);
+            jdbcTemplate.execute("""
+                    -- 初始化设置 --
+                    INSERT INTO review_config(id, name, value)
+                    SELECT 1, 'website_icon', 'data/icon/default_icon.jpg'
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM review_config WHERE id = 1
+                    );
+                """);
+            jdbcTemplate.execute("""
+                    -- 初始化设置 --
+                    INSERT INTO review_config(id, name, value)
+                    SELECT 2, 'website_url', '127.0.0.1:8080'
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM review_config WHERE id = 2
+                    );
+                """);
         };
         
     }
