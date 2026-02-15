@@ -1,13 +1,81 @@
 <!DOCTYPE HTML>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Test Page</title>
+    <style>
+        .radio-card-group {
+            display: flex;
+            gap: 12px;
+            margin: 18px 0;
+        }
+
+        .radio-card input {
+            display: none;
+        }
+
+        .radio-card span {
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        /* 选中效果 */
+        .radio-card input:checked+span {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .input {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 15px;
+
+            border: 1px solid #ddd;
+            border-radius: 10px;
+
+            background: white;
+            color: #222;
+
+            outline: none;
+            transition: 0.2s;
+        }
+
+        /* 聚焦高亮 */
+        .input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+    </style>
 </head>
+
 <body>
-<h1>Welcome to the Test Page</h1>
-<p>This is a simple HTML page for testing purposes.</p>
-<p>Feel free to explore and modify the content as needed.</p>
+    <h1>Welcome to the Test Page</h1>
+    <p>This is a simple HTML page for testing purposes.</p>
+    <p>Feel free to explore and modify the content as needed.</p>
+    <input class="input" type="text" placeholder="请输入用户名..." />
+
+    <div class="radio-card-group">
+
+        <label class="radio-card">
+            <input type="radio" name="mode" checked />
+            <span>普通模式</span>
+        </label>
+
+        <label class="radio-card">
+            <input type="radio" name="mode" />
+            <span>专业模式</span>
+        </label>
+
+    </div>
+
 </body>
+
 </html>
 <script src="/js/url.js"></script>

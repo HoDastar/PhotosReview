@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin</title>
+    <link rel="stylesheet" href="css/root.css">
+    <link rel="stylesheet" href="css/input.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --bg: rgb(244, 243, 249);
+            --white: #fff;
+            --text: #111827;
+            --muted: #6b7280;
+            --border: rgba(17, 24, 39, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            margin: 0;
+            color: var(--color-fg);
+            background: var(--color-bg2);
+        }
+
+        /* 顶部导航条 */
+        .nav {
+            height: 64px;
+            background: var(--color-bg);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+        }
+
+        .nav h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-user {
+            margin: 3px;
+        }
+
+        /* 主体：左右分栏 3:7 */
+        .main {
+            min-height: calc(100vh - 64px);
+            padding: 16px;
+        }
+
+        .panel {
+            height: calc(100vh - 64px - 32px);
+            /* 视口高度 - nav - main上下padding */
+            display: flex;
+            gap: 16px;
+        }
+
+        .toolbar {
+            width: 300px;
+            background: var(--color-bg);
+            border: none;
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+            overflow: auto;
+        }
+
+        .viewer {
+            flex: 1;
+            padding: 16px;
+            height: calc(100vh - 60px);
+            /* 扣掉header高度 */
+            overflow-y: auto;
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE */
+        }
+
+        .viewer::-webkit-scrollbar {
+            display: none;
+            /* Chrome / Edge */
+        }
+
+        .panel-btn {
+            width: 100%;
+            padding: 12px 18px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            background: var(--color-bg);
+        }
+
+        .panel-btn:hover {
+            background: var(--color-primary-light);
+            border-left: 8px solid var(--color-primary);
+        }
+
+        .panel-btn.selected {
+            background: var(--color-primary-light);
+            border-left: 8px solid var(--color-primary);
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: 13px;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+
+
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+
+        }
+
+        .form-label {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .form-label .title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .form-label .desc {
+            font-size: 14px;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        .form-control {
+            flex: 2;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .form-submit {
+            margin-top: 30px;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading-overlay">
+        页面加载中，请稍候...<br>
+        首次加载时较慢，请耐心等待
+    </div>
+    <header class="nav">
+        <h1> <span data-i18n="nav_title">Backend System</span></h1>
+        <div class="nav-buttons">
+            <div class="button-circle"><i class="fa-solid fa-right-to-bracket"></i></div>
+            <div class="button-circle"><i class="fa-solid fa-key"></i></div>
+            <div class="nav-user">UID: 10000</div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="panel">
+            <aside class="toolbar">
+                <button class="panel-btn selected" data-page="projList"><i class="fa-solid fa-tools"></i> <span
+                        data-i18n="proj_list">Project list</span></button>
+                <button class="panel-btn" data-page="createProj"><i class="fa-solid fa-add"></i> <span
+                        data-i18n="create_proj">Create project</span></button>
+            </aside>
+
+            <section class="viewer" id="projList">
+                <p class="hint">右侧是显示栏，宽度占比 7。页面主体背景为 rgb(244,243,249)。</p>
+            </section>
+            <section class="viewer" id="createProj" style="display: none;">
+                <h2><span data-i18n="create_proj">Create project</span></h2>
+                <div class="form-row">
+                    <div class="form-label">
+                        <div class="title">Project name</div>
+                        <div class="desc">Not exceeding 100 words.</div>
+                    </div>
+                    <div class="form-control">
+                        <input type="text" class="text-input" placeholder="请输入项目名称..." />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">
+                        <div class="title">Project type</div>
+                        <div class="desc"><span>Screening is a type of Single-Person Review, which can help you screen out from large-scale. Review support the Multi-Person Review, calculating average and variance.</span></div>
+                    </div>
+                    <div class="form-control">
+                        <div class="radio-card-group">
+
+                            <label class="radio-card">
+                                <input type="radio" name="review_type" checked />
+                                <span data-i18n="screening_review_type">Screening</span>
+                            </label>
+
+                            <label class="radio-card">
+                                <input type="radio" name="review_type" />
+                                <span data-i18n="review_review_type">Review</span>
+                            </label>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">
+                        <div class="title">Project thumbnail</div>
+                        <div class="desc">Description</div>
+                    </div>
+                    <div class="form-control">
+                        <div class="file-upload">
+                            <input type="file" id="imgInputThumbnail" accept=".jpg,.jpeg,.png,.webp" />
+                            <label for="imgInputThumbnail" class="file-btn">
+                                <i class="fa-solid fa-file"></i> <span>Choose an Image</span>
+                            </label>
+                            <div class="file-display" id="imgInputThumbnailDisplay">
+                                <span>You haven't chosen</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-submit">
+                    <button class="button-outline">Clean</button>
+                    <button class="button-outline" id="submitCreateProj">Submit</button>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+
+</html>
+<script src="./js/i18n.js"></script>
+<script src="./js/url.js"></script>
+<script src="./js/f.js"></script>
+<script>
+    const panelBtns = document.querySelectorAll('.panel-btn');
+    const viewers = document.querySelectorAll('.viewer');
+
+    panelBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            // 切换按钮选中状态
+            panelBtns.forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+
+            // 显示对应的viewer
+            const page = btn.getAttribute('data-page');
+            viewers.forEach(v => {
+                v.style.display = v.id === page ? 'block' : 'none';
+                history.pushState(null, "", "?p=" + page);
+            });
+        });
+    });
+
+    function goPage(p) {
+        // 切换按钮选中状态
+        panelBtns.forEach(b => b.classList.remove('selected'));
+        panelBtns.forEach(b => {
+            if (b.getAttribute('data-page') == p) {
+                b.classList.add('selected');
+            }
+        });
+        // 显示对应的viewer
+        viewers.forEach(v => {
+            v.style.display = v.id === p ? 'block' : 'none';
+        });
+    }
+
+    // 当页面所有资源加载完毕后执行
+    window.onload = function () {
+        const loader = document.getElementById('loading-overlay');
+        loader.classList.add('fade-out');
+        loader.remove();
+        // 读取GET参数p，切换到对应页面
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has("p")) {
+            goPage(urlParams.get("p"));
+        }
+
+        // Loading Button Events
+        document.getElementById("submitCreateProj").addEventListener("click", createProj);
+    };
+
+    document.getElementById("imgInputThumbnail").addEventListener("change", () => {
+        fileInputChange("imgInputThumbnail");
+    });
+
+    // Create Project
+    async function createProj() {
+        const fileInput = document.getElementById("imgInputThumbnail");
+        const result = await postApiWithFile("")
+    }
+
+    function fileInputChange(id, allowed = ["jpg", "png", "jpeg", "webp"]) {
+        const fileInput = document.getElementById(id);
+        const file = fileInput.files[0]
+        const fileName = file.name;
+        const fileExt = fileName.split(".").pop().toLowerCase();
+        if (!allowed.includes(fileExt)) {
+            fileInput.value = "";
+            return;
+        }
+        const imgExt = ["jpg", "png", "jpeg", "webp"];
+        if (imgExt.includes(fileExt)) {
+            const display = document.getElementById(id + "Display")
+            display.innerHTML = '';
+            const imgEl = document.createElement("img");
+            imgEl.classList.add("file-preview");
+            display.appendChild(imgEl);
+            // 创建图片预览
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imgEl.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+</script>

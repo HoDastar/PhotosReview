@@ -44,7 +44,7 @@ public class UserAPI {
         if (allname.length() > 255 || password.length() > 255) {
             return new Respond<>(false, "6", null);
         }
-        if (uid > 9999999 || uid < 0) {
+        if (uid > 999999999 || uid < 10000) {
             return new Respond<>(false, "7", null);
         }
 

@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    /* Background Layers */
+    --color-bg: #ffffff;
+    /* 主背景 */
+    --color-bg2: #f5f7fa;
+    /* 次级背景（卡片） */
+    --color-bg3: #42a5f5;
+    /* 强调背景（主色块） */
+
+    /* Foreground Text */
+    --color-fg: #2f2f2f;
+    /* 主文字 */
+    --color-fg-opposite: #ffffff;
+    /* 反色文字（按钮/主色块） */
+
+    /* Primary Theme */
+    --color-primary: #42a5f5;
+    /* 主色 */
+    --color-primary-light: rgba(66, 165, 245, 0.25);
+    /* hover/高亮 */
+    --color-primary-soft: #64b5f6;
+    /* 柔和蓝 */
+    --color--primary-strong: #1e88e5;
+    /* 深蓝强调 */
+
+    /* Borders */
+    --color-border: #e3e6ea;
+    /* 默认边框 */
+    --color-border2: #9aa0a6;
+    /* 深边框 */
+
+    /* Buttons */
+    --color-btn: #42a5f5;
+    /* 按钮背景 */
+    --color-btn-fg: #ffffff;
+    /* 按钮文字 */
+
+    /* Inputs */
+    --color-input-bg: #fafcff;
+    /* 输入框背景 */
+    --color-input-fg: #222222;
+    /* 输入框文字 */
+
+
+    --color-chart-bg: #e4e4e4;
+    --color-chart-avg: darkblue;
+    --color-chart-bar: linear-gradient(180deg, #287af5, #4facfe);
+
+    --row-even: #ffffff;
+    --row-odd: #eeeeee;
+}
+
+body.dark {
+
+    /* Background Layers */
+    --color-bg: #121212;
+    /* 主背景 */
+    --color-bg2: #1e1e1e;
+    /* 次级背景（卡片） */
+    --color-bg3: #1e88e5;
+    /* 主色强调背景 */
+
+    /* Foreground Text */
+    --color-fg: #e8e8e8;
+    /* 主文字 */
+    --color-fg-opposite: #121212;
+    /* 反色文字 */
+
+    /* Primary Theme */
+    --color-primary: #64b5f6;
+    /* 夜间主色更柔和 */
+    --color-primary-light: rgba(100, 181, 246, 0.25);
+    --color-primary-soft: #42a5f5;
+    --color--primary-strong: #2196f3;
+
+    /* Borders */
+    --color-border: #2a2a2a;
+    /* 默认边框 */
+    --color-border2: #555555;
+    /* 深边框 */
+
+    /* Buttons */
+    --color-btn: #2196f3;
+    /* 按钮蓝更亮 */
+    --color-btn-fg: #ffffff;
+
+    /* Inputs */
+    --color-input-bg: #1c1c1c;
+    /* 输入框背景 */
+    --color-input-fg: #f0f0f0;
+    /* 输入框文字 */
+
+    --color-chart-bg: #363636;
+    --color-chart-avg: #4eb9fc;
+    --color-chart-bar: linear-gradient(180deg, #00f2fe, #4facfe);
+
+    --row-even: #1e1e1e;
+    --row-odd: #2a2a2a;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: var(--color-bg2);
+    color: var(--color-fg);
+    font-family: "Noto Sans TC", Arial, sans-serif;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* 夜间模式切换按钮 */
+.dark-toggle {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: background 0.3s, color 0.3s, border 0.3s;
+}
+
+.dark-toggle.active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+}
+
+/* 加载页面样式 */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: white;
+    color: #000;
+    z-index: 9999;
+    /* 保证置顶 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    transition: opacity 0.5s ease;
+}
+
+/* 加载完成时淡出动画 */
+#loading-overlay.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 空心按钮 */
+.button-outline {
+    padding: 8px 16px;
+    border: 2px solid var(--color-primary);
+    background-color: transparent;
+    color: var(--color-primary);
+    font-size: 16px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.button-outline:hover {
+    background-color: var(--color-primary);
+    color: var(--color-btn-fg);
+}
+
+.button-long {
+    width: 100%;
+    padding: 12px 0;
+    margin: 10px 0;
+    background: var(--color-btn);
+    color: var(--color-btn-fg);
+    border: none;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    gap: 8px;
+    transition: background 0.2s;
+}
+
+.button-long:hover {
+    background: #1565c0;
+}
+
+.button-circle {
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--color-border);
+    text-align: center;
+    cursor: pointer;
+    margin: 3px;
+}

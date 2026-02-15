@@ -37,7 +37,7 @@ public class ReviewAPI {
      */
     @PostMapping("create_proj")
     public Respond<String> create_proj(
-            @RequestParam("icon")MultipartFile iconFile,
+            @RequestParam("file")MultipartFile iconFile,
             @RequestParam("json") String json
     ) throws Exception {
         // json转换
@@ -49,6 +49,9 @@ public class ReviewAPI {
             return new Respond<>(false, "1", null);
         }
         if (!(map.get("name") instanceof String) || !(map.get("type") instanceof Integer)) {
+            return new Respond<>(false, "1", null);
+        }
+        if (iconFile == null || iconFile.isEmpty()) {
             return new Respond<>(false, "1", null);
         }
         String name = (String) map.get("name");
