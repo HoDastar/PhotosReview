@@ -7,6 +7,7 @@
     <title>Admin</title>
     <link rel="stylesheet" href="css/root.css">
     <link rel="stylesheet" href="css/input.css">
+    <link rel="stylesheet" href="css/modal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         :root {
@@ -167,6 +168,7 @@
             text-align: right;
         }
     </style>
+    <link rel="stylesheet" href="css/modal.css">
 </head>
 
 <body>
@@ -174,6 +176,22 @@
         页面加载中，请稍候...<br>
         首次加载时较慢，请耐心等待
     </div>
+    <!-- 遮罩层 -->
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <!-- 弹窗内容 -->
+    <div class="modal" id="modal">
+        <div class="modal-header">
+            <h3></h3>
+            <span class="close-btn" id="closeBtn">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p></p>
+        </div>
+        <div class="modal-footer">
+            <button class="confirm-btn" id="confirmBtn">OK</button>
+        </div>
+    </div>
+
     <header class="nav">
         <h1> <span data-i18n="nav_title">Backend System</span></h1>
         <div class="nav-buttons">
@@ -215,12 +233,12 @@
                         <div class="radio-card-group">
 
                             <label class="radio-card">
-                                <input type="radio" name="review_type" checked />
+                                <input type="radio" name="review_type" value="0" checked />
                                 <span data-i18n="screening_review_type">Screening</span>
                             </label>
 
                             <label class="radio-card">
-                                <input type="radio" name="review_type" />
+                                <input type="radio" name="review_type" value="1" />
                                 <span data-i18n="review_review_type">Review</span>
                             </label>
 
@@ -257,9 +275,11 @@
 <script src="./js/i18n.js"></script>
 <script src="./js/url.js"></script>
 <script src="./js/f.js"></script>
+<script src="js/modal.js"></script>
 <script>
     const panelBtns = document.querySelectorAll('.panel-btn');
     const viewers = document.querySelectorAll('.viewer');
+    let url;
 
     panelBtns.forEach(btn => {
         btn.addEventListener("click", () => {
@@ -300,19 +320,36 @@
         if (urlParams.has("p")) {
             goPage(urlParams.get("p"));
         }
+        // Loading website infomation
+        loadWebsiteInfo();
 
         // Loading Button Events
         document.getElementById("submitCreateProj").addEventListener("click", createProj);
+        document.getElementById("imgInputThumbnail").addEventListener("change", () => {
+            fileInputChange("imgInputThumbnail");
+        });
     };
-
-    document.getElementById("imgInputThumbnail").addEventListener("change", () => {
-        fileInputChange("imgInputThumbnail");
-    });
 
     // Create Project
     async function createProj() {
         const fileInput = document.getElementById("imgInputThumbnail");
-        const result = await postApiWithFile("")
+        const projName = document.querySelector("#createProj .text-input").value;
+        const reviewTypeInput = document.querySelector('input[name="review_type"]:checked');
+        // 非空
+        if (!projName || projName.trim() === "" || !reviewTypeInput || fileInput.value === '') {
+            openModal("Warming", "Please fill in all required fields.");
+            return;
+        }
+
+        const reviewType = parseInt(reviewTypeInput.value, 10);
+        if (NaN(reviewType)) {
+            return;
+        }
+        const param = {
+            name: projName,
+            reviewType: reviewType,
+        }
+        const result = await postApiWithFile(url + "api/review/create_proj", param)
     }
 
     function fileInputChange(id, allowed = ["jpg", "png", "jpeg", "webp"]) {
@@ -337,6 +374,16 @@
                 imgEl.src = e.target.result;
             }
             reader.readAsDataURL(file);
+        }
+    }
+
+    function loadWebsiteInfo() {
+        const info = localStorage.getItem("website_info");
+        if (info) {
+            const infoObj = JSON.parse(info);
+            url = infoObj.website_url;
+        } else {
+            setTimeout(loadWebsiteInfo, 500);
         }
     }
 </script>

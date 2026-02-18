@@ -1,5 +1,7 @@
 {
     "nav_title": "Backend System",
     "proj_list" : "Project list",
-    "create_proj": "Create project"
+    "alert_title_warming": "Warning",
+    "create_proj": "Create project",
+    "create_proj_alert_1": "Please fill in all required fields."
 }

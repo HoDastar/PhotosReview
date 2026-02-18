@@ -39,9 +39,9 @@ const i18n = (() => {
 
     function lookUp(key) {
         if (dict[key]) {
-            return key + ": " + dict[key]
+            return dict[key]
         } else {
-            return "None";
+            return "NaN";
         }
     }
 

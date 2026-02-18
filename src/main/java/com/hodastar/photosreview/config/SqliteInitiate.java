@@ -73,7 +73,7 @@ public class SqliteInitiate {
             jdbcTemplate.execute("""
                     -- 初始化设置 --
                     INSERT INTO review_config(id, name, value)
-                    SELECT 0, 'website_name', 'A Photo Review System'
+                    SELECT 0, 'website_name', 'Photo Review System'
                     WHERE NOT EXISTS (
                         SELECT 1 FROM review_config WHERE id = 0
                     );
