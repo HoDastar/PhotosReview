@@ -2,6 +2,7 @@ package com.hodastar.photosreview.controllers;
 
 import com.hodastar.photosreview.entities.EntityReviewUsers;
 import com.hodastar.photosreview.mappers.UserMapper;
+import com.hodastar.photosreview.utils.CryptUtil;
 import com.hodastar.photosreview.utils.Respond;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,12 +64,18 @@ public class UserAPI {
             return new Respond<>(false, "5", null);
         }
 
+        // 检查uid是否占用
+        Boolean isExist = userMapper.isUidExist(uid);
+        if (Boolean.TRUE.equals(isExist)) {
+            return new Respond<>(false, "2", null);
+        }
+
         // 注册
-        Map<String, Object> result = userMapper.register(uid, password, allname);
-        if ((boolean) result.get("result")) {
-            return new Respond<>(true, "success", (String) result.get("token"));
+        Boolean result = userMapper.register(uid, password, allname);
+        if (result) {
+            return new Respond<>(true, "success", null);
         } else {
-            return new Respond<>(false, (String) result.get("msg"), null);
+            return new Respond<>(false, "0", null);
         }
     }
 
@@ -89,13 +96,26 @@ public class UserAPI {
         }
         int uid = (Integer) body.get("uid");
         String password = (String) body.get("password");
-        // 登录
-        Map<String, Object> result = userMapper.login(uid, password);
-        if ((boolean) result.get("result")) {
-            return new Respond<>(true, "success", (String) result.get("token"));
-        } else {
-            return new Respond<>(false, (String) result.get("msg"), null);
+
+        // 获取用户
+        Optional<EntityReviewUsers> user = userMapper.getUserByUid(uid);
+        if (user.isEmpty()) {
+            return new Respond<>(false, "2", null);
         }
+        // 验证密码
+        if (!CryptUtil.checkBCEcrypt(password, user.get().password)) {
+            return new Respond<>(false, "2", null);
+        }
+        // 更新登录时间
+        Boolean result = userMapper.updateLoginTime(uid);
+        if (!result) {
+            return new Respond<>(false, "0", null);
+        }
+
+        // 合成token
+        String originalToken = String.valueOf(uid) + String.valueOf(user.get().login_time);
+        String token = CryptUtil.nBCrypt(originalToken);
+        return new Respond<>(true, "success", token);
     }
 
     // 查询token接口

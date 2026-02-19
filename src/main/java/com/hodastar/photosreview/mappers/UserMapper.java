@@ -47,27 +47,25 @@ public class UserMapper {
     }
 
     /**
-     * 登录功能
+     * 判断uid是否被占用
      * @param uid 用户 ID
-     * @param password 原始密码
+     * @return 是否被占用
+     */
+    public Boolean isUidExist(int uid) {
+        Boolean isExist = jdbcTemplate.queryForObject(
+                "SELECT EXISTS(SELECT 1 FROM review_users WHERE uid = ?)",
+                Boolean.class,
+                uid
+        );
+        return Boolean.TRUE.equals(isExist);
+    }
+
+    /**
+     * 更新登录时间
+     * @param uid 用户 ID
      * @return 登录结果map
      */
-    public Map<String, Object> login(int uid, String password) {
-        Map<String, Object> map = new HashMap<>();
-        // 获取用户
-        Optional<EntityReviewUsers> user = getUserByUid(uid);
-        if (user.isEmpty()) {
-            map.put("result", false);
-            map.put("msg", "1");
-            return map;
-        }
-
-        // 验证密码
-        if (!CryptUtil.checkBCEcrypt(password, user.get().password)) {
-            map.put("result", false);
-            map.put("msg", "2");
-            return map;
-        }
+    public Boolean updateLoginTime(int uid) {
 
         long currentTime = System.currentTimeMillis() / 1000;
         // 更新登录时间
@@ -75,20 +73,7 @@ public class UserMapper {
                 "UPDATE review_users SET login_time = ? WHERE uid = ?",
                 currentTime, uid
         );
-        if (rowsAffected == 0) {
-            map.put("result", false);
-            map.put("msg", "-1");
-            return map;
-        }
-
-        // 构造token原
-        String originToken = String.valueOf(uid) + String.valueOf(user.get().password) + String.valueOf(currentTime);
-        // 加密token
-        String token = CryptUtil.nBCrypt(originToken);
-        map.put("result", true);
-        map.put("msg", "success");
-        map.put("token", token);
-        return map;
+        return rowsAffected != 0;
     }
 
     /**
@@ -102,41 +87,19 @@ public class UserMapper {
         if (user.isEmpty()) {
             return false;
         }
-        String originToken = String.valueOf(uid) + String.valueOf(user.get().password) + String.valueOf(user.get().login_time);
-        String dbToken = CryptUtil.nBCrypt(originToken);
+        String originalToken = String.valueOf(uid) + String.valueOf(user.get().login_time);
+        String dbToken = CryptUtil.nBCrypt(originalToken);
         return dbToken.equals(token);
     }
 
     /**
-     * 注册功能
+     * 注册
      * @param uid 用户 ID
      * @param password 原始密码
      * @param allname 用户全名
      * @return 注册结果map
      */
-    public Map<String, Object> register(int uid, String password, String allname) {
-
-        Map<String, Object> map = new HashMap<>();
-
-        // 非空检查
-        if (password == null || password.isEmpty() || allname == null || allname.isEmpty()) {
-            map.put("result", false);
-            map.put("msg", "1");
-            return map;
-        }
-
-        // 检查uid是否占用
-        Boolean isExist = jdbcTemplate.queryForObject(
-                "SELECT EXISTS(SELECT 1 FROM review_users WHERE uid = ?)",
-                Boolean.class,
-                uid
-        );
-        if (Boolean.TRUE.equals(isExist)) {
-            map.put("result", false);
-            map.put("msg", "3");
-            return map;
-        }
-
+    public Boolean register(int uid, String password, String allname) {
         // 获取当前秒级时间戳
         long currentTime = System.currentTimeMillis() / 1000;
         // 加密密码
@@ -148,19 +111,9 @@ public class UserMapper {
                 uid, ppassword, currentTime, allname, 1
         );
         if (rowsAffected == 0) {
-            map.put("result", false);
-            map.put("msg", "-1");
-            // 数据库插入失败：立即返回，避免继续构造和返回成功 token
-            return map;
+            return false;
+        } else {
+            return true;
         }
-
-        // 构造token原
-        String originToken = String.valueOf(uid) + String.valueOf(ppassword) + String.valueOf(currentTime);
-        // 加密token
-        String token = CryptUtil.nBCrypt(originToken);
-        map.put("result", true);
-        map.put("msg", "success");
-        map.put("token", token);
-        return map;
     }
 }

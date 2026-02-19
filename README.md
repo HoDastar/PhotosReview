@@ -23,17 +23,17 @@ export JWT_SECRET=change_this_secret
 
 Modal error code
 ```aiignore
+ * 0: 数据库操作失败
  * 1: 参数错误
- * 2: 密码错误
+ * 2: uid或密码错误
  * 3: uid已占用
  * 4: Token无效
- * 5: 注册权限不足
+ * 5: 操作权限不足
  * 6: 字符过长
  * 7: uid无效
  * 8: 不支持的文件类型
  * 9: 文件过大
  * 10: 文件不存在
- * -1: 数据库操作失败
 ```
 
 
