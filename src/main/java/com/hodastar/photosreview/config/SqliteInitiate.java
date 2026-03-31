@@ -30,7 +30,7 @@ public class SqliteInitiate {
                     """);
             jdbcTemplate.execute("""
                     INSERT INTO review_users(uid, password, login_time, allname, status)
-                    SELECT 10000, '$2a$10$lAecc.DqEAYsrnCa7RojTuyd23agS0DqsCTcoPaNuEpkVSE4YweQa', 0, 'root', 0
+                    SELECT 10000, '$2a$10$3WrOZ89bEfspgEEm3.u5Ku5DDJHfHQ1dFb4c9F83NbhRv6Wp6W2He', 0, 'root', 0
                     WHERE NOT EXISTS (
                         SELECT 1 FROM review_users WHERE uid = 10000
                     );
@@ -38,7 +38,7 @@ public class SqliteInitiate {
             jdbcTemplate.execute("""
                     CREATE TABLE IF NOT EXISTS review_proj (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name TEXT NOT NULL,
+                        name TEXT NOT NULL UNIQUE,
                         -- 0 = 审片, 1 = 筛片
                         type INTEGER NOT NULL,
                         task TEXT NOT NULL,
@@ -50,8 +50,6 @@ public class SqliteInitiate {
                         -- 0/1 是否展示
                         display INTEGER NOT NULL
                     );
-                    CREATE UNIQUE INDEX idx_review_proj_name
-                    ON review_proj(name);
                 """);
             jdbcTemplate.execute("""
                     CREATE TABLE IF NOT EXISTS review_data (

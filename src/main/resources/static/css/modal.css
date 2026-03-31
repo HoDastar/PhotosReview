@@ -26,8 +26,8 @@
       transform: translate(-50%, -50%) scale(0.8);
       background-color: var(--color-bg);
       border-radius: 8px;
-      width: 400px;
-      padding: 20px;
+      width: 500px;
+      padding: 30px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
       z-index: 1000;
       opacity: 0;

@@ -65,6 +65,14 @@ public class CryptUtil {
         return hmacSha256(inputSalt, Config.HMAC_SECRET);
     }
 
+    // 牛逼加密2
+    public static String nBCrypt2(String input) {
+        // 加盐
+        String inputSalt = input + Config.SALT + Config.SALT;
+        // 返回SHA256加密
+        return hmacSha256(inputSalt, Config.HMAC_SECRET + Config.SALT);
+    }
+
     /**
      * byte[] 转 HEX
      */

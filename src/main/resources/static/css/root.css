@@ -18,6 +18,9 @@
     /* 主文字 */
     --color-fg-opposite: #ffffff;
     /* 反色文字（按钮/主色块） */
+    --color-fg-secondary: #666666;
+    --color-fg-tertiary: #999999;
+    --color-fg-disabled: #cccccc;
 
     /* Primary Theme */
     --color-primary: #42a5f5;
@@ -34,6 +37,8 @@
     /* 默认边框 */
     --color-border2: #9aa0a6;
     /* 深边框 */
+    --color-hr: #d1d5db;
+    /* 水平分割线 */
 
     /* Buttons */
     --color-btn: #42a5f5;
@@ -59,9 +64,9 @@
 body.dark {
 
     /* Background Layers */
-    --color-bg: #121212;
+    --color-bg: #151718;
     /* 主背景 */
-    --color-bg2: #1e1e1e;
+    --color-bg2: #1c1c1c;
     /* 次级背景（卡片） */
     --color-bg3: #1e88e5;
     /* 主色强调背景 */
@@ -71,6 +76,9 @@ body.dark {
     /* 主文字 */
     --color-fg-opposite: #121212;
     /* 反色文字 */
+    --color-fg-secondary: #cccccc;
+    --color-fg-tertiary: #999999;
+    --color-fg-disabled: #666666;
 
     /* Primary Theme */
     --color-primary: #64b5f6;
@@ -84,6 +92,7 @@ body.dark {
     /* 默认边框 */
     --color-border2: #555555;
     /* 深边框 */
+    --color-hr: #3a3a3a;
 
     /* Buttons */
     --color-btn: #2196f3;
@@ -140,6 +149,26 @@ body {
     background: var(--color-primary);
     color: #fff;
     border-color: var(--color-primary);
+}
+
+.lang-toggle {
+    position: fixed;
+    bottom: 24px;
+    right: 80px;
+    z-index: 1000;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    border: 1px solid var(--color-bg);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: background 0.3s, color 0.3s, border 0.3s;
 }
 
 /* 加载页面样式 */

@@ -30,9 +30,17 @@ const i18n = (() => {
 
         // placeholder
         document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
-            const key = el.dataset.i18n - placeholder;
+            const key = el.dataset.i18nPlaceholder;
             if (dict[key]) {
                 el.placeholder = dict[key];
+            }
+        });
+
+        // title
+        document.querySelectorAll("[data-i18n-title]").forEach(el => {
+            const key = el.dataset.i18nTitle;
+            if (dict[key]) {
+                el.title = dict[key];
             }
         });
     }
@@ -46,8 +54,8 @@ const i18n = (() => {
     }
 
     async function set(lang) {
-        localStorage.setItem("lang") = lang;
-        await load(lang);
+        localStorage.setItem("lang", lang);
+        await loadDict(lang);
         translate();
     }
 

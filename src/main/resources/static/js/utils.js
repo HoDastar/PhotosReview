@@ -1,0 +1,50 @@
+/**
+ * Sets a cookie with the specified name, value, and expiration in days.
+ *
+ * @function
+ * @param {string} name - The name of the cookie.
+ * @param {string} value - The value to store in the cookie.
+ * @param {number} days - The number of days until the cookie expires.
+ */
+
+function setCookie(name, value, days) {
+    const d = new Date();
+    d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = name + "=" + value + ";expires=" + d.toUTCString() + ";path=/";
+}
+
+/**
+ * Retrieves the value of a cookie by its name.
+ *
+ * @function
+ * @param {string} name - The name of the cookie to retrieve.
+ * @returns {string} The value of the cookie, or an empty string if not found.
+ */
+
+function getCookie(name) {
+    const arr = document.cookie.split(';');
+    for (let i = 0; i < arr.length; i++) {
+        let c = arr[i].trim();
+        if (c.indexOf(name + "=") === 0) return c.substring(name.length + 1, c.length);
+    }
+    return "";
+}
+/**
+ * Deletes a cookie by setting its expiration date to the past.
+ *
+ * @function
+ * @param {string} name - The name of the cookie to delete.
+ */
+function deleteCookie(name) {
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
+}
+
+// 跳转页面
+function go_url(url, method) {
+    if (method === 0) {
+        window.location.href = url;
+    }
+    if (method === 1) {
+        window.open(url);
+    }
+}

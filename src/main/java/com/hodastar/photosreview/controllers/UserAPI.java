@@ -1,14 +1,20 @@
 package com.hodastar.photosreview.controllers;
 
+import com.hodastar.photosreview.config.Config;
 import com.hodastar.photosreview.entities.EntityReviewUsers;
 import com.hodastar.photosreview.mappers.UserMapper;
 import com.hodastar.photosreview.utils.CryptUtil;
 import com.hodastar.photosreview.utils.Respond;
+import com.hodastar.photosreview.utils.Utilities;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
+
+import static com.hodastar.photosreview.config.Config.LOGIN_SESSION_FILE_DIR;
 
 @RestController
 @RequestMapping("/api/user")
@@ -35,6 +41,7 @@ public class UserAPI {
         if (!(body.get("uid") instanceof Integer) || !(body.get("allname") instanceof String) || !(body.get("password") instanceof String) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
             return new Respond<>(false, "1", null);
         }
+
         int uid = (Integer) body.get("uid");
         String allname = (String) body.get("allname");
         String password = (String) body.get("password");
@@ -42,7 +49,7 @@ public class UserAPI {
         String adminToken = (String) body.get("adminToken");
 
         // 检查长度
-        if (allname.length() > 255 || password.length() > 255) {
+        if (allname.length() > 100 || password.length() > 100) {
             return new Respond<>(false, "6", null);
         }
         if (uid > 999999999 || uid < 10000) {
@@ -55,12 +62,12 @@ public class UserAPI {
         }
 
         // 获取信息
-        Optional<EntityReviewUsers> user = userMapper.getUserByUid(adminUid);
+        Optional<EntityReviewUsers> adminUser = userMapper.getUserByUid(adminUid);
         // 检查管理员权限
-        if (user.isEmpty()) {
+        if (adminUser.isEmpty()) {
             return new Respond<>(false, "5", null);
         }
-        if (user.get().status != 0) {
+        if (adminUser.get().status != 0) {
             return new Respond<>(false, "5", null);
         }
 
@@ -107,21 +114,102 @@ public class UserAPI {
             return new Respond<>(false, "2", null);
         }
         // 更新登录时间
-        Boolean result = userMapper.updateLoginTime(uid);
+        long currentTime = System.currentTimeMillis() / 1000;
+        Boolean result = userMapper.updateLoginTime(uid, currentTime);
         if (!result) {
             return new Respond<>(false, "0", null);
         }
 
         // 合成token
-        String originalToken = String.valueOf(uid) + String.valueOf(user.get().login_time);
+        String originalToken = String.valueOf(uid) + String.valueOf(currentTime);
         String token = CryptUtil.nBCrypt(originalToken);
+        // 存储token
+        String sessionToken = CryptUtil.nBCrypt2(token);
+        Utilities.saveDocumentFile(sessionToken, LOGIN_SESSION_FILE_DIR, String.valueOf(uid) + ".session");
+        // 返回token
         return new Respond<>(true, "success", token);
+    }
+
+    /**
+     * 修改密码接口
+     * param uid
+     * param password
+     * param newPassword
+     * @return 修改结果
+     */
+    @PostMapping("/alter_password")
+    public Respond<String> alterPassword(@RequestBody HashMap<String, Object> body) {
+        // 检查类型
+        if (!body.containsKey("uid") || !body.containsKey("password") || !body.containsKey("newPassword")) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("uid") instanceof Integer) || !(body.get("password") instanceof String) || !(body.get("newPassword") instanceof String)) {
+            return new Respond<>(false, "1", null);
+        }
+        int uid = (Integer) body.get("uid");
+        String password = (String) body.get("password");
+        String newPassword = (String) body.get("newPassword");
+
+        // 检查长度
+        if (password.length() > 255 || newPassword.length() > 255) {
+            return new Respond<>(false, "6", null);
+        }
+
+        // 获取用户
+        Optional<EntityReviewUsers> user = userMapper.getUserByUid(uid);
+        if (user.isEmpty()) {
+            return new Respond<>(false, "2", null);
+        }
+        // 验证密码
+        if (!CryptUtil.checkBCEcrypt(password, user.get().password)) {
+            return new Respond<>(false, "2", null);
+        }
+        // 加密密码
+        String newPasswordHash = CryptUtil.BCEcrypt(newPassword);
+        // 更新密码
+        Boolean result = userMapper.updatePassword(uid, newPasswordHash);
+        if (result) {
+            return new Respond<>(true, "success", null);
+        } else {
+            return new Respond<>(false, "0", null);
+        }
     }
 
     // 查询token接口
     @GetMapping("/check_token")
     public Respond<Boolean> checkToken(@RequestParam int uid, @RequestParam String token) {
-        boolean isValid = userMapper.checkToken(uid, token);
-        return new Respond<>(isValid, "success", null);
+        String dirStr = LOGIN_SESSION_FILE_DIR + String.valueOf(uid) + ".session";
+        // 检查是否存在session文件
+        File sessionFile = new File(dirStr);
+        if (sessionFile.exists()) {
+            // 验证session
+            String sessionToken = Utilities.readDocumentFile(dirStr);
+            if (sessionToken == null || !CryptUtil.nBCrypt2(token).equals(sessionToken)) {
+                return new Respond<>(false, "success", null);
+            }
+        }
+        Boolean result = userMapper.checkToken(uid, token);
+        // 重新存储token
+        String sessionToken = CryptUtil.nBCrypt2(token);
+        Utilities.saveDocumentFile(sessionToken, LOGIN_SESSION_FILE_DIR, String.valueOf(uid) + ".session");
+        return new Respond<>(result, "success", null);
+    }
+
+    // 获取少量用户信息
+    @GetMapping("/get_user_info")
+    public Respond<HashMap<String, Object>> getUserInfo(@RequestParam int uid, @RequestParam String token) {
+        // 验证token
+        if (!userMapper.checkToken(uid, token)) {
+            return new Respond<>(false, "4", null);
+        }
+        Optional<EntityReviewUsers> user = userMapper.getUserByUid(uid);
+        if (user.isEmpty()) {
+            return new Respond<>(false, "2", null);
+        }
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("uid", user.get().uid);
+        data.put("allname", user.get().allname);
+        data.put("status", user.get().status);
+        return new Respond<>(true, "success", data);
     }
 }

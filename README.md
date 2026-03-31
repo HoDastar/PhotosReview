@@ -1,9 +1,11 @@
 # PhotoReview Server
 
 Overview
+
 - Provides auth (JWT), email verification.
 
 Quick start
+
 ```bash
 git clone https://github.com/yourname/ReclightServer.git
 cd ReclightServer
@@ -22,6 +24,7 @@ export JWT_SECRET=change_this_secret
 ```
 
 Modal error code
+
 ```aiignore
  * 0: 数据库操作失败
  * 1: 参数错误
@@ -34,15 +37,18 @@ Modal error code
  * 8: 不支持的文件类型
  * 9: 文件过大
  * 10: 文件不存在
+ * 11: 有未填写的必填字段
+ * 12：登录已过期
 ```
 
-
 Build
+
 ```bash
 ./mvnw clean package -DskipTests
 java -jar target/*.jar
 ```
 
 Notes
+
 - Redis is optional. Use secrets for production credentials.
 - Open an issue or PR on GitHub for contributions.

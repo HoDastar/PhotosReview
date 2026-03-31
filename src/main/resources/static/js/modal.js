@@ -35,3 +35,21 @@ function openModal(title, text) {
         closeBtn.addEventListener('click', onClose);
     })
 }
+
+// 气泡弹窗
+function showBubble(text, bgcolor = '#fff', fcolor = '#333') {
+    const container = document.getElementById('bubbleContainer');
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = text;
+    bubble.style.backgroundColor = bgcolor;
+    bubble.style.color = fcolor;
+    container.appendChild(bubble);
+
+    // 动画结束后移除
+    bubble.addEventListener('animationend', () => {
+        if (bubble.style.opacity === '0' || getComputedStyle(bubble).opacity === '0') {
+            bubble.remove();
+        }
+    });
+}

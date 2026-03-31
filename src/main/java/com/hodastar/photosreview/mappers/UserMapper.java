@@ -7,16 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
-/**
- * 用户数据访问对象
- * error code:
- * 1: 有空值
- * 2: 密码错误
- * 3: uid已占用
- * 4: Token无效
- * 5: 注册权限不足
- * -1: 数据库操作失败
- */
 @Repository
 public class UserMapper {
     private final JdbcTemplate jdbcTemplate;
@@ -65,13 +55,25 @@ public class UserMapper {
      * @param uid 用户 ID
      * @return 登录结果map
      */
-    public Boolean updateLoginTime(int uid) {
+    public Boolean updateLoginTime(int uid, long currentTime) {
 
-        long currentTime = System.currentTimeMillis() / 1000;
         // 更新登录时间
         int rowsAffected = jdbcTemplate.update(
                 "UPDATE review_users SET login_time = ? WHERE uid = ?",
                 currentTime, uid
+        );
+        return rowsAffected != 0;
+    }
+
+    /**
+     * 更新密码
+     * @param uid 用户 ID
+     * @param newPassword 新加密后的密码
+     * @return 更新结果     */
+    public Boolean updatePassword(int uid, String newPassword) {
+        int rowsAffected = jdbcTemplate.update(
+                "UPDATE review_users SET password = ? WHERE uid = ?",
+                newPassword, uid
         );
         return rowsAffected != 0;
     }

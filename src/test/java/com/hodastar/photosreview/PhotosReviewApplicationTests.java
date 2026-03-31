@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
+import static com.hodastar.photosreview.config.Config.LOGIN_SESSION_FILE_DIR;
 
 import java.util.Map;
 
@@ -18,25 +19,13 @@ class PhotosReviewApplicationTests {
 
     @Test
     void contextLoads() {
-/*
-        log.info(CryptUtil.BCEcrypt("123456"));
-        log.info(CryptUtil.checkBCEcrypt("123456", "$2a$10$lAecc.DqEAYsrnCa7RojTuyd23agS0DqsCTcoPaNuEpkVSE4YweQa").toString());
- */
-        String a = """
-                {
-                "wss": "ws://localhost:8080/ws",
-                "api": "http://localhost:8080/api",
-                "a": {
-                    "b": 1,
-                    "c": 2
-                }
-                }
-                """;
-        Map<String, Object> b = Utilities.jsonStringToMap(a);
-        log.info(b.get("wss").toString());
-        log.info(b.get("api").toString());
-        log.info(b.get("a").toString());
-
+        b();
     }
 
+    void a() {
+        System.out.println(Utilities.readDocumentFile(LOGIN_SESSION_FILE_DIR+"10000.session"));
+    }
+    void b() {
+        System.out.println(CryptUtil.BCEcrypt("Aa123456"));
+    }
 }
