@@ -490,7 +490,7 @@ async function loadManageDist(index, id) {
             distributionContainerEl.appendChild(trEl);
         } else {
             // UID的所有任务
-            currentTaskList.forEach((tasks, uid) => {
+            Object.entries(currentTaskList).forEach(([uid, tasks]) => {
                 // UID下的每一项任务
                 tasks.forEach((task, index) => {
                     // 创建行
@@ -588,7 +588,7 @@ async function loadManageDist(index, id) {
 
         // 注册Add表单
         addBtnEl.addEventListener("click", () => {
-            const uid = parseInt(addFirstInputEl.value, 10);
+            const uid = parseInt(addUidInputEl.value, 10);
             const first = parseInt(addFirstInputEl.value, 10);
             const last = parseInt(addLastInputEl.value, 10);
             if (isNaN(uid) || isNaN(first) || isNaN(last) || uid <= 0 || first < 0 || last < 0 || first > last) {
