@@ -61,9 +61,8 @@ public class UserAPI {
             return new Respond<>(false, "4", null);
         }
 
-        // 获取信息
-        Optional<EntityReviewUsers> adminUser = userMapper.getUserByUid(adminUid);
         // 检查管理员权限
+        Optional<EntityReviewUsers> adminUser = userMapper.getUserByUid(adminUid);
         if (adminUser.isEmpty()) {
             return new Respond<>(false, "5", null);
         }
@@ -178,20 +177,7 @@ public class UserAPI {
     // 查询token接口
     @GetMapping("/check_token")
     public Respond<Boolean> checkToken(@RequestParam int uid, @RequestParam String token) {
-        String dirStr = LOGIN_SESSION_FILE_DIR + String.valueOf(uid) + ".session";
-        // 检查是否存在session文件
-        File sessionFile = new File(dirStr);
-        if (sessionFile.exists()) {
-            // 验证session
-            String sessionToken = Utilities.readDocumentFile(dirStr);
-            if (sessionToken == null || !CryptUtil.nBCrypt2(token).equals(sessionToken)) {
-                return new Respond<>(false, "success", null);
-            }
-        }
         Boolean result = userMapper.checkToken(uid, token);
-        // 重新存储token
-        String sessionToken = CryptUtil.nBCrypt2(token);
-        Utilities.saveDocumentFile(sessionToken, LOGIN_SESSION_FILE_DIR, String.valueOf(uid) + ".session");
         return new Respond<>(result, "success", null);
     }
 

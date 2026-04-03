@@ -56,7 +56,7 @@ public class ProjAPI {
             @RequestParam("adminToken") String adminToken
     ) {
         // 检查token
-        if (!userMapper.checkToken(adminUid, adminToken)) {
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
             return new Respond<>(false, "5", null);
         }
 
@@ -73,7 +73,7 @@ public class ProjAPI {
             @RequestParam("adminToken") String adminToken
     ) {
         // 检查token
-        if (!userMapper.checkToken(adminUid, adminToken)) {
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
             return new Respond<>(false, "5", null);
         }
         Integer count = projMapper.getProjDataCount(projName);
@@ -122,13 +122,17 @@ public class ProjAPI {
         int adminUid = (Integer) map.get("adminUid");
         String adminToken = (String) map.get("adminToken");
 
+        if (name.isBlank()) {
+            return new Respond<>(false, "1", null);
+        }
+
         // 检查token
-        if (!userMapper.checkToken(adminUid, adminToken)) {
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
             return new Respond<>(false, "5", null);
         }
 
         // check name length
-        if (name.length() > 255 || name.isEmpty()) {
+        if (name.length() > 255) {
             return new Respond<>(false, "6", null);
         }
         // check type
@@ -193,7 +197,7 @@ public class ProjAPI {
         String adminToken = (String) body.get("adminToken");
 
         // 检查token
-        if (!userMapper.checkToken(adminUid, adminToken)) {
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
             return new Respond<>(false, "5", null);
         }
 
@@ -245,7 +249,7 @@ public class ProjAPI {
         String adminToken = (String) map.get("adminToken");
 
         // 检查token
-        if (!userMapper.checkToken(adminUid, adminToken)) {
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
             return new Respond<>(false, "5", null);
         }
 
@@ -271,7 +275,10 @@ public class ProjAPI {
 
         if (map.containsKey("name")) {
             String mName = (String) map.get("name");
-            if (mName.length() > 255 || mName.isEmpty()) {
+            if (mName.isBlank()) {
+                return new Respond<>(false, "1", null);
+            }
+            if (mName.length() > 255) {
                 return new Respond<>(false, "6", null);
             }
             if (!mName.equals(name)) {
@@ -414,10 +421,10 @@ public class ProjAPI {
         String adminToken = (String) map.get("adminToken");
 
         // 检查token
-        if (!userMapper.checkToken(adminUid, adminToken)) {
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
             return new Respond<>(false, "5", null);
         }
-        if (proj.length() > 255 || proj.isEmpty()) {
+        if (proj.length() > 255 || proj.isBlank()) {
             return new Respond<>(false, "1", null);
         }
 
