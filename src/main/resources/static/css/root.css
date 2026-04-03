@@ -230,9 +230,11 @@ body {
     gap: 8px;
     transition: background 0.2s;
 }
-
 .button-long:hover {
     background: #1565c0;
+}
+.button-long:active {
+    transform: scale(0.96);
 }
 
 .button-circle {

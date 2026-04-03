@@ -2,14 +2,24 @@ package com.hodastar.photosreview.mappers;
 
 import com.hodastar.photosreview.entities.EntityReviewUsers;
 import com.hodastar.photosreview.utils.CryptUtil;
+import com.hodastar.photosreview.utils.Respond;
+import com.hodastar.photosreview.utils.Utilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.io.File;
 import java.util.*;
+
+import static com.hodastar.photosreview.config.Config.LOGIN_SESSION_FILE_DIR;
 
 @Repository
 public class UserMapper {
     private final JdbcTemplate jdbcTemplate;
+
+    private static final Logger log =
+            LoggerFactory.getLogger(UserMapper.class);
 
     public UserMapper(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -85,13 +95,54 @@ public class UserMapper {
      * @return 是否有效
      */
     public Boolean checkToken(int uid, String token) {
+        String dirStr = LOGIN_SESSION_FILE_DIR + String.valueOf(uid) + ".session";
+        // 检查是否存在session文件
+        File sessionFile = new File(dirStr);
+        if (sessionFile.exists()) {
+            // 验证session
+            String sessionToken = Utilities.readDocumentFile(dirStr);
+            if (sessionToken != null && CryptUtil.nBCrypt2(token) == sessionToken) {
+                return true;
+            }
+        }
         Optional<EntityReviewUsers> user = getUserByUid(uid);
         if (user.isEmpty()) {
             return false;
         }
         String originalToken = String.valueOf(uid) + String.valueOf(user.get().login_time);
         String dbToken = CryptUtil.nBCrypt(originalToken);
-        return dbToken.equals(token);
+        if (!dbToken.equals(token)) {
+            log.info("用户 {} token 无效", uid);
+            return false;
+        }
+
+        // 重新存储token
+        String sessionToken = CryptUtil.nBCrypt2(token);
+        Utilities.saveDocumentFile(sessionToken, LOGIN_SESSION_FILE_DIR, String.valueOf(uid) + ".session");
+        return true;
+    }
+
+    /**
+     * 检查管理员权限
+     * @param adminUid 管理员用户 ID
+     * @param adminToken 管理员token
+     * @return 是否是管理员
+     */
+    public Boolean checkAdmin(int adminUid, String adminToken) {
+        // 检查token
+        if (!checkToken(adminUid, adminToken)) {
+            return false;
+        }
+
+        // 检查管理员权限
+        Optional<EntityReviewUsers> adminUser = getUserByUid(adminUid);
+        if (adminUser.isEmpty()) {
+            return false;
+        }
+        if (adminUser.get().status != 0) {
+            return false;
+        }
+        return true;
     }
 
     /**
