@@ -131,9 +131,9 @@ async function getProj() {
     projList = result.data;
 
     const projListContainerEl = document.getElementById("projListContainer");
-    const projListSCardContainerEl = document.getElementById("projListSCardContainer");
+    // const projListSCardContainerEl = document.getElementById("projListSCardContainer");
     projListContainerEl.innerHTML = "";
-    projListSCardContainerEl.innerHTML = "";
+    // projListSCardContainerEl.innerHTML = "";
     projList.forEach((el, index) => {
         /**
          * Project List渲染
@@ -243,7 +243,9 @@ async function getProj() {
         /**
          * Project List S Card渲染
          * @Begin
+         * Discard
          */
+        /*
         selectedUploadToProjName = '';
         // 判断status
         if (el.status === 0 || el.status === 1) {
@@ -286,11 +288,6 @@ async function getProj() {
             pEl2.innerHTML = `<i class="fa-solid fa-list-check"></i> ${statusText}`;
             sCardEl.appendChild(pEl1);
             sCardEl.appendChild(pEl2);
-            /*
-            if (selectedUploadToProjName === el.name) {
-                sCardEl.classList.add("active");
-            }
-             */
             sCardEl.addEventListener("click", () => {
                 if (selectedUploadToProjName !== el.name) {
                     selectedUploadToProjName = el.name;
@@ -302,9 +299,11 @@ async function getProj() {
             });
             projListSCardContainerEl.appendChild(sCardEl);
         }
+        */
         /**
          * Project List S Card渲染
          * @End
+         * Discard
          */
     });
 
@@ -787,8 +786,8 @@ function photosPoolChange(files) {
 
 async function uploadImages() {
     const filePoolEl = document.getElementById("filePool");
-    const author = document.querySelector('#upload input[name="input_author"]').value;
-    if (!selectedUploadToProjName || !author|| Object.keys(photosPool).length === 0) {
+    const author = document.querySelector('#manageProj input[name="input_author"]').value;
+    if (!currentManageProjId || !author|| Object.keys(photosPool).length === 0) {
         openModal(
             i18n.lookUp("modal_content_fail")[11].title,
             i18n.lookUp("modal_content_fail")[11].message
@@ -807,7 +806,7 @@ async function uploadImages() {
         const progressBar = fileX.progressBar;
         const labelEl = fileX.labelEl
         let param = {
-            proj: selectedUploadToProjName,
+            id: currentManageProjId,
             author: author,
             adminUid: uid,
             adminToken: token
@@ -946,6 +945,7 @@ async function signout() {
         fileInputChange("imgInputManageThumbnail");
     });
     document.getElementById("cleanPhotosPool").addEventListener("click", cleanPhotosPool);
+    document.getElementById("uploadPhotosPool").addEventListener("click", uploadImages);
 
     const imgInputUploadEl = document.getElementById("imgInputUpload")
     const selectImageToPoolEl = document.getElementById("selectImagesToPool")

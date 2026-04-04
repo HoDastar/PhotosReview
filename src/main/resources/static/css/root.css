@@ -196,20 +196,23 @@ body {
 }
 
 /* 空心按钮 */
-.button-outline {
-    padding: 8px 16px;
-    border: 2px solid var(--color-primary);
-    background-color: transparent;
-    color: var(--color-primary);
-    font-size: 16px;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.button-outline:hover {
-    background-color: var(--color-primary);
+.button-common {
+    padding: 10px 25px;
+    background-color: var(--color-btn);
+    border: none;
     color: var(--color-btn-fg);
+    font-size: 16px;
+    border-radius: 999px;
+    margin: 0 5px;
+    cursor: pointer;
+    transition: all 0.5s;
+}
+.button-common:hover {
+    background-color: var(--color-primary-soft);
+    transform: translateY(-2px);
+}
+.button-common:active {
+    transform: scale(0.96);
 }
 
 .button-long {

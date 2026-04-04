@@ -12,6 +12,7 @@
   "manage_user": "Manage User",
   "manage_distribution": "Manage Distribution",
   "no_project": "No project yet.",
+  "project_info": "Project Information",
   "input_project_name": "Project name...",
   "description_input_project_name": "The maximum number of characters should not exceed 100.",
   "description_project_type": "Please select project type, which will cannot be changed on create.",
