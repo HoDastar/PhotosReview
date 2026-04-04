@@ -12,6 +12,7 @@
   "manage_user": "管理用户",
   "manage_distribution": "任务分配",
   "no_project": "暂无工程。",
+  "project_info": "工程信息",
   "input_project_name": "请输入工程名称...",
   "description_input_project_name": "最大字符不超过100个。",
   "description_project_type": "请选择工程类型，创建后将无法修改。",

@@ -138,13 +138,15 @@
             </div>
             <hr>
             <div class="form-submit">
-                <button class="button-outline" id="cleanCreateProj" data-i18n="clean">Clean</button>
-                <button class="button-outline" id="submitCreateProj" data-i18n="submit">Submit</button>
+                <button class="button-common" id="cleanCreateProj" data-i18n="clean">Clean</button>
+                <button class="button-common" id="submitCreateProj" data-i18n="submit">Submit</button>
             </div>
         </section>
 
         <section class="viewer" id="manageProj" style="display: none;">
             <h2><span data-i18n="manage_project">Manage Project</span></h2>
+
+            <h3 class="subtitle"><span data-i18n="project_info"></span></h3>
             <div class="form-row">
                 <div class="form-label">
                     <div class="title" data-i18n="project_name">Project Name</div>
@@ -217,11 +219,57 @@
                     </div>
                 </div>
             </div>
-            <hr>
             <div class="form-submit">
-                <button class="button-outline" id="cancelManageProj" data-i18n="cancel">Cancel</button>
-                <button class="button-outline" id="saveManageProj" data-i18n="save">Save</button>
+                <button class="button-common" id="cancelManageProj" data-i18n="cancel">Cancel</button>
+                <button class="button-common" id="saveManageProj" data-i18n="save">Save</button>
             </div>
+
+            <hr>
+
+            <h3 class="subtitle"><span data-i18n="upload"></span></h3>
+
+            <div class="form-row">
+                <div class="form-label">
+                    <div class="title"><span data-i18n="author">Author</span></div>
+                    <div class="desc"><span data-i18n="description_input_author">Please input the author of photos.</span></div>
+                </div>
+                <div class="form-control">
+                    <input type="text" class="text-input" name="input_author"
+                           data-i18n-placeholder="input_author" maxlength="100"/>
+                </div>
+            </div>
+
+            <input type="file" id="imgInputUpload" accept=".jpg,.jpeg,.png,.webp" class="files-pool-input" multiple hidden/>
+            <div class="form-row">
+                <div class="form-label">
+                    <div class="title"><span data-i18n="photos_pool">Photos Pool</span></div>
+                    <div class="desc"><span data-i18n="description_choose_photos">Select a series of photos by this author to upload.</span></div>
+                </div>
+                <div class="form-control">
+                    <div class="file-btn" id="selectImagesToPool">
+                        <i class="fa-solid fa-file"></i>
+                        <span data-i18n="choose_images"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="files-pool" id="filePool">
+                <!--
+                <div class="item">
+                    <img src="https://th.bing.com/th/id/OIP.9a4umpl2vucdEY3UAtgGWAHaGw?o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3">
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: 10%"></div>
+                    </div>
+                    <div class="close">×</div>
+                    <div class="label color_blue">READY</div>
+                </div>
+                -->
+            </div>
+            <div class="form-submit">
+                <button class="button-common" id="cleanPhotosPool"><span data-i18n="clean">Clean</span></button>
+                <button class="button-common" id="uploadPhotosPool"><span data-i18n="upload">Upload</span></button>
+            </div>
+
+            <hr>
         </section>
 
         <section class="viewer" id="manageDist" style="display: none;">
@@ -296,17 +344,17 @@
                 </tbody>
             </table>
             <div class="form-submit">
-                <button class="button-outline" id="addTaskItem" data-i18n="add">Add</button>
+                <button class="button-common" id="addTaskItem" data-i18n="add">Add</button>
             </div>
             <hr>
             -->
             <div class="form-submit">
-                <button class="button-outline" id="cancelManageDist" data-i18n="cancel">Cancel</button>
-                <button class="button-outline" id="saveManageDist" data-i18n="save">Save</button>
+                <button class="button-common" id="cancelManageDist" data-i18n="cancel">Cancel</button>
+                <button class="button-common" id="saveManageDist" data-i18n="save">Save</button>
             </div>
         </section>
 
-        <section class="viewer" id="upload" style="display: none">
+        <!--<section class="viewer" id="upload" style="display: none">
             <h2><span data-i18n="upload">Upload</span></h2>
             <div>
                 <div class="title" data-i18n="choose_a_project">Choose a Project</div>
@@ -344,21 +392,11 @@
                 </div>
             </div>
             <div class="files-pool" id="filePool">
-                <!--
-                <div class="item">
-                    <img src="https://th.bing.com/th/id/OIP.9a4umpl2vucdEY3UAtgGWAHaGw?o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3">
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: 10%"></div>
-                    </div>
-                    <div class="close">×</div>
-                    <div class="label color_blue">READY</div>
-                </div>
-                -->
             </div>
             <div class="form-submit">
-                <button class="button-outline" id="cleanPhotosPool">Clean</button>
+                <button class="button-common" id="cleanPhotosPool">Clean</button>
             </div>
-        </section>
+        </section>-->
     </div>
 </main>
 </body>

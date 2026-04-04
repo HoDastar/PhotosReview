@@ -395,7 +395,7 @@ public class ProjAPI {
 
         // 检查参数
         if (
-                !map.containsKey("proj") ||
+                !map.containsKey("id") ||
                         !map.containsKey("author") ||
                         !map.containsKey("adminUid") ||
                         !map.containsKey("adminToken")
@@ -403,7 +403,7 @@ public class ProjAPI {
             return new Respond<>(false, "1", null);
         }
         if (
-                !(map.get("proj") instanceof String) ||
+                !(map.get("id") instanceof Integer) ||
                         !(map.get("author") instanceof String) ||
                         !(map.get("adminUid") instanceof Integer) ||
                         !(map.get("adminToken") instanceof String)
@@ -415,7 +415,7 @@ public class ProjAPI {
             return new Respond<>(false, "1", null);
         }
 
-        String proj = (String) map.get("proj");
+        int projId = (Integer) map.get("id");
         String author = (String) map.get("author");
         int adminUid = (Integer) map.get("adminUid");
         String adminToken = (String) map.get("adminToken");
@@ -424,12 +424,9 @@ public class ProjAPI {
         if (!userMapper.checkAdmin(adminUid, adminToken)) {
             return new Respond<>(false, "5", null);
         }
-        if (proj.length() > 255 || proj.isBlank()) {
-            return new Respond<>(false, "1", null);
-        }
 
         // 获取原工程信息
-        Optional<EntityReviewProj> projOpt = projMapper.getProjByName(proj);
+        Optional<EntityReviewProj> projOpt = projMapper.getProjById(projId);
         if (projOpt.isEmpty()) {
             return new Respond<>(false, "14", null);
         }
@@ -447,6 +444,7 @@ public class ProjAPI {
 
         String uuid = Utilities.generateUUID();
         String baseDir = System.getProperty("user.dir");
+        String proj = projOpt.get().name;
         String dirStr = baseDir + File.separator +
                 "data" + File.separator +
                 "proj" + File.separator +
