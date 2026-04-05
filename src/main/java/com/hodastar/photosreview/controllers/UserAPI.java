@@ -1,6 +1,5 @@
 package com.hodastar.photosreview.controllers;
 
-import com.hodastar.photosreview.config.Config;
 import com.hodastar.photosreview.entities.EntityReviewUsers;
 import com.hodastar.photosreview.mappers.UserMapper;
 import com.hodastar.photosreview.utils.CryptUtil;
@@ -9,9 +8,8 @@ import com.hodastar.photosreview.utils.Utilities;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 import static com.hodastar.photosreview.config.Config.LOGIN_SESSION_FILE_DIR;
@@ -29,31 +27,35 @@ public class UserAPI {
     /**
      * 注册接口
      * param uid uid
-     * param allname 用户名
-     * param password 密码
-     * @return 注册结果      */
+     * param allname 用户显示名
+     * param status 用户状态(0=管理员, 1=普通用户)
+     * @return 注册结果
+     */
     @PostMapping("/register")
     public Respond<String> register(@RequestBody HashMap<String, Object> body) {
         // 检查类型
-        if (!body.containsKey("uid") || !body.containsKey("allname") || !body.containsKey("password") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
+        if (!body.containsKey("uid") || !body.containsKey("allname") || !body.containsKey("status") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
             return new Respond<>(false, "1", null);
         }
-        if (!(body.get("uid") instanceof Integer) || !(body.get("allname") instanceof String) || !(body.get("password") instanceof String) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
+        if (!(body.get("uid") instanceof Integer) || !(body.get("allname") instanceof String) || !(body.get("status") instanceof Integer) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
             return new Respond<>(false, "1", null);
         }
 
         int uid = (Integer) body.get("uid");
-        String allname = (String) body.get("allname");
-        String password = (String) body.get("password");
+        String allname = ((String) body.get("allname")).trim();
+        int status = (Integer) body.get("status");
         int adminUid = (Integer) body.get("adminUid");
         String adminToken = (String) body.get("adminToken");
 
         // 检查长度
-        if (allname.length() > 100 || password.length() > 100) {
+        if (allname.isEmpty() || allname.length() > 10) {
             return new Respond<>(false, "6", null);
         }
         if (uid > 999999999 || uid < 10000) {
             return new Respond<>(false, "7", null);
+        }
+        if (status != 0 && status != 1) {
+            return new Respond<>(false, "1", null);
         }
 
         // 检查token
@@ -77,12 +79,116 @@ public class UserAPI {
         }
 
         // 注册
-        Boolean result = userMapper.register(uid, password, allname);
+        Boolean result = userMapper.register(uid, allname, status);
         if (result) {
             return new Respond<>(true, "success", null);
         } else {
             return new Respond<>(false, "0", null);
         }
+    }
+
+    @GetMapping("/get_user_list_admin")
+    public Respond<List<HashMap<String, Object>>> getUserListAdmin(
+            @RequestParam("adminUid") int adminUid,
+            @RequestParam("adminToken") String adminToken
+    ) {
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+
+        List<HashMap<String, Object>> userList = userMapper.getUserList().stream()
+                .filter(user -> user.uid != adminUid)
+                .map(user -> {
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put("uid", user.uid);
+                    map.put("allname", user.allname);
+                    map.put("status", user.status);
+                    return map;
+                }).toList();
+
+        return new Respond<>(true, "success", userList);
+    }
+
+    @PostMapping("/reset_password")
+    public Respond<String> resetPassword(@RequestBody HashMap<String, Object> body) {
+        if (!body.containsKey("uid") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("uid") instanceof Integer) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
+            return new Respond<>(false, "1", null);
+        }
+        int uid = (Integer) body.get("uid");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
+
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+        if (uid == adminUid) {
+            return new Respond<>(false, "5", null);
+        }
+        if (userMapper.getUserByUid(uid).isEmpty()) {
+            return new Respond<>(false, "2", null);
+        }
+        String newPasswordHash = CryptUtil.BCEcrypt("123456");
+        Boolean result = userMapper.updatePassword(uid, newPasswordHash);
+        return result ? new Respond<>(true, "success", null) : new Respond<>(false, "0", null);
+    }
+
+    @PostMapping("/ban_user")
+    public Respond<String> banUser(@RequestBody HashMap<String, Object> body) {
+        if (!body.containsKey("uid") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("uid") instanceof Integer) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
+            return new Respond<>(false, "1", null);
+        }
+        int uid = (Integer) body.get("uid");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
+
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+        if (uid == adminUid) {
+            return new Respond<>(false, "5", null);
+        }
+        if (userMapper.getUserByUid(uid).isEmpty()) {
+            return new Respond<>(false, "2", null);
+        }
+        Boolean result = userMapper.updateStatus(uid, 2);
+        return result ? new Respond<>(true, "success", null) : new Respond<>(false, "0", null);
+    }
+
+    @PostMapping("/delete_user")
+    public Respond<String> deleteUser(@RequestBody HashMap<String, Object> body) {
+        if (!body.containsKey("uid") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("uid") instanceof Integer) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
+            return new Respond<>(false, "1", null);
+        }
+        int uid = (Integer) body.get("uid");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
+
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+        if (uid == adminUid) {
+            return new Respond<>(false, "5", null);
+        }
+        if (userMapper.getUserByUid(uid).isEmpty()) {
+            return new Respond<>(false, "2", null);
+        }
+
+        String sessionFilePath = LOGIN_SESSION_FILE_DIR + uid + ".session";
+        File sessionFile = new File(sessionFilePath);
+        if (sessionFile.exists()) {
+            sessionFile.delete();
+        }
+        Boolean result = userMapper.deleteUser(uid);
+        return result ? new Respond<>(true, "success", null) : new Respond<>(false, "0", null);
     }
 
     /**
