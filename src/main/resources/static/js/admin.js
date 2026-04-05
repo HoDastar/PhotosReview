@@ -604,19 +604,15 @@ async function loadManageDist(index, id) {
      */
     const addTask = (uid, first, end) => {
         const uidStr = String(uid);
-        let isRerender = false;
         // 判断是不是第一个
         if (Object.keys(currentTaskList).length === 0) {
-            isRerender = true;
         }
         if (currentTaskList[uidStr]) {
             currentTaskList[uidStr].push([first, end]);
         } else {
             currentTaskList[uidStr] = [[first, end]];
         }
-        if (isRerender) {
-            render();
-        }
+        render();
     }
     /**
      * 删除此uid用户的第n项任务
@@ -630,17 +626,18 @@ async function loadManageDist(index, id) {
             if (currentTaskList[uidStr].length === 0) {
                 delete currentTaskList[uidStr];
             }
-            // 判断是不是最后一个
-            if (Object.keys(currentTaskList).length === 0) {
-                render();
-            }
+            render();
         }
     }
     // 渲染
     const render = () => {
         distributionContainerEl.innerHTML = "";
 
-        // 添加项
+        /**
+         * 添加表单
+         * @Begin
+         */
+        // UID
         const addEl = document.createElement("tr");
         const addUidTdEl = document.createElement("td");
         addUidTdEl.classList.add("text-edit");
@@ -650,6 +647,7 @@ async function loadManageDist(index, id) {
         addUidTdEl.appendChild(addUidInputEl);
         addEl.appendChild(addUidTdEl);
 
+        // first
         const addFirstTdEl = document.createElement("td");
         addFirstTdEl.classList.add("text-edit");
         const addFirstInputEl = document.createElement("input");
@@ -658,6 +656,7 @@ async function loadManageDist(index, id) {
         addFirstTdEl.appendChild(addFirstInputEl);
         addEl.appendChild(addFirstTdEl);
 
+        // last
         const addLastTdEl = document.createElement("td");
         addLastTdEl.classList.add("text-edit");
         const addLastInputEl = document.createElement("input");
@@ -666,6 +665,7 @@ async function loadManageDist(index, id) {
         addLastTdEl.appendChild(addLastInputEl);
         addEl.appendChild(addLastTdEl);
 
+        // add按钮
         const addBtnTdEl = document.createElement("td");
         const addBtnEl = document.createElement("span");
         addBtnEl.classList.add("btn", "edit");
@@ -675,6 +675,10 @@ async function loadManageDist(index, id) {
         addEl.appendChild(addBtnTdEl);
 
         distributionContainerEl.appendChild(addEl);
+        /**
+         * 添加表单
+         * @End
+         */
 
         if (Object.keys(currentTaskList).length === 0) {
             const trEl = document.createElement("tr");
@@ -690,30 +694,12 @@ async function loadManageDist(index, id) {
                 tasks.forEach((task, index) => {
                     // 创建行
                     const trEl = document.createElement("tr");
-                    // 删除按钮
-                    const delTdEl = document.createElement("td");
-                    const delBtnEl = document.createElement("span");
-                    delBtnEl.classList.add("btn", "del");
-                    delBtnEl.title = i18n.lookUp("delete");
-                    delBtnEl.innerHTML = `<i class="fa-solid fa-trash"></i>`;
-                    // 删除按钮事件
-                    delBtnEl.addEventListener("click",async  () => {
-                        let confirm = await openModal(
-                            i18n.lookUp("modal_content_confirm")[4].title,
-                            i18n.lookUp("modal_content_confirm")[4].message
-                        );
-                        if (confirm) {
-                            delTask(uid, index);
-                            render();
-                        }
-                    });
-                    delTdEl.appendChild(delBtnEl);
-                    trEl.appendChild(delTdEl);
 
                     // UID列
                     const uidTdEl = document.createElement("td");
                     uidTdEl.classList.add("text-edit");
                     uidTdEl.innerHTML = uid;
+                    uidTdEl.style.cursor = 'default';
                     trEl.appendChild(uidTdEl);
 
                     // first列
@@ -775,6 +761,25 @@ async function loadManageDist(index, id) {
                         });
                     });
                     trEl.appendChild(lastTdEl);
+
+                    // 删除按钮
+                    const delTdEl = document.createElement("td");
+                    const delBtnEl = document.createElement("span");
+                    delBtnEl.classList.add("btn", "del");
+                    delBtnEl.title = i18n.lookUp("delete");
+                    delBtnEl.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+                    // 删除按钮事件
+                    delBtnEl.addEventListener("click",async  () => {
+                        let confirm = await openModal(
+                            i18n.lookUp("modal_content_confirm")[4].title,
+                            i18n.lookUp("modal_content_confirm")[4].message
+                        );
+                        if (confirm) {
+                            delTask(uid, index);
+                        }
+                    });
+                    delTdEl.appendChild(delBtnEl);
+                    trEl.appendChild(delTdEl);
 
                     distributionContainerEl.appendChild(trEl);
                 })

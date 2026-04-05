@@ -300,12 +300,6 @@ hr {
     margin: 20px 0;
 }
 
-.form-distribution {
-    border-collapse: collapse;
-    margin: 20px auto;
-    width: 100%;
-}
-
 /* 表格样式 */
 .form-distribution {
     width: 94%;
@@ -335,7 +329,7 @@ hr {
     background-color: var(--row-odd);
 }
 
-.form-distribution th:nth-child(4) {
+.form-distribution #distributionContainer th:nth-child(4) {
     width: 50px;
 }
 
