@@ -107,6 +107,202 @@ async function createProj() {
     }
 }
 
+function getUserStatusText(status) {
+    if (status === 0) {
+        return i18n.lookUp("admin_user");
+    }
+    if (status === 2) {
+        return i18n.lookUp("banned_user");
+    }
+    return i18n.lookUp("normal_user");
+}
+
+async function loadManageUserList() {
+    const result = await getApi(window.location.origin + `/api/user/get_user_list_admin?adminUid=${uid}&adminToken=${token}`);
+    if (!result.result) {
+        return;
+    }
+
+    const tbody = document.getElementById("manageUserTableBody");
+    if (!tbody) {
+        return;
+    }
+    tbody.innerHTML = "";
+
+    if (!result.data || result.data.length === 0) {
+        const emptyTr = document.createElement("tr");
+        emptyTr.innerHTML = `<td colspan="3">${i18n.lookUp("no_user")}</td>`;
+        tbody.appendChild(emptyTr);
+        return;
+    }
+
+    result.data.forEach((user) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${user.uid}</td>
+            <td>${user.allname}</td>
+            <td>${getUserStatusText(user.status)}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function getManageUserUid() {
+    const uidInput = document.querySelector('#manageUser input[name="input_manage_user_uid"]');
+    const targetUid = parseInt(uidInput.value, 10);
+    if (!targetUid || targetUid < 10000 || targetUid > 999999999) {
+        openModal(
+            i18n.lookUp("modal_content_fail")[7].title,
+            i18n.lookUp("modal_content_fail")[7].message
+        );
+        return null;
+    }
+    return targetUid;
+}
+
+function getManageUserAllname() {
+    const allnameInput = document.querySelector('#manageUser input[name="input_manage_user_allname"]');
+    const allname = allnameInput.value.trim();
+    if (!allname) {
+        openModal(
+            i18n.lookUp("modal_content_fail")[11].title,
+            i18n.lookUp("modal_content_fail")[11].message
+        );
+        return null;
+    }
+    if (allname.length > 10) {
+        openModal(
+            i18n.lookUp("modal_content_fail")[6].title,
+            i18n.lookUp("modal_content_fail")[6].message
+        );
+        return null;
+    }
+    return allname;
+}
+
+async function registerUser() {
+    const targetUid = getManageUserUid();
+    if (!targetUid) {
+        return;
+    }
+    const allname = getManageUserAllname();
+    if (!allname) {
+        return;
+    }
+    const statusEl = document.querySelector('#manageUser input[name="register_user_status"]:checked');
+    if (!statusEl) {
+        openModal(
+            i18n.lookUp("modal_content_fail")[11].title,
+            i18n.lookUp("modal_content_fail")[11].message
+        );
+        return;
+    }
+    const result = await postApi(window.location.origin + "/api/user/register", {
+        uid: targetUid,
+        allname,
+        status: parseInt(statusEl.value, 10),
+        adminUid: uid,
+        adminToken: token
+    });
+    const msg = parseInt(result.message, 10);
+    if (!result.result) {
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+    } else {
+        await openModal(
+            i18n.lookUp("modal_content_success")[0].title,
+            i18n.lookUp("modal_content_success")[0].message
+        );
+        await loadManageUserList();
+    }
+}
+
+async function resetUserPassword() {
+    const targetUid = getManageUserUid();
+    if (!targetUid) {
+        return;
+    }
+    const result = await postApi(window.location.origin + "/api/user/reset_password", {
+        uid: targetUid,
+        adminUid: uid,
+        adminToken: token
+    });
+    const msg = parseInt(result.message, 10);
+    if (!result.result) {
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+    } else {
+        await openModal(
+            i18n.lookUp("modal_content_success")[0].title,
+            i18n.lookUp("modal_content_success")[0].message
+        );
+        await loadManageUserList();
+    }
+}
+
+async function banUser() {
+    const targetUid = getManageUserUid();
+    if (!targetUid) {
+        return;
+    }
+    const result = await postApi(window.location.origin + "/api/user/ban_user", {
+        uid: targetUid,
+        adminUid: uid,
+        adminToken: token
+    });
+    const msg = parseInt(result.message, 10);
+    if (!result.result) {
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+    } else {
+        await openModal(
+            i18n.lookUp("modal_content_success")[0].title,
+            i18n.lookUp("modal_content_success")[0].message
+        );
+        await loadManageUserList();
+    }
+}
+
+async function deleteUser() {
+    const targetUid = getManageUserUid();
+    if (!targetUid) {
+        return;
+    }
+    const confirm = await openModal(
+        i18n.lookUp("modal_content_confirm")[2].title,
+        i18n.lookUp("modal_content_confirm")[2].message,
+        true
+    );
+    if (!confirm) {
+        return;
+    }
+
+    const result = await postApi(window.location.origin + "/api/user/delete_user", {
+        uid: targetUid,
+        adminUid: uid,
+        adminToken: token
+    });
+    const msg = parseInt(result.message, 10);
+    if (!result.result) {
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+    } else {
+        await openModal(
+            i18n.lookUp("modal_content_success")[0].title,
+            i18n.lookUp("modal_content_success")[0].message
+        );
+        await loadManageUserList();
+    }
+}
+
 // Clean Create Project Form
 function cleanCreateProj() {
     document.querySelector("#createProj .text-input").value = "";
@@ -926,6 +1122,7 @@ async function signout() {
     // Loading website information
     loadWebsiteInfo();
     await getProj();
+    await loadManageUserList();
 
     // Loading Button Events
     document.getElementById("submitCreateProj").addEventListener("click", createProj);
@@ -946,6 +1143,10 @@ async function signout() {
     });
     document.getElementById("cleanPhotosPool").addEventListener("click", cleanPhotosPool);
     document.getElementById("uploadPhotosPool").addEventListener("click", uploadImages);
+    document.getElementById("submitRegisterUser").addEventListener("click", registerUser);
+    document.getElementById("resetUserPassword").addEventListener("click", resetUserPassword);
+    document.getElementById("banUserBtn").addEventListener("click", banUser);
+    document.getElementById("deleteUserBtn").addEventListener("click", deleteUser);
 
     const imgInputUploadEl = document.getElementById("imgInputUpload")
     const selectImageToPoolEl = document.getElementById("selectImagesToPool")

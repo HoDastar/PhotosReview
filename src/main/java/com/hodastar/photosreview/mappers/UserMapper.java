@@ -47,6 +47,23 @@ public class UserMapper {
     }
 
     /**
+     * 获取所有用户
+     * @return 用户列表
+     */
+    public List<EntityReviewUsers> getUserList() {
+        return jdbcTemplate.query(
+                "SELECT * FROM review_users ORDER BY uid ASC",
+                (rs, rowNum) -> new EntityReviewUsers(
+                        rs.getInt("uid"),
+                        rs.getString("password"),
+                        rs.getLong("login_time"),
+                        rs.getString("allname"),
+                        rs.getInt("status")
+                )
+        );
+    }
+
+    /**
      * 判断uid是否被占用
      * @param uid 用户 ID
      * @return 是否被占用
@@ -148,25 +165,48 @@ public class UserMapper {
     /**
      * 注册
      * @param uid 用户 ID
-     * @param password 原始密码
      * @param allname 用户全名
+     * @param status 用户状态(0=管理员, 1=普通用户)
      * @return 注册结果map
      */
-    public Boolean register(int uid, String password, String allname) {
+    public Boolean register(int uid, String allname, int status) {
         // 获取当前秒级时间戳
         long currentTime = System.currentTimeMillis() / 1000;
         // 加密密码
-        String ppassword = CryptUtil.BCEcrypt(password);
+        String ppassword = CryptUtil.BCEcrypt("123456");
 
         // 插入新用户
         int rowsAffected = jdbcTemplate.update(
                 "INSERT INTO review_users (uid, password, login_time, allname, status) VALUES (?, ?, ?, ?, ?)",
-                uid, ppassword, currentTime, allname, 1
+                uid, ppassword, currentTime, allname, status
         );
-        if (rowsAffected == 0) {
-            return false;
-        } else {
-            return true;
-        }
+        return rowsAffected != 0;
+    }
+
+    /**
+     * 更新用户状态
+     * @param uid 用户 ID
+     * @param status 用户状态
+     * @return 更新结果
+     */
+    public Boolean updateStatus(int uid, int status) {
+        int rowsAffected = jdbcTemplate.update(
+                "UPDATE review_users SET status = ? WHERE uid = ?",
+                status, uid
+        );
+        return rowsAffected != 0;
+    }
+
+    /**
+     * 删除用户
+     * @param uid 用户 ID
+     * @return 删除结果
+     */
+    public Boolean deleteUser(int uid) {
+        int rowsAffected = jdbcTemplate.update(
+                "DELETE FROM review_users WHERE uid = ?",
+                uid
+        );
+        return rowsAffected != 0;
     }
 }

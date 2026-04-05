@@ -459,3 +459,47 @@ hr {
         max-width: 100%;
     }
 }
+/* Manage User Table (new style) */
+.manage-user-table {
+    width: 100%;
+    max-width: 980px;
+    margin: 18px 0 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--color-border2);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--color-bg);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.manage-user-table thead th {
+    border: none;
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 700;
+    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg));
+}
+
+.manage-user-table tbody td {
+    border: none;
+    border-top: 1px solid var(--color-border2);
+    padding: 12px 14px;
+    text-align: left;
+}
+
+.manage-user-table tbody tr:hover td {
+    background: color-mix(in srgb, var(--color-primary-light) 45%, var(--color-bg));
+}
+
+.manage-user-table thead th:first-child,
+.manage-user-table tbody td:first-child {
+    width: 180px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.manage-user-table thead th:last-child,
+.manage-user-table tbody td:last-child {
+    width: 220px;
+}
