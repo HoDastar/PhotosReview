@@ -82,6 +82,7 @@
   "register_user": "注册用户",
   "reset_password_default": "重置密码",
   "ban_user": "封禁用户",
+  "unban_user": "解封用户",
   "modal_content_fail": [
     {
       "index": 0,
