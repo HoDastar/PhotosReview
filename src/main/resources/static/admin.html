@@ -63,6 +63,10 @@
                     data-i18n="project_list">Project List</span></button>
             <button class="panel-btn" data-page="createProj"><i class="fa-solid fa-add"></i> <span
                     data-i18n="create_project">Create project</span></button>
+            <button class="panel-btn" data-page="manageUser"><i class="fa-solid fa-users-gear"></i> <span
+                    data-i18n="manage_user">Manage User</span></button>
+            <button class="panel-btn" data-page="upload"><i class="fa-solid fa-upload"></i> <span
+                    data-i18n="upload">Upload</span></button>
         </aside>
 
         <section class="viewer" id="projList">
@@ -348,6 +352,71 @@
                 <button class="button-common" id="cancelManageDist" data-i18n="cancel">Cancel</button>
                 <button class="button-common" id="saveManageDist" data-i18n="save">Save</button>
             </div>
+        </section>
+
+        <section class="viewer" id="manageUser" style="display: none;">
+            <h2><span data-i18n="manage_user">Manage User</span></h2>
+            <div class="form-row">
+                <div class="form-label">
+                    <div class="title">UID</div>
+                    <div class="desc" data-i18n="description_input_uid"></div>
+                </div>
+                <div class="form-control">
+                    <input type="number" class="text-input" name="input_manage_user_uid" placeholder="UID"/>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-label">
+                    <div class="title"><span data-i18n="allname"></span></div>
+                    <div class="desc" data-i18n="description_input_allname"></div>
+                </div>
+                <div class="form-control">
+                    <input type="text" class="text-input" name="input_manage_user_allname" data-i18n-placeholder="input_allname" maxlength="10"/>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-label">
+                    <div class="title"><span data-i18n="user_role"></span></div>
+                    <div class="desc" data-i18n="description_user_role"></div>
+                </div>
+                <div class="form-control">
+                    <div class="radio-card-group">
+                        <label class="radio-card">
+                            <input type="radio" name="register_user_status" value="0"/>
+                            <span data-i18n="admin_user"></span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="register_user_status" value="1" checked/>
+                            <span data-i18n="normal_user"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-submit">
+                <button class="button-common" id="submitRegisterUser" data-i18n="register_user">Register</button>
+            </div>
+
+            <hr>
+
+            <div class="form-submit">
+                <button class="button-common" id="resetUserPassword" data-i18n="reset_password_default">Reset Password</button>
+                <button class="button-common" id="banUserBtn" data-i18n="ban_user">Ban User</button>
+                <button class="button-common" id="deleteUserBtn" data-i18n="delete">Delete</button>
+            </div>
+
+            <hr>
+
+            <h3 class="subtitle"><span data-i18n="user_list"></span></h3>
+            <table class="form-distribution manage-user-table">
+                <thead>
+                <tr>
+                    <th>UID</th>
+                    <th><span data-i18n="allname"></span></th>
+                    <th><span data-i18n="user_role"></span></th>
+                </tr>
+                </thead>
+                <tbody id="manageUserTableBody"></tbody>
+            </table>
         </section>
 
         <!--<section class="viewer" id="upload" style="display: none">
