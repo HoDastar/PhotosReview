@@ -82,6 +82,7 @@
   "register_user": "Register User",
   "reset_password_default": "Reset Password",
   "ban_user": "Ban User",
+  "unban_user": "Unban User",
   "modal_content_fail": [
     {
       "index": 0,

@@ -495,5 +495,16 @@ hr {
 
 .manage-user-table thead th:last-child,
 .manage-user-table tbody td:last-child {
-    width: 220px;
+    width: 360px;
+}
+
+.manage-user-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.manage-user-actions .user-op-btn {
+    min-width: 92px;
+    padding: 6px 10px;
 }

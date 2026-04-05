@@ -160,6 +160,31 @@ public class UserAPI {
         return result ? new Respond<>(true, "success", null) : new Respond<>(false, "0", null);
     }
 
+    @PostMapping("/unban_user")
+    public Respond<String> unbanUser(@RequestBody HashMap<String, Object> body) {
+        if (!body.containsKey("uid") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("uid") instanceof Integer) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
+            return new Respond<>(false, "1", null);
+        }
+        int uid = (Integer) body.get("uid");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
+
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+        if (uid == adminUid) {
+            return new Respond<>(false, "5", null);
+        }
+        if (userMapper.getUserByUid(uid).isEmpty()) {
+            return new Respond<>(false, "2", null);
+        }
+        Boolean result = userMapper.updateStatus(uid, 1);
+        return result ? new Respond<>(true, "success", null) : new Respond<>(false, "0", null);
+    }
+
     @PostMapping("/delete_user")
     public Respond<String> deleteUser(@RequestBody HashMap<String, Object> body) {
         if (!body.containsKey("uid") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
