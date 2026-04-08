@@ -241,7 +241,7 @@
                     a_status = i18n.lookUp("finished");
                     a_status_color = 'color_red';
                     btlist = `
-                        <button onclick="go_url('overall_view.html?proj_name=${proj.proj_name}',1)"><i class="fa-solid fa-eye"></i> ${i18n.lookUp("view_results")}</button>
+                        <button onclick="go_url('overall_view.html?proj_id=${proj.proj_id}',1)"><i class="fa-solid fa-eye"></i> ${i18n.lookUp("view_results")}</button>
                         `
                     break;
 
@@ -252,10 +252,10 @@
             let card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <div class="card_background" style="background:url('${window.location.origin}/data/proj/${proj.proj_name + '/icon/' + proj.proj_thumbnail}') center/cover;">
+                <div class="card_background" style="background:url('${window.location.origin}/data/proj/${proj.proj_id + '/icon/' + proj.proj_thumbnail}') center/cover;">
                 </div>
                 <div style="z-index: 1;">
-                    <img src="${window.location.origin}/data/proj/${proj.proj_name + '/icon/' + proj.proj_thumbnail}" alt="Thumbnail">
+                    <img src="${window.location.origin}/data/proj/${proj.proj_id + '/icon/' + proj.proj_thumbnail}" alt="Thumbnail">
                     <div class="card_text">
                         <h3>${proj.proj_name}</h3>
                         <p>
@@ -293,10 +293,10 @@
         }
     }
 
-    function loadWebsiteInfo() {
-        const info = localStorage.getItem("website_info");
+    async function loadWebsiteInfo() {
+        const info = await getApi(window.location.origin + "/api/system/get_website_info");
         if (info) {
-            const infoObj = JSON.parse(info);
+            const infoObj = info.data;
             url = infoObj.website_url;
 
             const link = document.createElement("link");
@@ -313,7 +313,7 @@
                 }
                 if (key === "website_url") {
                     el.addEventListener("click", () => {
-                        window.location.href = infoObj.website_url + "/admin";
+                        window.location.href = infoObj.website_url;
                     });
                 }
             });

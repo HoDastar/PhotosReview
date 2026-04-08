@@ -2,6 +2,7 @@ package com.hodastar.photosreview;
 
 import com.hodastar.photosreview.mappers.PhotosMapper;
 import com.hodastar.photosreview.utils.CryptUtil;
+import com.hodastar.photosreview.utils.FileUtil;
 import com.hodastar.photosreview.utils.Utilities;
 import org.apache.juli.logging.Log;
 import org.junit.jupiter.api.Test;
@@ -28,15 +29,12 @@ class PhotosReviewApplicationTests {
     }
 
     void a() {
-        System.out.println(Utilities.readDocumentFile(LOGIN_SESSION_FILE_DIR+"10000.session"));
+        System.out.println(FileUtil.readDocumentFile(LOGIN_SESSION_FILE_DIR+"10000.session"));
     }
     void b() {
         System.out.println(CryptUtil.BCEcrypt("Aa123456"));
     }
 
     void c() {
-        System.out.println(
-                photosMapper.getPhotos(null, null, 1)
-        );
     }
 }

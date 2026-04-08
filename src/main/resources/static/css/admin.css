@@ -302,11 +302,10 @@ hr {
 
 /* 表格样式 */
 .form-distribution {
-    width: 94%;
-    max-width: 800px;
+    width: 100%;
+    max-width: 980px;
     padding: 0 100px;
     border-collapse: collapse;
-    margin: 30px auto;
 }
 
 .form-distribution th,
@@ -378,6 +377,7 @@ hr {
     border: 3px solid var(--color-border);
     border-radius: 10px;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     padding: 14px;
     gap: 10px;
@@ -389,8 +389,8 @@ hr {
 }
 
 .files-pool .item {
-    width: 100px;
-    height: 100px;
+    width: 98px;
+    height: 98px;
     border-radius: 10px;
     border: 2px solid var(--color-border);
     position: relative;
@@ -454,7 +454,7 @@ hr {
     }
 }
 /* Manage User Table (new style) */
-.manage-user-table {
+.common-table {
     width: 100%;
     max-width: 980px;
     margin: 18px 0 0;
@@ -467,44 +467,73 @@ hr {
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
 
-.manage-user-table thead th {
+.common-table thead th {
     border: none;
     padding: 12px 14px;
     text-align: left;
     font-size: 14px;
     font-weight: 700;
+    user-select: none;
     background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg));
 }
 
-.manage-user-table tbody td {
+.common-table tbody td {
     border: none;
     border-top: 1px solid var(--color-border2);
     padding: 12px 14px;
+    user-select: none;
     text-align: left;
 }
 
-.manage-user-table tbody tr:hover td {
+.common-table tbody tr:hover td {
     background: color-mix(in srgb, var(--color-primary-light) 45%, var(--color-bg));
 }
 
-.manage-user-table thead th:first-child,
-.manage-user-table tbody td:first-child {
-    width: 180px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+.common-table img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
 }
 
-.manage-user-table thead th:last-child,
-.manage-user-table tbody td:last-child {
-    width: 360px;
+.common-table .btn {
+     margin: 5px;
+     padding: 8px;
+     width: 20px;
+     cursor: pointer;
+     user-select: none;
+     transition: all 0.5s;
+ }
+
+.common-table .btn.del:hover {
+    color: rgb(220, 38, 38);
+}
+
+.common-table .btn.edit:hover {
+    color: var(--color-primary);
+}
+
+.common-table.form-manage-user thead th:first-child,
+.common-table.form-manage-user tbody td:first-child {
+    width: 180px;
+}
+
+.common-table.form-manage-user thead th:last-child,
+.common-table.form-manage-user tbody td:last-child {
+    width: 400px;
 }
 
 .manage-user-actions {
     display: flex;
-    gap: 8px;
+    gap: 3px;
     flex-wrap: wrap;
 }
 
 .manage-user-actions .user-op-btn {
     min-width: 92px;
-    padding: 6px 10px;
+    padding: 8px 10px;
+}
+
+.common-table.form-manage-photos thead th:last-child,
+.common-table.form-manage-photos tbody td:last-child {
+    width: 100px;
 }

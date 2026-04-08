@@ -3,6 +3,7 @@ package com.hodastar.photosreview.controllers;
 import com.hodastar.photosreview.entities.EntityReviewUsers;
 import com.hodastar.photosreview.mappers.UserMapper;
 import com.hodastar.photosreview.utils.CryptUtil;
+import com.hodastar.photosreview.utils.FileUtil;
 import com.hodastar.photosreview.utils.Respond;
 import com.hodastar.photosreview.utils.Utilities;
 import org.springframework.web.bind.annotation.*;
@@ -87,6 +88,7 @@ public class UserAPI {
         }
     }
 
+    // 获取用户列表（管理员）
     @GetMapping("/get_user_list_admin")
     public Respond<List<HashMap<String, Object>>> getUserListAdmin(
             @RequestParam("adminUid") int adminUid,
@@ -109,6 +111,7 @@ public class UserAPI {
         return new Respond<>(true, "success", userList);
     }
 
+    // 重置
     @PostMapping("/reset_password")
     public Respond<String> resetPassword(@RequestBody HashMap<String, Object> body) {
         if (!body.containsKey("uid") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
@@ -128,13 +131,14 @@ public class UserAPI {
             return new Respond<>(false, "5", null);
         }
         if (userMapper.getUserByUid(uid).isEmpty()) {
-            return new Respond<>(false, "2", null);
+            return new Respond<>(false, "20", null);
         }
         String newPasswordHash = CryptUtil.BCEcrypt("123456");
         Boolean result = userMapper.updatePassword(uid, newPasswordHash);
         return result ? new Respond<>(true, "success", null) : new Respond<>(false, "0", null);
     }
 
+    // 封禁
     @PostMapping("/ban_user")
     public Respond<String> banUser(@RequestBody HashMap<String, Object> body) {
         if (!body.containsKey("uid") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
@@ -154,12 +158,19 @@ public class UserAPI {
             return new Respond<>(false, "5", null);
         }
         if (userMapper.getUserByUid(uid).isEmpty()) {
-            return new Respond<>(false, "2", null);
+            return new Respond<>(false, "20", null);
+        }
+
+        String sessionFilePath = LOGIN_SESSION_FILE_DIR + uid + ".session";
+        File sessionFile = new File(sessionFilePath);
+        if (sessionFile.exists()) {
+            sessionFile.delete();
         }
         Boolean result = userMapper.updateStatus(uid, 2);
         return result ? new Respond<>(true, "success", null) : new Respond<>(false, "0", null);
     }
 
+    // 解封
     @PostMapping("/unban_user")
     public Respond<String> unbanUser(@RequestBody HashMap<String, Object> body) {
         if (!body.containsKey("uid") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
@@ -179,12 +190,13 @@ public class UserAPI {
             return new Respond<>(false, "5", null);
         }
         if (userMapper.getUserByUid(uid).isEmpty()) {
-            return new Respond<>(false, "2", null);
+            return new Respond<>(false, "20", null);
         }
         Boolean result = userMapper.updateStatus(uid, 1);
         return result ? new Respond<>(true, "success", null) : new Respond<>(false, "0", null);
     }
 
+    // 通过uid删除用户
     @PostMapping("/delete_user")
     public Respond<String> deleteUser(@RequestBody HashMap<String, Object> body) {
         if (!body.containsKey("uid") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
@@ -204,7 +216,7 @@ public class UserAPI {
             return new Respond<>(false, "5", null);
         }
         if (userMapper.getUserByUid(uid).isEmpty()) {
-            return new Respond<>(false, "2", null);
+            return new Respond<>(false, "20", null);
         }
 
         String sessionFilePath = LOGIN_SESSION_FILE_DIR + uid + ".session";
@@ -255,7 +267,7 @@ public class UserAPI {
         String token = CryptUtil.nBCrypt(originalToken);
         // 存储token
         String sessionToken = CryptUtil.nBCrypt2(token);
-        Utilities.saveDocumentFile(sessionToken, LOGIN_SESSION_FILE_DIR, String.valueOf(uid) + ".session");
+        FileUtil.saveDocumentFile(sessionToken, LOGIN_SESSION_FILE_DIR, String.valueOf(uid) + ".session");
         // 返回token
         return new Respond<>(true, "success", token);
     }
@@ -309,7 +321,7 @@ public class UserAPI {
     @GetMapping("/check_token")
     public Respond<Boolean> checkToken(@RequestParam int uid, @RequestParam String token) {
         Boolean result = userMapper.checkToken(uid, token);
-        return new Respond<>(result, "success", null);
+        return new Respond<>(result, "Done", null);
     }
 
     // 获取少量用户信息

@@ -8,13 +8,9 @@ import com.hodastar.photosreview.mappers.ProjMapper;
 import com.hodastar.photosreview.mappers.UserMapper;
 import com.hodastar.photosreview.utils.JsonObjGet;
 import com.hodastar.photosreview.utils.Respond;
-import com.hodastar.photosreview.utils.Utilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
@@ -64,21 +60,17 @@ public class PhotosAPI {
     public Respond<List<EntityReviewPhotos>> fetchPhotoListAll(
             @RequestParam("adminUid") int uid,
             @RequestParam("adminToken") String token,
-            @RequestParam(value = "proj_name", required = false) String projName,
-            @RequestParam(value = "author", required = false) String author,
-            @RequestParam(value = "page", required = false, defaultValue = "1") int page
+            @RequestParam("projId") String projId,
+            @RequestParam(value = "author", required = false) String author
     ){
         // 验证用户
         if (!userMapper.checkAdmin(uid, token)) {
             return new Respond<>(false, "5", null);
         }
-        if (projName == null || projName.isBlank()) {
-            projName = null;
-        }
         if (author == null || author.isBlank()) {
             author = null;
         }
-        List<EntityReviewPhotos> data = photosMapper.getPhotos(projName, author, page);
+        List<EntityReviewPhotos> data = photosMapper.getPhotos(projId, author);
         return new Respond<>(true, "true", data);
     }
 

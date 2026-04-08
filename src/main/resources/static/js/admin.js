@@ -107,256 +107,6 @@ async function createProj() {
     }
 }
 
-function getUserStatusText(status) {
-    if (status === 0) {
-        return i18n.lookUp("admin_user");
-    }
-    if (status === 2) {
-        return i18n.lookUp("banned_user");
-    }
-    return i18n.lookUp("normal_user");
-}
-
-async function loadManageUserList() {
-    const result = await getApi(window.location.origin + `/api/user/get_user_list_admin?adminUid=${uid}&adminToken=${token}`);
-    if (!result.result) {
-        return;
-    }
-
-    const tbody = document.getElementById("manageUserTableBody");
-    if (!tbody) {
-        return;
-    }
-    tbody.innerHTML = "";
-
-    if (!result.data || result.data.length === 0) {
-        const emptyTr = document.createElement("tr");
-        emptyTr.innerHTML = `<td colspan="4">${i18n.lookUp("no_user")}</td>`;
-        tbody.appendChild(emptyTr);
-        return;
-    }
-
-    result.data.forEach((user) => {
-        const tr = document.createElement("tr");
-        const operationTd = document.createElement("td");
-        operationTd.classList.add("manage-user-actions");
-        operationTd.innerHTML = `
-            <button class="button-common user-op-btn" data-op="reset" data-uid="${user.uid}">${i18n.lookUp("reset_password_default")}</button>
-            ${user.status === 2
-            ? `<button class="button-common user-op-btn" data-op="unban" data-uid="${user.uid}">${i18n.lookUp("unban_user")}</button>`
-            : `<button class="button-common user-op-btn" data-op="ban" data-uid="${user.uid}">${i18n.lookUp("ban_user")}</button>`
-        }
-            <button class="button-common user-op-btn" data-op="delete" data-uid="${user.uid}">${i18n.lookUp("delete")}</button>
-        `;
-        tr.innerHTML = `
-            <td>${user.uid}</td>
-            <td>${user.allname}</td>
-            <td>${getUserStatusText(user.status)}</td>
-        `;
-        tr.appendChild(operationTd);
-        tbody.appendChild(tr);
-    });
-
-    tbody.querySelectorAll(".user-op-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-            const targetUid = parseInt(btn.getAttribute("data-uid"), 10);
-            const op = btn.getAttribute("data-op");
-            if (op === "reset") {
-                await resetUserPassword(targetUid);
-                return;
-            }
-            if (op === "ban") {
-                await banUser(targetUid);
-                return;
-            }
-            if (op === "unban") {
-                await unbanUser(targetUid);
-                return;
-            }
-            if (op === "delete") {
-                await deleteUser(targetUid);
-            }
-        });
-    });
-}
-
-function getManageUserUid() {
-    const uidInput = document.querySelector('#manageUser input[name="input_manage_user_uid"]');
-    const targetUid = parseInt(uidInput.value, 10);
-    if (!targetUid || targetUid < 10000 || targetUid > 999999999) {
-        openModal(
-            i18n.lookUp("modal_content_fail")[7].title,
-            i18n.lookUp("modal_content_fail")[7].message
-        );
-        return null;
-    }
-    return targetUid;
-}
-
-function getManageUserAllname() {
-    const allnameInput = document.querySelector('#manageUser input[name="input_manage_user_allname"]');
-    const allname = allnameInput.value.trim();
-    if (!allname) {
-        openModal(
-            i18n.lookUp("modal_content_fail")[11].title,
-            i18n.lookUp("modal_content_fail")[11].message
-        );
-        return null;
-    }
-    if (allname.length > 10) {
-        openModal(
-            i18n.lookUp("modal_content_fail")[6].title,
-            i18n.lookUp("modal_content_fail")[6].message
-        );
-        return null;
-    }
-    return allname;
-}
-
-async function registerUser() {
-    const targetUid = getManageUserUid();
-    if (!targetUid) {
-        return;
-    }
-    const allname = getManageUserAllname();
-    if (!allname) {
-        return;
-    }
-    const statusEl = document.querySelector('#manageUser input[name="register_user_status"]:checked');
-    if (!statusEl) {
-        openModal(
-            i18n.lookUp("modal_content_fail")[11].title,
-            i18n.lookUp("modal_content_fail")[11].message
-        );
-        return;
-    }
-    const result = await postApi(window.location.origin + "/api/user/register", {
-        uid: targetUid,
-        allname,
-        status: parseInt(statusEl.value, 10),
-        adminUid: uid,
-        adminToken: token
-    });
-    const msg = parseInt(result.message, 10);
-    if (!result.result) {
-        await openModal(
-            i18n.lookUp("modal_content_fail")[msg].title,
-            i18n.lookUp("modal_content_fail")[msg].message
-        );
-    } else {
-        await openModal(
-            i18n.lookUp("modal_content_success")[0].title,
-            i18n.lookUp("modal_content_success")[0].message
-        );
-        await loadManageUserList();
-    }
-}
-
-async function resetUserPassword(targetUid = getManageUserUid()) {
-    if (!targetUid) {
-        return;
-    }
-    const result = await postApi(window.location.origin + "/api/user/reset_password", {
-        uid: targetUid,
-        adminUid: uid,
-        adminToken: token
-    });
-    const msg = parseInt(result.message, 10);
-    if (!result.result) {
-        await openModal(
-            i18n.lookUp("modal_content_fail")[msg].title,
-            i18n.lookUp("modal_content_fail")[msg].message
-        );
-    } else {
-        await openModal(
-            i18n.lookUp("modal_content_success")[0].title,
-            i18n.lookUp("modal_content_success")[0].message
-        );
-        await loadManageUserList();
-    }
-}
-
-async function banUser(targetUid = getManageUserUid()) {
-    if (!targetUid) {
-        return;
-    }
-    const result = await postApi(window.location.origin + "/api/user/ban_user", {
-        uid: targetUid,
-        adminUid: uid,
-        adminToken: token
-    });
-    const msg = parseInt(result.message, 10);
-    if (!result.result) {
-        await openModal(
-            i18n.lookUp("modal_content_fail")[msg].title,
-            i18n.lookUp("modal_content_fail")[msg].message
-        );
-    } else {
-        await openModal(
-            i18n.lookUp("modal_content_success")[0].title,
-            i18n.lookUp("modal_content_success")[0].message
-        );
-        await loadManageUserList();
-    }
-}
-
-async function unbanUser(targetUid = getManageUserUid()) {
-    if (!targetUid) {
-        return;
-    }
-    const result = await postApi(window.location.origin + "/api/user/unban_user", {
-        uid: targetUid,
-        adminUid: uid,
-        adminToken: token
-    });
-    const msg = parseInt(result.message, 10);
-    if (!result.result) {
-        await openModal(
-            i18n.lookUp("modal_content_fail")[msg].title,
-            i18n.lookUp("modal_content_fail")[msg].message
-        );
-    } else {
-        await openModal(
-            i18n.lookUp("modal_content_success")[0].title,
-            i18n.lookUp("modal_content_success")[0].message
-        );
-        await loadManageUserList();
-    }
-}
-
-async function deleteUser(targetUid = getManageUserUid()) {
-    if (!targetUid) {
-        return;
-    }
-    const confirm = await openModal(
-        i18n.lookUp("modal_content_confirm")[2].title,
-        i18n.lookUp("modal_content_confirm")[2].message,
-        true
-    );
-    if (!confirm) {
-        return;
-    }
-
-    const result = await postApi(window.location.origin + "/api/user/delete_user", {
-        uid: targetUid,
-        adminUid: uid,
-        adminToken: token
-    });
-    const msg = parseInt(result.message, 10);
-    if (!result.result) {
-        await openModal(
-            i18n.lookUp("modal_content_fail")[msg].title,
-            i18n.lookUp("modal_content_fail")[msg].message
-        );
-    } else {
-        await openModal(
-            i18n.lookUp("modal_content_success")[0].title,
-            i18n.lookUp("modal_content_success")[0].message
-        );
-        await loadManageUserList();
-    }
-}
-
 // Clean Create Project Form
 function cleanCreateProj() {
     document.querySelector("#createProj .text-input").value = "";
@@ -391,7 +141,7 @@ async function getProj() {
          */
         const cardEl = document.createElement("div");
         cardEl.classList.add("card");
-        const backgroundUrl = "/data/proj/" + el.name + "/icon/" + el.thumbnail;
+        const backgroundUrl = "/data/proj/" + el.projId + "/icon/" + el.thumbnail;
 
         const cardBackgroundEl = document.createElement("div");
         cardBackgroundEl.classList.add("card_background");
@@ -462,14 +212,14 @@ async function getProj() {
         const buttonManageEl = document.createElement("button");
         buttonManageEl.innerHTML = `<i class="fa-solid fa-gear"></i> ${i18n.lookUp("manage_project")}`;
         buttonManageEl.addEventListener("click", () => {
-            loadManageProj(index, el.id);
+            loadManageProj(index, el.projId);
         });
         cardTextEl.appendChild(buttonManageEl);
 
         const buttonDistEl = document.createElement("button");
         buttonDistEl.innerHTML = `<i class="fa-solid fa-diagram-project"></i> ${i18n.lookUp("manage_distribution")}`;
         buttonDistEl.addEventListener("click", () => {
-            loadManageDist(index, el.id);
+            loadManageDist(index, el.projId);
         });
         cardTextEl.appendChild(buttonDistEl);
 
@@ -477,7 +227,7 @@ async function getProj() {
         buttonDeleteEl.style.background = "rgb(220, 38, 38)";
         buttonDeleteEl.innerHTML = `<i class="fa-solid fa-trash"></i> ${i18n.lookUp("delete")}`;
         buttonDeleteEl.addEventListener("click", () => {
-            deleteProj(el.name);
+            deleteProj(el.projId);
         });
         cardTextEl.appendChild(buttonDeleteEl);
 
@@ -604,6 +354,7 @@ function loadManageProj(index, id) {
             break;
     }
     currentManageProjId = id;
+    loadManagePhotosList();
 }
 
 async function loadManageDist(index, id) {
@@ -615,7 +366,7 @@ async function loadManageDist(index, id) {
         return;
     }
     // 获取工程总量
-    const resultTotal = await getApi(window.location.origin + `/api/proj/get_proj_count?proj_name=${projList[index].name}&adminUid=${uid}&adminToken=${token}`);
+    const resultTotal = await getApi(window.location.origin + `/api/proj/get_proj_count?proj_id=${projList[index].projId}&adminUid=${uid}&adminToken=${token}`);
     if (!resultTotal.result) {
         const msg = parseInt(resultTotal.message, 10);
         await openModal(
@@ -896,7 +647,7 @@ async function saveManageProj() {
     const reviewDisplay = parseInt(reviewDisplayInput.value, 10);
     const reviewStatus = parseInt(reviewStatusInput.value, 10);
     const param = {
-        id: currentManageProjId,
+        projId: currentManageProjId,
         name: projName,
         display: reviewDisplay,
         status: reviewStatus,
@@ -925,7 +676,7 @@ async function saveManageProj() {
 async function saveManageDist() {}
 
 // Delete Project
-async function deleteProj(name) {
+async function deleteProj(id) {
     const confirm = await openModal(
         i18n.lookUp("modal_content_confirm")[1].title,
         i18n.lookUp("modal_content_confirm")[1].message,
@@ -933,7 +684,7 @@ async function deleteProj(name) {
     );
     if (confirm) {
         const result = await postApi(window.location.origin + "/api/proj/delete_proj", {
-            projName: name,
+            projId: id,
             adminUid: uid,
             adminToken: token
         });
@@ -1061,13 +812,15 @@ async function uploadImages() {
         const progressBar = fileX.progressBar;
         const labelEl = fileX.labelEl
         let param = {
-            id: currentManageProjId,
+            projId: currentManageProjId,
             author: author,
             adminUid: uid,
             adminToken: token
         };
 
         progressBar.style.display = "block";
+        labelEl.classList.remove(...labelEl.classList);
+        labelEl.classList.add("label", "color_blue");
         labelEl.innerHTML = 'UPLOADING';
 
         const result = await postApiWithFileOnProgress(
@@ -1078,13 +831,13 @@ async function uploadImages() {
         );
         if (!result.result) {
             const msg = result.message;
-            showBubble(i18n.lookUp("modal_content_fail")[19].message);
-            labelEl.classList.remove("color_blue");
-            labelEl.classList.add("color_red");
+            showBubble(i18n.lookUp("modal_content_fail")[19].message, "red", "#fff");
+            labelEl.classList.remove(...labelEl.classList);
+            labelEl.classList.add("label", "color_red");
             labelEl.innerHTML = "FAIL";
         } else {
-            labelEl.classList.remove("color_blue");
-            labelEl.classList.add("color_green");
+            labelEl.classList.remove(...labelEl.classList);
+            labelEl.classList.add("label", "color_green");
             labelEl.innerHTML = "SUCCESS";
             delete photosPool[uuid];
         }
@@ -1116,10 +869,391 @@ function cleanPhotosPool() {
     Object.keys(photosPool).forEach(key => delete photosPool[key]);
 }
 
-function loadWebsiteInfo() {
-    const info = localStorage.getItem("website_info");
+async function loadManagePhotosList(author = null) {
+    if (author === null) {
+        author = "";
+    }
+    const result = await getApi(window.location.origin + `/api/photos/fetch_photo_list_all?projId=${currentManageProjId}&author=${author}&adminUid=${uid}&adminToken=${token}`);
+    if (!result.result) {
+        const msg = parseInt(result.message, 10);
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+        return;
+    }
+
+    const managePhotosTableBodyEl = document.getElementById("managePhotosTableBody");
+    managePhotosTableBodyEl.innerHTML = "";
+    if (!result.data || result.data.length === 0) {
+        const trEl = document.createElement("tr");
+        const tdEl = document.createElement("td");
+        tdEl.colSpan = 4;
+        tdEl.innerHTML = i18n.lookUp("no_photo");
+        trEl.appendChild(tdEl);
+        managePhotosTableBodyEl.appendChild(trEl);
+        return;
+    }
+
+    const photos = result.data;
+    let page = 0;
+    const pageSize = 10;
+
+    // 删除单个照片
+    const delPhoto = async (photoId, tr, index) => {
+        let confirm = await openModal(
+            i18n.lookUp("modal_content_confirm")[4].title,
+            i18n.lookUp("modal_content_confirm")[4].message
+        );
+        if (confirm) {
+            const resultDel = await postApi(window.location.origin + "/api/proj/delete_photo", {
+                id: photoId,
+                adminUid: uid,
+                adminToken: token
+            });
+            if (!resultDel.result) {
+                const msg = parseInt(resultDel.message, 10);
+                await openModal(
+                    i18n.lookUp("modal_content_fail")[msg].title,
+                    i18n.lookUp("modal_content_fail")[msg].message
+                );
+            } else {
+                showBubble(i18n.lookUp("modal_content_success")[0].message, "blue", "#fff");
+                tr.remove();
+                // 从数组中删除
+                photos.splice(index, 1);
+            }
+        }
+    }
+
+    // 加载更多
+     const load = (btn) => {
+        const newPage = page + 1;
+        const length = photos.length;
+        const start = (newPage - 1) * pageSize;
+        const end = Math.min(start + pageSize, length);
+        // 新一页超过总长度
+        if (start >= length) {
+            showBubble(i18n.lookUp("no_more"), "red", "#fff");
+            return;
+        }
+        page = newPage;
+        if (btn != null) {
+            btn.remove();
+        }
+        photos.forEach((photo, index) => {
+            if (start <= index && index < end) {
+                const trEl = document.createElement("tr");
+
+                const photoIdTdEl = document.createElement("td");
+                photoIdTdEl.innerHTML = photo.id;
+                trEl.appendChild(photoIdTdEl);
+
+                const thumbnailTdEl = document.createElement("td");
+                const thumbnailImgEl = document.createElement("img");
+                thumbnailImgEl.src = `/data/proj/${currentManageProjId}/thumbnail/${photo.name}`;
+                thumbnailImgEl.style.cursor = "pointer";
+                thumbnailImgEl.addEventListener("click", () => {
+                    go_url(`/data/proj/${currentManageProjId}/img/${photo.name}`, 1);
+                });
+                thumbnailTdEl.appendChild(thumbnailImgEl);
+                trEl.appendChild(thumbnailTdEl);
+
+                const authorTdEl = document.createElement("td");
+                authorTdEl.innerHTML = photo.author;
+                trEl.appendChild(authorTdEl);
+
+                const actionTdEl = document.createElement("td");
+                const delBtnEl = document.createElement("span");
+                delBtnEl.classList.add("btn", "del");
+                delBtnEl.title = i18n.lookUp("delete");
+                delBtnEl.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+                delBtnEl.addEventListener("click", () => {
+                    delPhoto(photo.id, trEl, index);
+                });
+                actionTdEl.appendChild(delBtnEl);
+                trEl.appendChild(actionTdEl);
+
+                managePhotosTableBodyEl.appendChild(trEl);
+            }
+        });
+
+        // 加载更多按钮
+        if (end < length) {
+            const loadMoreTrEl = document.createElement("tr");
+            const loadMoreTdEl = document.createElement("td");
+            loadMoreTdEl.colSpan = 4;
+            const loadMoreBtnEl = document.createElement("button");
+            loadMoreBtnEl.id = "loadMorePhotos";
+            loadMoreBtnEl.classList.add("button-common");
+            loadMoreBtnEl.innerHTML = i18n.lookUp("load_more");
+            loadMoreBtnEl.addEventListener("click", () => {
+                load(loadMoreTrEl);
+            });
+            loadMoreTdEl.appendChild(loadMoreBtnEl);
+            loadMoreTrEl.appendChild(loadMoreTdEl);
+            managePhotosTableBodyEl.appendChild(loadMoreTrEl);
+        }
+
+     }
+
+     load(null);
+}
+function filterManagePhotos() {
+    const authorInputEl = document.querySelector('#manageProj input[name="input_author_manage_photos"]');
+    let author = authorInputEl.value.trim();
+    if (!author || author === "") {
+        author = null;
+    }
+    loadManagePhotosList(author);
+}
+async function loadManageUserList() {
+    const result = await getApi(window.location.origin + `/api/user/get_user_list_admin?adminUid=${uid}&adminToken=${token}`);
+    if (!result.result) {
+        return;
+    }
+
+    const tbody = document.getElementById("manageUserTableBody");
+    if (!tbody) {
+        return;
+    }
+    tbody.innerHTML = "";
+
+    if (!result.data || result.data.length === 0) {
+        const emptyTr = document.createElement("tr");
+        emptyTr.innerHTML = `<td colspan="4">${i18n.lookUp("no_user")}</td>`;
+        tbody.appendChild(emptyTr);
+        return;
+    }
+
+    result.data.forEach((user) => {
+        const tr = document.createElement("tr");
+        const operationTd = document.createElement("td");
+        operationTd.classList.add("manage-user-actions");
+        operationTd.innerHTML = `
+            <button class="button-common user-op-btn" data-op="reset" data-uid="${user.uid}">${i18n.lookUp("reset_password_default")}</button>
+            ${user.status === 2
+            ? `<button class="button-common user-op-btn" data-op="unban" data-uid="${user.uid}">${i18n.lookUp("unban_user")}</button>`
+            : `<button class="button-common user-op-btn" data-op="ban" data-uid="${user.uid}">${i18n.lookUp("ban_user")}</button>`
+        }
+            <button class="button-common user-op-btn" data-op="delete" data-uid="${user.uid}">${i18n.lookUp("delete")}</button>
+        `;
+        tr.innerHTML = `
+            <td>${user.uid}</td>
+            <td>${user.allname}</td>
+            <td>${getUserStatusText(user.status)}</td>
+        `;
+        tr.appendChild(operationTd);
+        tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll(".user-op-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            const targetUid = parseInt(btn.getAttribute("data-uid"), 10);
+            const op = btn.getAttribute("data-op");
+            if (op === "reset") {
+                await resetUserPassword(targetUid);
+                return;
+            }
+            if (op === "ban") {
+                await banUser(targetUid);
+                return;
+            }
+            if (op === "unban") {
+                await unbanUser(targetUid);
+                return;
+            }
+            if (op === "delete") {
+                await deleteUser(targetUid);
+            }
+        });
+    });
+}
+
+function getUserStatusText(status) {
+    if (status === 0) {
+        return i18n.lookUp("admin_user");
+    }
+    if (status === 2) {
+        return i18n.lookUp("banned_user");
+    }
+    return i18n.lookUp("normal_user");
+}
+function getManageUserUid() {
+    const uidInput = document.querySelector('#manageUser input[name="input_manage_user_uid"]');
+    const targetUid = parseInt(uidInput.value, 10);
+    if (!targetUid || targetUid < 10000 || targetUid > 999999999) {
+        openModal(
+            i18n.lookUp("modal_content_fail")[7].title,
+            i18n.lookUp("modal_content_fail")[7].message
+        );
+        return null;
+    }
+    return targetUid;
+}
+function getManageUserAllname() {
+    const allnameInput = document.querySelector('#manageUser input[name="input_manage_user_allname"]');
+    const allname = allnameInput.value.trim();
+    if (!allname) {
+        openModal(
+            i18n.lookUp("modal_content_fail")[11].title,
+            i18n.lookUp("modal_content_fail")[11].message
+        );
+        return null;
+    }
+    if (allname.length > 10) {
+        openModal(
+            i18n.lookUp("modal_content_fail")[6].title,
+            i18n.lookUp("modal_content_fail")[6].message
+        );
+        return null;
+    }
+    return allname;
+}
+async function registerUser() {
+    const targetUid = getManageUserUid();
+    if (!targetUid) {
+        return;
+    }
+    const allname = getManageUserAllname();
+    if (!allname) {
+        return;
+    }
+    const statusEl = document.querySelector('#manageUser input[name="register_user_status"]:checked');
+    if (!statusEl) {
+        openModal(
+            i18n.lookUp("modal_content_fail")[11].title,
+            i18n.lookUp("modal_content_fail")[11].message
+        );
+        return;
+    }
+    const result = await postApi(window.location.origin + "/api/user/register", {
+        uid: targetUid,
+        allname,
+        status: parseInt(statusEl.value, 10),
+        adminUid: uid,
+        adminToken: token
+    });
+    const msg = parseInt(result.message, 10);
+    if (!result.result) {
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+    } else {
+        await openModal(
+            i18n.lookUp("modal_content_success")[0].title,
+            i18n.lookUp("modal_content_success")[0].message
+        );
+        await loadManageUserList();
+    }
+}
+async function resetUserPassword(targetUid = getManageUserUid()) {
+    if (!targetUid) {
+        return;
+    }
+    const result = await postApi(window.location.origin + "/api/user/reset_password", {
+        uid: targetUid,
+        adminUid: uid,
+        adminToken: token
+    });
+    const msg = parseInt(result.message, 10);
+    if (!result.result) {
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+    } else {
+        await openModal(
+            i18n.lookUp("modal_content_success")[0].title,
+            i18n.lookUp("modal_content_success")[0].message
+        );
+        await loadManageUserList();
+    }
+}
+async function banUser(targetUid = getManageUserUid()) {
+    if (!targetUid) {
+        return;
+    }
+    const result = await postApi(window.location.origin + "/api/user/ban_user", {
+        uid: targetUid,
+        adminUid: uid,
+        adminToken: token
+    });
+    const msg = parseInt(result.message, 10);
+    if (!result.result) {
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+    } else {
+        await openModal(
+            i18n.lookUp("modal_content_success")[0].title,
+            i18n.lookUp("modal_content_success")[0].message
+        );
+        await loadManageUserList();
+    }
+}
+async function unbanUser(targetUid = getManageUserUid()) {
+    if (!targetUid) {
+        return;
+    }
+    const result = await postApi(window.location.origin + "/api/user/unban_user", {
+        uid: targetUid,
+        adminUid: uid,
+        adminToken: token
+    });
+    const msg = parseInt(result.message, 10);
+    if (!result.result) {
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+    } else {
+        await openModal(
+            i18n.lookUp("modal_content_success")[0].title,
+            i18n.lookUp("modal_content_success")[0].message
+        );
+        await loadManageUserList();
+    }
+}
+async function deleteUser(targetUid = getManageUserUid()) {
+    if (!targetUid) {
+        return;
+    }
+    const confirm = await openModal(
+        i18n.lookUp("modal_content_confirm")[2].title,
+        i18n.lookUp("modal_content_confirm")[2].message,
+        true
+    );
+    if (!confirm) {
+        return;
+    }
+
+    const result = await postApi(window.location.origin + "/api/user/delete_user", {
+        uid: targetUid,
+        adminUid: uid,
+        adminToken: token
+    });
+    const msg = parseInt(result.message, 10);
+    if (!result.result) {
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+    } else {
+        await openModal(
+            i18n.lookUp("modal_content_success")[0].title,
+            i18n.lookUp("modal_content_success")[0].message
+        );
+        await loadManageUserList();
+    }
+}
+
+async function loadWebsiteInfo() {
+    const info = await getApi(window.location.origin + "/api/system/get_website_info");
     if (info) {
-        const infoObj = JSON.parse(info);
+        const infoObj = info.data;
         url = infoObj.website_url;
 
         const link = document.createElement("link");
@@ -1179,7 +1313,7 @@ async function signout() {
         goPage(urlParams.get("p"));
     }
     // Loading website information
-    loadWebsiteInfo();
+    await loadWebsiteInfo();
     await getProj();
     await loadManageUserList();
 
@@ -1203,6 +1337,7 @@ async function signout() {
     document.getElementById("cleanPhotosPool").addEventListener("click", cleanPhotosPool);
     document.getElementById("uploadPhotosPool").addEventListener("click", uploadImages);
     document.getElementById("submitRegisterUser").addEventListener("click", registerUser);
+    document.getElementById("filterManagePhotos").addEventListener("click", filterManagePhotos);
 
     const imgInputUploadEl = document.getElementById("imgInputUpload")
     const selectImageToPoolEl = document.getElementById("selectImagesToPool")

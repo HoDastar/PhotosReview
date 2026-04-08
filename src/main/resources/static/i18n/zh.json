@@ -10,6 +10,7 @@
   "create_user": "新建用户",
   "manage_project": "管理工程",
   "manage_user": "管理用户",
+  "manage_photos": "管理图集",
   "manage_distribution": "任务分配",
   "no_project": "暂无工程。",
   "project_info": "工程信息",
@@ -64,6 +65,7 @@
   "first": "首项",
   "last": "末项",
   "add": "添加",
+  "filter": "筛选",
   "operation": "操作",
   "add_task": "添加任务",
   "task_list": "任务列表",
@@ -74,6 +76,7 @@
   "description_input_uid": "请输入用户UID（10000-999999999）。",
   "user_role": "用户角色",
   "description_user_role": "请选择注册用户身份。",
+  "description_input_author_manage_photos": "筛选此作者的照片。",
   "admin_user": "管理员",
   "normal_user": "普通用户",
   "user_list": "用户列表",
@@ -83,6 +86,9 @@
   "reset_password_default": "重置密码",
   "ban_user": "封禁用户",
   "unban_user": "解封用户",
+  "no_photo": "暂无照片。",
+  "load_more": "加载更多",
+  "no_more": "没有更多照片了。",
   "modal_content_fail": [
     {
       "index": 0,
@@ -183,7 +189,28 @@
       "index": 19,
       "title": "警告",
       "message": "上传失败。"
+    },
+    {
+      "index": 20,
+      "title": "警告",
+      "message": "不存在此用户。"
+    },
+    {
+      "index": 21,
+      "title": "警告",
+      "message": "删除失败。"
+    },
+    {
+      "index": 22,
+      "title": "警告",
+      "message": "保存失败。"
+    },
+    {
+      "index": 23,
+      "title": "警告",
+      "message": "获取系统信息错误，请刷新重试。"
     }
+
   ],
   "modal_content_success": [
     {
@@ -231,7 +258,7 @@
     {
       "index": 4,
       "title": "警告",
-      "message": "是否要删除此任务？"
+      "message": "是否要删除？"
     }
   ],
   "loading-1": "页面加载中，请稍候...",
