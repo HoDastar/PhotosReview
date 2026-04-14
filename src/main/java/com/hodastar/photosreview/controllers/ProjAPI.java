@@ -455,7 +455,7 @@ public class ProjAPI {
         return new Respond<>(true, "success", null);
     }
 
-    // 删除照片（管理员）
+    // 删除照片
     @PostMapping("delete_photo")
     public Respond<Boolean> deletePhoto(
             @RequestBody HashMap<String, Object> body

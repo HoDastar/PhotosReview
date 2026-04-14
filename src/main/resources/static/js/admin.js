@@ -312,7 +312,7 @@ async function getProj() {
     }
 }
 
-function loadManageProj(index, id) {
+async function loadManageProj(index, id) {
     if (!projList[index]) {
         openModal(
             i18n.lookUp("modal_content_fail")[0].title,
@@ -884,6 +884,7 @@ async function loadManagePhotosList(author = null) {
     }
 
     const managePhotosTableBodyEl = document.getElementById("managePhotosTableBody");
+    const photosTotalEl = document.getElementById("photosTotal");
     managePhotosTableBodyEl.innerHTML = "";
     if (!result.data || result.data.length === 0) {
         const trEl = document.createElement("tr");
@@ -896,6 +897,7 @@ async function loadManagePhotosList(author = null) {
     }
 
     const photos = result.data;
+    photosTotalEl.innerHTML = photos.length;
     let page = 0;
     const pageSize = 10;
 
@@ -946,7 +948,10 @@ async function loadManagePhotosList(author = null) {
                 const trEl = document.createElement("tr");
 
                 const photoIdTdEl = document.createElement("td");
-                photoIdTdEl.innerHTML = photo.id;
+                photoIdTdEl.innerHTML = `<label class="checkbox">
+                    <input type="checkbox" name="input_manage_photo" value="${photo.id}"><span class="box"></span>${photo.id}
+                </label>
+                `;
                 trEl.appendChild(photoIdTdEl);
 
                 const thumbnailTdEl = document.createElement("td");
@@ -1007,6 +1012,39 @@ function filterManagePhotos() {
     }
     loadManagePhotosList(author);
 }
+async function deleteSelectedPhotos() {
+    const arr = Array.from(document.querySelectorAll('input[name="input_manage_photo"]:checked'))
+        .map(el => Number(el.value));
+    const length = arr.length;
+    if (length === 0) {
+        return;
+    }
+
+    const confirm = await openModal(
+        i18n.lookUp("modal_content_confirm")[4].title,
+        i18n.lookUp("modal_content_confirm")[4].message
+    );
+    if (!confirm) {
+        return;
+    }
+
+    let affected = 0;
+    for (let i = 0; i < length; i++) {
+        const resultDel = await postApi(window.location.origin + "/api/proj/delete_photo", {
+            id: arr[i],
+            adminUid: uid,
+            adminToken: token
+        });
+        if (resultDel.result) {
+            affected++;
+        } else {
+            showBubble(i18n.lookUp("modal_content_fail")[21].message, "red", "#fff");
+        }
+    }
+    showBubble(i18n.lookUp("affected_rows") + affected, "blue", "#fff");
+    filterManagePhotos();
+}
+
 async function loadManageUserList() {
     const result = await getApi(window.location.origin + `/api/user/get_user_list_admin?adminUid=${uid}&adminToken=${token}`);
     if (!result.result) {
@@ -1036,7 +1074,7 @@ async function loadManageUserList() {
             ? `<button class="button-common user-op-btn" data-op="unban" data-uid="${user.uid}">${i18n.lookUp("unban_user")}</button>`
             : `<button class="button-common user-op-btn" data-op="ban" data-uid="${user.uid}">${i18n.lookUp("ban_user")}</button>`
         }
-            <button class="button-common user-op-btn" data-op="delete" data-uid="${user.uid}">${i18n.lookUp("delete")}</button>
+            <button class="button-common user-op-btn del" data-op="delete" data-uid="${user.uid}">${i18n.lookUp("delete")}</button>
         `;
         tr.innerHTML = `
             <td>${user.uid}</td>
@@ -1338,6 +1376,7 @@ async function signout() {
     document.getElementById("uploadPhotosPool").addEventListener("click", uploadImages);
     document.getElementById("submitRegisterUser").addEventListener("click", registerUser);
     document.getElementById("filterManagePhotos").addEventListener("click", filterManagePhotos);
+    document.getElementById("deleteSelectedPhotos").addEventListener("click", deleteSelectedPhotos);
 
     const imgInputUploadEl = document.getElementById("imgInputUpload")
     const selectImageToPoolEl = document.getElementById("selectImagesToPool")

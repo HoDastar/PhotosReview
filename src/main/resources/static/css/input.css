@@ -86,6 +86,56 @@
   opacity: 1;
 }
 
+/**
+ * Checkbox input
+ */
+.checkbox {
+       display: inline-flex;
+       align-items: center;
+       cursor: pointer;
+       gap: 8px;
+       user-select: none;
+   }
+
+/* 隐藏原生 checkbox */
+.checkbox input {
+    display: none;
+}
+
+/* 自定义方框 */
+.checkbox .box {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--color-fg);
+    border-radius: 4px;
+    position: relative;
+    background: transparent;
+    transition: all 0.2s;
+}
+
+/* 打勾（✔） */
+.checkbox .box::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 6px;
+    height: 10px;
+    border: solid var(--color-primary);
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg) scale(0);
+    transition: transform 0.2s ease;
+}
+
+/* 选中状态 */
+.checkbox input:checked + .box::after {
+    transform: rotate(45deg) scale(1);
+}
+
+/* hover 效果 */
+.checkbox:hover .box {
+    transform: scale(1.1);
+}
 
 /**
 * ---------

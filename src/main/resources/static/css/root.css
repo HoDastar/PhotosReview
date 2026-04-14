@@ -213,6 +213,11 @@ body {
 }
 .button-common:active {
     transform: scale(0.96);
+}.button-common.del {
+     background-color: rgb(220, 38, 38);
+ }
+.button-common.del:hover {
+    background-color: rgb(185, 28, 28);
 }
 
 .button-long {

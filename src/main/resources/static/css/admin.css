@@ -457,7 +457,7 @@ hr {
 .common-table {
     width: 100%;
     max-width: 980px;
-    margin: 18px 0 0;
+    margin: 30px 0;
     border-collapse: separate;
     border-spacing: 0;
     border: 1px solid var(--color-border2);
@@ -532,6 +532,7 @@ hr {
     min-width: 92px;
     padding: 8px 10px;
 }
+
 
 .common-table.form-manage-photos thead th:last-child,
 .common-table.form-manage-photos tbody td:last-child {

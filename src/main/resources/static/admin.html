@@ -273,6 +273,12 @@
             <h3 class="subtitle"><span data-i18n="manage_photos">Manage Photos</span></h3>
             <div class="form-row">
                 <div class="form-label">
+                    <div class="desc"><span data-i18n="total">Total</span></div>
+                    <div class="title"><span id="photosTotal">999</span></div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-label">
                     <div class="title"><span data-i18n="author"></span></div>
                     <div class="desc"><span data-i18n="description_input_author_manage_photos">Filter photos by author.</span></div>
                 </div>
@@ -294,16 +300,16 @@
                     </tr>
                 </thead>
                 <tbody id="managePhotosTableBody">
-                    <tr>
-                        <td>1</td>
-                        <td><img src="http://127.0.0.1:8080/data/proj/9e72d72d-227f-4244-8b99-cff059317696/img/ffaef87f-8922-4145-b987-e7e9b35f4c97.jpg"></td>
-                        <td>BoBo</td>
-                        <td><span class="btn del" title="Delete"><i class="fa-solid fa-trash"></i></span></td>
-                    </tr>
                 </tbody>
             </table>
+            <div class="form-row">
+                <div class="form-label">
+                    <div class="title"><span data-i18n="batch_delete">Batch Delete</span></div>
+                    <div class="desc"><span data-i18n="description_batch_delete"></span></div>
+                </div>
+            </div>
             <div class="form-submit">
-                <button class="button-common" id="loadMorePhotos" data-i18n="load_more">Load More</button>
+                <button class="button-common del" id="deleteSelectedPhotos"><span data-i18n="delete">Delete</span></button>
             </div>
 
         </section>
