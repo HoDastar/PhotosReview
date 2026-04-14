@@ -24,9 +24,9 @@ public class SystemAPI {
     @RequestMapping("/get_website_info")
     public Respond<Map<String, Object>> getWebsiteInfo() {
         Map<String, Object> data = new HashMap<>();
-        data.put("website_name", config.WEBSITE_NAME);
-        data.put("website_icon", config.WEBSITE_ICON);
-        data.put("website_url", config.WEBSITE_URL);
+        data.put("website_name", systemMapper.getWebsiteName());
+        data.put("website_icon", systemMapper.getWebsiteIcon());
+        data.put("website_url", systemMapper.getWebsiteUrl());
         return new Respond<>(true, "true", data);
     }
 }

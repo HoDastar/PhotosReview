@@ -1,8 +1,11 @@
 package com.hodastar.photosreview.controllers;
 
+import com.hodastar.photosreview.entities.EntityReviewPhotos;
 import com.hodastar.photosreview.entities.EntityReviewProj;
 import com.hodastar.photosreview.mappers.ProjMapper;
 import com.hodastar.photosreview.mappers.UserMapper;
+import com.hodastar.photosreview.utils.FileUtil;
+import com.hodastar.photosreview.utils.ImageUtils;
 import com.hodastar.photosreview.utils.Respond;
 import com.hodastar.photosreview.utils.Utilities;
 import org.slf4j.Logger;
@@ -39,6 +42,7 @@ public class ProjAPI {
                 .filter(proj -> proj.display == 1)
                 .map(proj -> {
                     HashMap<String, Object> map = new HashMap<>();
+                    map.put("proj_id", proj.projId);
                     map.put("proj_name", proj.name);
                     map.put("proj_type", proj.type);
                     map.put("proj_status", proj.status);
@@ -46,7 +50,7 @@ public class ProjAPI {
                     map.put("proj_time", proj.time);
                     return map;
                 }).toList();
-        return new Respond<>(true, "success", projList);
+        return new Respond<>(true, "Done", projList);
     }
 
     // 获取工程列表Admin
@@ -62,13 +66,13 @@ public class ProjAPI {
 
         // 获取工程
         List<EntityReviewProj> projList = projMapper.getProjList();
-        return new Respond<>(true, "success", projList);
+        return new Respond<>(true, "succeess", projList);
     }
 
     // 获取工程总量
     @GetMapping("/get_proj_count")
     public Respond<Integer> get_proj_count(
-            @RequestParam("proj_name") String projName,
+            @RequestParam("proj_id") String projId,
             @RequestParam("adminUid") int adminUid,
             @RequestParam("adminToken") String adminToken
     ) {
@@ -76,7 +80,7 @@ public class ProjAPI {
         if (!userMapper.checkAdmin(adminUid, adminToken)) {
             return new Respond<>(false, "5", null);
         }
-        Integer count = projMapper.getProjDataCount(projName);
+        Integer count = projMapper.getProjDataCount(projId);
         return new Respond<>(true, "success", count);
     }
 
@@ -146,20 +150,12 @@ public class ProjAPI {
 
         // Generous a uuid
         String uuid = Utilities.generateUUID();
-
-        // dir
-        //String dirStr = "data/proj/" + name + "/icon/";
-        String baseDir = System.getProperty("user.dir");
-        String dirStr = baseDir + File.separator +
-                "data" + File.separator +
-                "proj" + File.separator +
-                name + File.separator +
-                "icon" + File.separator;
-
+        // Projid
+        String projId = Utilities.generateUUID();
         // gain file name extension
-        String extension = Utilities.getFileExtension(iconFile.getOriginalFilename());
+        String extension = FileUtil.getFileExtension(iconFile.getOriginalFilename());
         // check file extension
-        if (extension.isEmpty() || Utilities.isValidImg(extension)) {
+        if (extension.isEmpty() || !FileUtil.isValidImg(extension)) {
             return new Respond<>(false, "8", null);
         }
 
@@ -167,16 +163,22 @@ public class ProjAPI {
         if (iconFile.getSize() > 10 * 1024 * 1024) {
             return new Respond<>(false, "9", null);
         }
-
         // Save
         String fileName = uuid + "." + extension;
-        Utilities.saveMultipartFile(iconFile, dirStr, fileName);
-
         // 数据库
-        Boolean result = projMapper.createProj(name, type, fileName);
+        Boolean result = projMapper.createProj(projId, name, type, fileName);
         if (!result) {
             return new Respond<>(false, "0", null);
         }
+
+        // dir
+        String baseDir = System.getProperty("user.dir");
+        String dirStr = baseDir + File.separator +
+                "data" + File.separator +
+                "proj" + File.separator +
+                projId + File.separator +
+                "icon" + File.separator;
+        FileUtil.saveMultipartFile(iconFile, dirStr, fileName);
 
         return new Respond<>(true, "success", null);
     }
@@ -185,14 +187,14 @@ public class ProjAPI {
     @PostMapping("/delete_proj")
     public Respond<String> delete_proj(@RequestBody HashMap<String, Object> body) {
         // 检查参数
-        if (!body.containsKey("projName") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
+        if (!body.containsKey("projId") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
             return new Respond<>(false, "1", null);
         }
-        if (!(body.get("projName") instanceof String) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
+        if (!(body.get("projId") instanceof String) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
             return new Respond<>(false, "1", null);
         }
 
-        String projName = (String) body.get("projName");
+        String projId = (String) body.get("projId");
         int adminUid = (Integer) body.get("adminUid");
         String adminToken = (String) body.get("adminToken");
 
@@ -202,7 +204,7 @@ public class ProjAPI {
         }
 
         // 删除工程
-        Boolean result = projMapper.deleteProj(projName);
+        Boolean result = projMapper.deleteProj(projId);
         if (!result) {
             return new Respond<>(false, "0", null);
         }
@@ -230,21 +232,21 @@ public class ProjAPI {
 
         // 检查参数
         if (
-                !map.containsKey("id") ||
+                !map.containsKey("projId") ||
                         !map.containsKey("adminUid") ||
                         !map.containsKey("adminToken")
         ) {
             return new Respond<>(false, "1", null);
         }
         if (
-                !(map.get("id") instanceof Integer) ||
+                !(map.get("projId") instanceof String) ||
                         !(map.get("adminUid") instanceof Integer) ||
                         !(map.get("adminToken") instanceof String)
         ) {
             return new Respond<>(false, "1", null);
         }
 
-        int id = (Integer) map.get("id");
+        String projId = (String) map.get("projId");
         int adminUid = (Integer) map.get("adminUid");
         String adminToken = (String) map.get("adminToken");
 
@@ -262,7 +264,7 @@ public class ProjAPI {
         String baseDir = System.getProperty("user.dir");
 
         // 获取原工程信息
-        Optional<EntityReviewProj> projOpt = projMapper.getProjById(id);
+        Optional<EntityReviewProj> projOpt = projMapper.getProjById(projId);
         if (projOpt.isEmpty()) {
             return new Respond<>(false, "14", null);
         }
@@ -293,13 +295,9 @@ public class ProjAPI {
             isChangeImg = true;
 
             // gain file name extension
-            String extension = Utilities.getFileExtension(iconFile.getOriginalFilename());
+            String extension = FileUtil.getFileExtension(iconFile.getOriginalFilename());
             // check file extension
-            if (extension == null || extension.isEmpty()) {
-                return new Respond<>(false, "8", null);
-            }
-            // check file extension (only allow jpg/jpeg/png/webp)
-            if (!extension.equalsIgnoreCase("jpg") && !extension.equalsIgnoreCase("jpeg") && !extension.equalsIgnoreCase("png") && !extension.equalsIgnoreCase("webp")) {
+            if (extension == null || extension.isEmpty() || !FileUtil.isValidImg(extension)) {
                 return new Respond<>(false, "8", null);
             }
             // check file size (max 10MB)
@@ -333,7 +331,7 @@ public class ProjAPI {
         }
 
         // 数据库
-        Boolean result = projMapper.updateProj(id, name, thumbnail, status, display);
+        Boolean result = projMapper.updateProj(projId, name, thumbnail, status, display);
         if (!result) {
             return new Respond<>(false, "0", null);
         }
@@ -343,40 +341,13 @@ public class ProjAPI {
             String dirStr = baseDir + File.separator +
                     "data" + File.separator +
                     "proj" + File.separator +
-                    name + File.separator +
+                    projId + File.separator +
                     "icon" + File.separator;
             // Save
-            Utilities.saveMultipartFile(iconFile, dirStr, thumbnail);
-        }
-        if (isChangeName) {
-            String dirStr = baseDir + File.separator +
-                    "data" + File.separator +
-                    "proj" + File.separator +
-                    oldName;
-            String newDir = baseDir + File.separator +
-                    "data" + File.separator +
-                    "proj" + File.separator +
-                    name;
-            try {
-                Utilities.renameDir(dirStr, newDir);
-            } catch (Exception e) {
-                log.error("Failed to rename directory: " + dirStr + " to " + newDir, e);
-            }
+            FileUtil.saveMultipartFile(iconFile, dirStr, thumbnail);
         }
         return new Respond<>(true, "success", null);
     }
-
-    /**
-     * 图片集上传
-     * param name 工程名称
-     * param files 图片集
-    @PostMapping("/upload_images")
-    public Respond<String> upload_images(
-            @RequestParam("files") List<MultipartFile> files,
-            @RequestParam("json") String json
-    ) {
-    }
-     */
 
     /**
      * 图片上传
@@ -388,25 +359,25 @@ public class ProjAPI {
     public Respond<String> uploadImage(
             @RequestParam("file") MultipartFile img,
             @RequestParam("json") String json
-    ) throws IOException {
+    ) throws Exception {
         // json转换
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> map = mapper.readValue(json, Map.class);
 
         // 检查参数
         if (
-                !map.containsKey("id") ||
-                        !map.containsKey("author") ||
-                        !map.containsKey("adminUid") ||
-                        !map.containsKey("adminToken")
+                !map.containsKey("projId") ||
+                !map.containsKey("author") ||
+                !map.containsKey("adminUid") ||
+                !map.containsKey("adminToken")
         ) {
             return new Respond<>(false, "1", null);
         }
         if (
-                !(map.get("id") instanceof Integer) ||
-                        !(map.get("author") instanceof String) ||
-                        !(map.get("adminUid") instanceof Integer) ||
-                        !(map.get("adminToken") instanceof String)
+                !(map.get("projId") instanceof String) ||
+                !(map.get("author") instanceof String) ||
+                !(map.get("adminUid") instanceof Integer) ||
+                !(map.get("adminToken") instanceof String)
         ) {
             return new Respond<>(false, "1", null);
         }
@@ -415,7 +386,7 @@ public class ProjAPI {
             return new Respond<>(false, "1", null);
         }
 
-        int projId = (Integer) map.get("id");
+        String projId = (String) map.get("projId");
         String author = (String) map.get("author");
         int adminUid = (Integer) map.get("adminUid");
         String adminToken = (String) map.get("adminToken");
@@ -432,27 +403,15 @@ public class ProjAPI {
         }
 
         // gain file name extension
-        String extension = Utilities.getFileExtension(img.getOriginalFilename());
+        String extension = FileUtil.getFileExtension(img.getOriginalFilename());
         // check file extension
-        if (extension.isEmpty() || !Utilities.isValidImg(extension)) {
+        if (extension.isEmpty() || !FileUtil.isValidImg(extension)) {
             return new Respond<>(false, "8", null);
         }
         // check file size (max 50MB)
         if (img.getSize() > 50 * 1024 * 1024) {
             return new Respond<>(false, "9", null);
         }
-
-        String uuid = Utilities.generateUUID();
-        String baseDir = System.getProperty("user.dir");
-        String proj = projOpt.get().name;
-        String dirStr = baseDir + File.separator +
-                "data" + File.separator +
-                "proj" + File.separator +
-                proj + File.separator +
-                "img" + File.separator;
-
-        String fileName = uuid + "." + extension;
-        Utilities.saveMultipartFile(img, dirStr, fileName);
 
         String value;
         // 获取工程类型
@@ -463,13 +422,88 @@ public class ProjAPI {
             value = "{}";
         }
 
+        String uuid = Utilities.generateUUID();
+        String fileName = uuid + "." + extension;
+
+        String baseDir = System.getProperty("user.dir");
+        // 目标目录
+        String dirStr = baseDir + File.separator +
+                "data" + File.separator +
+                "proj" + File.separator +
+                projId + File.separator +
+                "img" + File.separator;
+
+        // 保存
+        FileUtil.saveMultipartFile(img, dirStr, fileName);
+
+        // 缩略图目录
+        String thumbnailDirStr = baseDir + File.separator +
+                "data" + File.separator +
+                "proj" + File.separator +
+                projId + File.separator +
+                "thumbnail" + File.separator;
+        // 生成缩略图
+        ImageUtils.createThumbnail(dirStr, thumbnailDirStr, fileName, 300, 300);
+
         // 添加数据库
-        Boolean r = projMapper.addPhoto(proj, author, fileName, value);
+        Boolean r = projMapper.addPhoto(projId, author, fileName, value);
         if (!r) {
-            Utilities.deleteFile(dirStr, fileName);
+            FileUtil.deleteFile(dirStr, fileName);
             return new Respond<>(false, "0", null);
         }
 
         return new Respond<>(true, "success", null);
+    }
+
+    // 删除照片
+    @PostMapping("delete_photo")
+    public Respond<Boolean> deletePhoto(
+            @RequestBody HashMap<String, Object> body
+    ) throws IOException {
+        if (!body.containsKey("id") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("id") instanceof Integer) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
+            return new Respond<>(false, "1", null);
+        }
+
+        int id = (Integer) body.get("id");
+        int uid = (Integer) body.get("adminUid");
+        String token = (String) body.get("adminToken");
+
+        // 验证用户
+        if (!userMapper.checkAdmin(uid, token)) {
+            return new Respond<>(false, "5", null);
+        }
+        // 获取照片
+        Optional<EntityReviewPhotos> photoOpt = projMapper.getPhotoById(id);
+        if (photoOpt.isEmpty()) {
+            return new Respond<>(true, "Done", null);
+        }
+        // 获取文件信息
+        String name = photoOpt.get().name;
+        String projId = photoOpt.get().proj;
+        // 删除数据
+        Boolean result = projMapper.deletePhotoById(id);
+        if (!result) {
+            return new Respond<>(false, "0", null);
+        }
+        // 文件目录
+        String baseDir = System.getProperty("user.dir");
+        String dirStr = baseDir + File.separator +
+                "data" + File.separator +
+                "proj" + File.separator +
+                projId + File.separator +
+                "img" + File.separator;
+        String thumbnailDirStr = baseDir + File.separator +
+                "data" + File.separator +
+                "proj" + File.separator +
+                projId + File.separator +
+                "thumbnail" + File.separator;
+        // 尝试删除文件
+        FileUtil.deleteFile(dirStr, name);
+        FileUtil.deleteFile(thumbnailDirStr, name);
+
+        return new Respond<>(true, "Done", null);
     }
 }

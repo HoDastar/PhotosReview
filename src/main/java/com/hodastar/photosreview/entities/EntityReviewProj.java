@@ -2,6 +2,7 @@ package com.hodastar.photosreview.entities;
 
 public class EntityReviewProj {
     public int id;
+    public String projId;
     public String name;
     public int type;
     public String task;
@@ -10,8 +11,9 @@ public class EntityReviewProj {
     public String time;
     public int display;
 
-    public EntityReviewProj(int id, String name, int type, String task, String thumbnail, int status, String time, int display) {
+    public EntityReviewProj(int id, String projId, String name, int type, String task, String thumbnail, int status, String time, int display) {
         this.id = id;
+        this.projId = projId;
         this.name = name;
         this.type = type;
         this.task = task;

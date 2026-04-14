@@ -11,6 +11,7 @@
   "manage_project": "Manage Project",
   "manage_user": "Manage User",
   "manage_distribution": "Manage Distribution",
+  "manage_photos": "Manage Photos",
   "no_project": "No project yet.",
   "project_info": "Project Information",
   "input_project_name": "Project name...",
@@ -64,6 +65,7 @@
   "first": "First",
   "last": "Last",
   "add": "Add",
+  "filter": "Filter",
   "operation": "Operation",
   "add_task": "Add Task",
   "task_list": "Task List",
@@ -74,6 +76,7 @@
   "description_input_uid": "Please input user UID (10000-999999999).",
   "user_role": "User Role",
   "description_user_role": "Please choose the role for registration.",
+  "description_input_author_manage_photos": "Filter photos by author.",
   "admin_user": "Administrator",
   "normal_user": "Normal User",
   "user_list": "User List",
@@ -83,6 +86,12 @@
   "reset_password_default": "Reset Password",
   "ban_user": "Ban User",
   "unban_user": "Unban User",
+  "no_photo": "No photos yet.",
+  "load_more": "Load More",
+  "no_more": "No more photos.",
+  "affected_rows": "Affected item(s): ",
+  "batch_delete": "Batch Delete",
+  "description_batch_delete": "Batch delete items by filtering conditions. Please be cautious when using this function.",
   "modal_content_fail": [
     {
       "index": 0,
@@ -183,6 +192,26 @@
       "index": 19,
       "title": "Warning",
       "message": "Upload failed."
+    },
+    {
+      "index": 20,
+      "title": "Warning",
+      "message": "This user does not exist."
+    },
+    {
+      "index": 21,
+      "title": "Warning",
+      "message": "Delete failed."
+    },
+    {
+      "index": 22,
+      "title": "Warning",
+      "message": "Save failed."
+    },
+    {
+      "index": 23,
+      "title": "Warning",
+      "message": "Error occurred while obtaining system information. Please refresh and try again."
     }
   ],
   "modal_content_success": [
@@ -231,7 +260,7 @@
     {
       "index": 4,
       "title": "Warming",
-      "message": "Are you sure you want to delete this task?"
+      "message": "Are you sure you want to delete?"
     }
   ],
   "loading-1": "Please wait while the page loads...",

@@ -65,8 +65,6 @@
                     data-i18n="create_project">Create project</span></button>
             <button class="panel-btn" data-page="manageUser"><i class="fa-solid fa-users-gear"></i> <span
                     data-i18n="manage_user">Manage User</span></button>
-            <button class="panel-btn" data-page="upload"><i class="fa-solid fa-upload"></i> <span
-                    data-i18n="upload">Upload</span></button>
         </aside>
 
         <section class="viewer" id="projList">
@@ -229,7 +227,6 @@
             <hr>
 
             <h3 class="subtitle"><span data-i18n="upload"></span></h3>
-
             <div class="form-row">
                 <div class="form-label">
                     <div class="title"><span data-i18n="author">Author</span></div>
@@ -272,6 +269,49 @@
             </div>
 
             <hr>
+
+            <h3 class="subtitle"><span data-i18n="manage_photos">Manage Photos</span></h3>
+            <div class="form-row">
+                <div class="form-label">
+                    <div class="desc"><span data-i18n="total">Total</span></div>
+                    <div class="title"><span id="photosTotal">999</span></div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-label">
+                    <div class="title"><span data-i18n="author"></span></div>
+                    <div class="desc"><span data-i18n="description_input_author_manage_photos">Filter photos by author.</span></div>
+                </div>
+                <div class="form-control">
+                    <input type="text" class="text-input" name="input_author_manage_photos"
+                           data-i18n-placeholder="input_author" maxlength="100"/>
+                </div>
+            </div>
+            <div class="form-submit">
+                <button class="button-common" id="filterManagePhotos"><span data-i18n="filter">Filter</span></button>
+            </div>
+            <table class="common-table form-manage-photos">
+                <thead>
+                    <tr>
+                        <th>Photoid</th>
+                        <th>Thumbnail</th>
+                        <th><span data-i18n="author"></span></th>
+                        <th><span data-i18n="operation"></span></th>
+                    </tr>
+                </thead>
+                <tbody id="managePhotosTableBody">
+                </tbody>
+            </table>
+            <div class="form-row">
+                <div class="form-label">
+                    <div class="title"><span data-i18n="batch_delete">Batch Delete</span></div>
+                    <div class="desc"><span data-i18n="description_batch_delete"></span></div>
+                </div>
+            </div>
+            <div class="form-submit">
+                <button class="button-common del" id="deleteSelectedPhotos"><span data-i18n="delete">Delete</span></button>
+            </div>
+
         </section>
 
         <section class="viewer" id="manageDist" style="display: none;">
@@ -362,7 +402,7 @@
                     <div class="desc" data-i18n="description_input_uid"></div>
                 </div>
                 <div class="form-control">
-                    <input type="number" class="text-input" name="input_manage_user_uid" placeholder="UID"/>
+                    <input type="text" class="text-input" name="input_manage_user_uid" placeholder="UID"/>
                 </div>
             </div>
             <div class="form-row">
@@ -399,7 +439,7 @@
             <hr>
 
             <h3 class="subtitle"><span data-i18n="user_list"></span></h3>
-            <table class="form-distribution manage-user-table">
+            <table class="common-table form-manage-user">
                 <thead>
                 <tr>
                     <th>UID</th>

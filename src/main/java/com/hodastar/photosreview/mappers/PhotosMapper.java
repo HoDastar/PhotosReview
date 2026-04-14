@@ -5,6 +5,7 @@ import com.hodastar.photosreview.utils.Utilities;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -18,21 +19,22 @@ public class PhotosMapper {
 
     // 获取全部照片列表
     public List<EntityReviewPhotos> getPhotos(
-            String projName,
-            String author,
-            int page
+            String projId,
+            String author
     ) {
-        int[] a = Utilities.calculateOffsetLimit(page, 10);
-        int offset = a[0];
-        int limit = a[1];
+        StringBuilder sql = new StringBuilder("SELECT * FROM review_data WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        sql.append(" AND proj = ?");
+        params.add(projId);
+
+        if (author != null) {
+            sql.append(" AND author LIKE ?");
+            params.add("%" + author + "%");
+        }
+
         return jdbcTemplate.query(
-                 """
-                 SELECT * FROM review_data
-                 WHERE (? IS NULL OR proj = ?)
-                 AND (? IS NULL OR author = ?)
-                 ORDER BY id DESC
-                 LIMIT ? OFFSET ?
-                 """,
+                 sql.toString(),
                 (rs, rowNum) -> {
                     return new EntityReviewPhotos(
                             rs.getInt("id"),
@@ -42,10 +44,9 @@ public class PhotosMapper {
                             rs.getString("value")
                     );
                 },
-                projName, projName, author, author,
-                limit, offset
+                params.toArray()
         );
     }
 
-    //
+    // 根据
 }

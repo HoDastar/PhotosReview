@@ -21,10 +21,6 @@ public class Config {
 
     public static final String LOGIN_SESSION_FILE_DIR = System.getProperty("user.dir") + File.separator + "loginSession" + File.separator;
 
-    public String WEBSITE_NAME;
-    public String WEBSITE_ICON;
-    public String WEBSITE_URL;
-
     private static final Logger log =
             LoggerFactory.getLogger(Config.class);
 
@@ -40,24 +36,5 @@ public class Config {
                         .anyRequest().permitAll()
                 );
         return http.build();
-    }
-
-
-    @Bean
-    CommandLineRunner loadWebsiteConfig() {
-        return args -> {
-            try {
-                // 在应用启动后安全地从 mapper 读取
-                this.WEBSITE_NAME = systemMapper.getWebsiteName();
-                this.WEBSITE_ICON = systemMapper.getWebsiteIcon();
-                this.WEBSITE_URL = systemMapper.getWebsiteUrl();
-            } catch (Exception e) {
-                // 读取失败时记录并使用默认值，避免整个应用启动失败
-                log.error("Failed to load website config: {}", e.getMessage());
-                if (this.WEBSITE_NAME == null) this.WEBSITE_NAME = "PhotosReview";
-                if (this.WEBSITE_ICON == null) this.WEBSITE_ICON = "/static/icon.png";
-                if (this.WEBSITE_URL == null) this.WEBSITE_URL = "/";
-            }
-        };
     }
 }

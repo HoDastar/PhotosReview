@@ -2,6 +2,7 @@ package com.hodastar.photosreview.mappers;
 
 import com.hodastar.photosreview.entities.EntityReviewUsers;
 import com.hodastar.photosreview.utils.CryptUtil;
+import com.hodastar.photosreview.utils.FileUtil;
 import com.hodastar.photosreview.utils.Respond;
 import com.hodastar.photosreview.utils.Utilities;
 import org.slf4j.Logger;
@@ -117,7 +118,7 @@ public class UserMapper {
         File sessionFile = new File(dirStr);
         if (sessionFile.exists()) {
             // 验证session
-            String sessionToken = Utilities.readDocumentFile(dirStr);
+            String sessionToken = FileUtil.readDocumentFile(dirStr);
             if (sessionToken != null && CryptUtil.nBCrypt2(token) == sessionToken) {
                 return true;
             }
@@ -135,7 +136,7 @@ public class UserMapper {
 
         // 重新存储token
         String sessionToken = CryptUtil.nBCrypt2(token);
-        Utilities.saveDocumentFile(sessionToken, LOGIN_SESSION_FILE_DIR, String.valueOf(uid) + ".session");
+        FileUtil.saveDocumentFile(sessionToken, LOGIN_SESSION_FILE_DIR, String.valueOf(uid) + ".session");
         return true;
     }
 
