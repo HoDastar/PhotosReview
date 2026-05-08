@@ -1,5 +1,7 @@
 package com.hodastar.photosreview.utils;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -19,6 +21,39 @@ public class ImageUtils {
         File source = new File(sourceD, filename);
         File target = new File(targetD, filename);
         BufferedImage srcImg = ImageIO.read(source);
+
+        // 按比例缩放
+        int srcWidth = srcImg.getWidth();
+        int srcHeight = srcImg.getHeight();
+
+        double scale = Math.min(
+                (double) width / srcWidth,
+                (double) height / srcHeight
+        );
+
+        int newW = (int) (srcWidth * scale);
+        int newH = (int) (srcHeight * scale);
+
+        Image scaledImg = srcImg.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+
+        BufferedImage output = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = output.createGraphics();
+
+        // 抗锯齿
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(scaledImg, 0, 0, null);
+        g.dispose();
+
+        ImageIO.write(output, "jpg", target);
+    }
+
+    public static void createThumbnail2(MultipartFile img, String dirStr, String filename, int width, int height) throws Exception {
+        File dir = new File(dirStr);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        File target = new File(dir, filename);
+        BufferedImage srcImg = ImageIO.read(img.getInputStream());
 
         // 按比例缩放
         int srcWidth = srcImg.getWidth();
