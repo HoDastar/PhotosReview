@@ -90,6 +90,7 @@
   "load_more": "加载更多",
   "no_more": "没有更多照片了。",
   "affected_rows": "已修改个数：",
+  "successful_rows": "成功个数：",
   "batch_delete": "批量删除",
   "description_batch_delete": "删除选中项，请谨慎操作！",
   "modal_content_fail": [

@@ -474,7 +474,7 @@ hr {
     font-size: 14px;
     font-weight: 700;
     user-select: none;
-    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg));
+    background: var(--color-primary-light);
 }
 
 .common-table tbody td {
@@ -483,10 +483,6 @@ hr {
     padding: 12px 14px;
     user-select: none;
     text-align: left;
-}
-
-.common-table tbody tr:hover td {
-    background: color-mix(in srgb, var(--color-primary-light) 45%, var(--color-bg));
 }
 
 .common-table img {
