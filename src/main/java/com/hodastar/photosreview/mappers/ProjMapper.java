@@ -191,6 +191,25 @@ public class ProjMapper {
     }
 
     /**
+     * 修改工程任务
+     * @param projId 工程ID
+     * @param task 工程任务
+     * @return 修改结果
+     */
+    public Boolean updateProjTask(String projId, String task) {
+        try {
+            int rowsAffected = jdbcTemplate.update(
+                    "UPDATE review_proj SET task = ? WHERE projid = ?",
+                    task, projId
+            );
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
      * 添加图片
      * @param projId 工程名称
      * @param author 作者

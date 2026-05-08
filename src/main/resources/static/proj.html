@@ -1,0 +1,1197 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>proj - default</title>
+    <link rel="icon" href="https://xinhaodan.top/root/lzzxsyb.jpg" type="image/x-icon">
+    <!-- 引入 Google Fonts 固定字体 -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+    <!-- 引入 Font Awesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="css/root.css?v=0.1">
+    <link rel="stylesheet" href="css/modal.css?v=0.1">
+    <link rel="stylesheet" href="css/radio.css?v=0.3">
+    <link rel="stylesheet" href="css/switch.css?v=0.3">
+    <link rel="stylesheet" href="css/watermark.css">
+    <style>
+        /* 基本重置 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        /* 整体容器占满视口，不产生浏览器整体滚动条 */
+        body {
+            height: auto;
+            min-height: 100vh;
+            /* 视口高度 */
+            display: flex;
+            flex-direction: row;
+            /* 桌面默认左右 */
+            overflow: auto;
+            /* 整体页面不滚动，内部区域可滚 */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 左右两部分的公共样式 */
+        .pane {
+            padding: 1.25rem;
+            min-width: 0;
+            /* 关键：允许 flex 子项水平收缩，避免出现横向滚动条 */
+        }
+
+        /* 左侧（主内容） 7 份 */
+        .left {
+            /* background: linear-gradient(180deg, #f7fbff 0%, #e6f0ff 100%);*/
+            background-color: var(--color-bg);
+            /* 可换颜色 */
+            flex: 1 1 auto;
+            /* 7:3 比例的关键 */
+        }
+
+        /* 右侧（辅助） 3 份 */
+        .right {
+            /* background: linear-gradient(180deg, #fff8f0 0%, #ffe6cc 100%);*/
+            background-color: var(--color-bg2);
+            flex: 0 0 auto;
+            width: 370px;
+            border-left: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        /* 内部示例样式（标题、卡片等） */
+        h1 {
+            margin-bottom: .75rem;
+            font-size: 1.2em;
+        }
+
+        h3 {
+            margin-bottom: .45rem;
+            font-size: 1em;
+        }
+
+        .proj_name {
+            position: fixed;
+        }
+
+        /*
+        .div_img {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            
+        }
+        */
+        .div_img {
+            position: fixed;
+            top: 50%;
+            left: calc((100% - 400px) / 2);
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+
+        .div_tools {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+        }
+
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+            margin-bottom: 1rem;
+        }
+
+        .widget {
+            background: var(--color-bg);
+            border-radius: 10px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.112);
+            text-align: left;
+            transition: all 0.5s;
+            cursor: default;
+        }
+
+        .widget:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.362);
+            transform: scale(1.01);
+
+        }
+
+        .widget p {
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        .widget .p_right {
+            float: right;
+        }
+
+        textarea {
+            margin-top: 10px;
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 2px solid var(--color-primary);
+            border-radius: 6px;
+            color: var(--color-fg);
+            background: var(--color-bg2);
+            outline: none;
+            transition: border 0.2s;
+            font-family: inherit;
+        }
+
+        .button-outline {
+            padding: 8px;
+        }
+
+        .button-long {
+            width: 100%;
+            padding: 12px 0;
+            margin: 10px 3px;
+            background: var(--color-btn);
+            color: var(--color-btn-fg);
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            height: 45px;
+            cursor: pointer;
+            display: inline;
+            align-items: center;
+            justify-content: center;
+            font-family: inherit;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .button-long:hover {
+            background: #1565c0;
+        }
+
+        /* 小输入框 */
+        .small-input {
+            width: 65px;
+            height: 40px;
+            padding: 6px;
+            border: 2px solid var(--color-primary);
+            border-radius: 6px;
+            /* 透明 */
+            background: rgba(255, 255, 255, 0);
+            color: var(--color-fg);
+            font-size: 11px;
+            outline: none;
+            transition: border 0.2s;
+            font-family: inherit;
+            text-align: center;
+        }
+
+        /* 中输入框 */
+        .mid-input {
+            width: 100%;
+            padding: 8px 6px;
+            margin: 5px 0;
+            border: 2px solid var(--color-primary);
+            border-radius: 6px;
+            background: var(--color-input-bg);
+            color: var(--color-input-fg);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border 0.2s;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .mid-input:focus {
+            border-color: var(--color-primary);
+        }
+
+        .loading_bar {
+            position: fixed;
+            border-radius: 7px;
+            top: 50%;
+            right: 50%;
+            padding: 20px 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.362);
+            background-color: var(--color-bg);
+            z-index: 999;
+        }
+
+        .bar {
+            width: 200px;
+            height: 13px;
+            background: #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .bar-text {
+            margin-top: 5px;
+        }
+
+        .fill {
+            width: 0%;
+            height: 100%;
+            background: #4b8aff;
+            transition: width .3s ease;
+        }
+
+        /* 响应式：窄屏（手机）时改为上下布局 */
+        @media (max-width: 976px) {
+            body {
+                flex-direction: column;
+            }
+
+            .left,
+            .right {
+                width: auto;
+                flex: 0 0 auto;
+                /* 按内容高度排列 */
+            }
+
+            .left {
+                height: 50vh;
+                /* 可根据需要调整 */
+            }
+
+            .div_tools {
+                position: static;
+                margin-top: -26px;
+            }
+
+            .proj_name {
+                position: absolute;
+            }
+
+            .div_img {
+                position: static;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                transform: none;
+            }
+
+
+            /* 如果你希望上下时每部分根据内容高度自适应，删除上面的 height:50vh; */
+        }
+
+        /* 额外：当想让手机时左右的某一块默认高度自适应内容，把 height:50vh 注释掉即可 */
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading-overlay">
+        页面加载中，请稍候...<br>
+        首次加载时较慢，请耐心等待
+    </div>
+    <!-- 遮罩层 -->
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <!-- 弹窗内容 -->
+    <div class="modal" id="modal">
+        <div class="modal-header">
+            <h3></h3>
+            <span class="close-btn" id="closeBtn">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p></p>
+        </div>
+        <div class="modal-footer">
+            <button class="confirm-btn" id="confirmBtn">OK</button>
+        </div>
+    </div>
+    <!-- 气泡弹窗 -->
+    <div class="bubble-container" id="bubbleContainer"></div>
+    <!-- 水印层 -->
+    <div class="watermark" aria-hidden="true"></div>
+
+    <section class="pane left">
+        <h1 id="html_proj_name" class="proj_name">alpha_test_0 ( Review )</h1>
+        <div style="display: none" id="loading_bar" class="loading_bar">
+            <!-- 进度条 -->
+            <div class="bar">
+                <div class="fill" id="bar-fill"></div>
+            </div>
+            <div class="bar-text" id="bar-text">Loading</div>
+        </div>
+
+        <div class="div_img">
+            <img src="" style="width: 70%;" id="html_img">
+        </div>
+        <div class="div_tools">
+            <button class="button-outline" onclick="pageView.prevPage()">←</button>
+            <button class="button-outline" onclick="pageView.nextPage()">→</button>
+            <button class="button-outline" onclick="pageView.zoomIn()">&nbsp;+&nbsp;</button>
+            <button class="button-outline" onclick="pageView.zoomOut()">&nbsp;-&nbsp;</button>
+            <button class="button-outline" onclick="pageView.rotate()">↻</button>
+            <input type="text" id="html_goPage_1" class="small-input" placeholder="Photoid"
+                style="display: inline-block;">
+            <input type="text" id="html_goPage_2" class="small-input" placeholder="Tempid"
+                style="display: inline-block;">
+        </div>
+    </section>
+
+    <aside class="pane right" id="rightPane">
+        <h1><i class="fa-solid fa-square-up-right"></i> <span id="html_mode">Project</span>模式</h1>
+        <div class="widget">
+            <h3><i class="fa-solid fa-circle-info"></i> 信息</h3>
+            <p>Photoid: <span class="p_right" id="html_photoid">1100</span></p>
+            <p>Tempid: <span class="p_right" id="html_tempid">0</span></p>
+            <p>状态: <span class="p_right" style="color: red;font-weight: bold;" id="html_status">Undone</span></p>
+            <p>全部: <span class="p_right" id="html_all">100</span></p>
+            <p>剩余: <span class="p_right" id="html_remaining">50</span></p>
+        </div>
+
+        <div class="widget">
+            <h3><i class="fa-solid fa-edit"></i> 编辑</h3>
+            <p>评分: </p>
+            <div class="radio-group" id="scoreRadios" style="">
+                <label>
+                    <input type="radio" name="opt" value="1">
+                    <span class="label-box"></span>
+                    <span>1</span>
+                </label>
+                <label>
+                    <input type="radio" name="opt" value="2">
+                    <span class="label-box"></span>
+                    <span>2</span>
+                </label>
+                <label>
+                    <input type="radio" name="opt" value="3">
+                    <span class="label-box"></span>
+                    <span>3</span>
+                </label>
+                <label>
+                    <input type="radio" name="opt" value="4">
+                    <span class="label-box"></span>
+                    <span>4</span>
+                </label>
+            </div>
+            <p>批注: </p>
+            <textarea placeholder="说点什么吧..." id="html_note"></textarea>
+            <button class="button-long" onclick="photoList.submit()">
+                <i class="fa-solid fa-check"></i>
+                提交
+            </button>
+        </div>
+
+        <div class="widget">
+            <h3><i class="fa-solid fa-sliders"></i> 批量操作</h3>
+            <p>Tempid 列表: </p>
+            <input type="text" id="html_list" class="mid-input" placeholder="输入示例：(0,3,4)" style="display: block;">
+            <p>Tempid 范围: </p>
+            <input type="text" id="html_range" class="mid-input" placeholder="输入示例： (2,7)" style="display: block;">
+        </div>
+
+        <div class="widget">
+            <h3><i class="fa-solid fa-gear" style="animation: spin 2s linear infinite;"></i> 设置</h3>
+            <div class="switch-row">
+                <span class="label-text">批量操作（列表）</span>
+                <label>
+                    <input type="checkbox" id="batchOperationList">
+                    <div class="switch">
+                        <div class="slider"></div>
+                    </div>
+                </label>
+            </div>
+            <div class="switch-row">
+                <span class="label-text">批量操作（范围）</span>
+                <label>
+                    <input type="checkbox" id="batchOperationRange">
+                    <div class="switch">
+                        <div class="slider"></div>
+                    </div>
+                </label>
+            </div>
+            <div class="switch-row">
+                <span class="label-text">锁定评分面板</span>
+                <label>
+                    <input type="checkbox" id="lockContent">
+                    <div class="switch">
+                        <div class="slider"></div>
+                    </div>
+                </label>
+            </div>
+            <div class="switch-row">
+                <span class="label-text">自动下一张</span>
+                <label>
+                    <input type="checkbox" id="autoNext">
+                    <div class="switch">
+                        <div class="slider"></div>
+                    </div>
+                </label>
+            </div>
+            <div class="switch-row">
+                <span class="label-text">评分自动提交</span>
+                <label>
+                    <input type="checkbox" id="autoCommit">
+                    <div class="switch">
+                        <div class="slider"></div>
+                    </div>
+                </label>
+            </div>
+            <p style="text-align: center;">
+                <button class="button-long" style="width: 47%;" onclick="pageView.clear()"><i
+                        class="fa-solid fa-remove"></i> 清除</button>
+                <button class="button-long" style="width: 47%;" onclick="photoList.switchMode()"><i
+                        class="fa-solid fa-square-up-right"></i> 切换模式</button>
+            </p>
+            <p style="text-align: center;">
+                <button class="button-long" style="width: 47%;font-size: 12px;margin-top: 0;"
+                    onclick="saveCache.cacheImages()"><i class="fa-solid fa-archive"></i> 缓存工程</button>
+                <button class="button-long" style="width: 47%;font-size: 12px;margin-top: 0;" id="darkToggle"><i
+                        class="fa-regular fa-moon" id="darkIcon"></i> 切换外观</button>
+            </p>
+        </div>
+        <p>&copy; 2025 LZMSPD. Flare. 信号弹</p>
+    </aside>
+</body>
+
+</html>
+<script src="js/functions.js?v=0.5"></script>
+<script src="js/watermark.js"></script>
+<script>
+    const user_uid = getCookie('review_uid');
+    const user_token = getCookie('review_token');
+    const mode = getUrlGet('type');
+    const proj_name = getUrlGet('proj_name');
+
+    // 检查登录情况（2分钟一次）
+    async function check_login() {
+        // 获取结果
+        let login_result = await get_api(`https://lzzxsyb.cn/review/api/check_token.php?uid=${user_uid}&token=${user_token}`)
+        if (!login_result.result) {
+            await openModal("Error", "Login Expired");
+            document.body.innerHTML = '';
+            window.location.href = "./loginout.html";
+            return false;
+        }
+        console.log(true)
+        setTimeout(() => {
+            check_login();
+        }, 2000 * 60);
+    }
+
+    // 设置类
+    class classSetting {
+        constructor() {
+            let settings_cookie = getCookie('review_settings');
+            if (!settings_cookie) {
+                this.batchOperationList = false;
+                this.batchOperationRange = false;
+                this.lockContent = false; // 锁定内容
+                this.autoNext = false; // 自动切换下一张
+                this.autoCommit = false; //评分自动提交
+            } else {
+                let settings_obj = JSON.parse(settings_cookie);
+                this.batchOperationList = settings_obj.batchOperationList;
+                this.batchOperationRange = settings_obj.batchOperationRange;
+                this.lockContent = settings_obj.lockContent;
+                this.autoNext = settings_obj.autoNext;
+                this.autoCommit = settings_obj.autoCommit;
+            }
+
+            document.getElementById('batchOperationList').addEventListener('change', () => this.toggleBatchOperationList());
+            document.getElementById('batchOperationRange').addEventListener('change', () => this.toggleBatchOperationRange());
+            document.getElementById('lockContent').addEventListener('change', () => this.toggleLockContent());
+            document.getElementById('autoNext').addEventListener('change', () => this.toggleAutoNext());
+            document.getElementById('autoCommit').addEventListener('change', () => this.toggleAutoCommit());
+
+            this.saveSettings();
+            this.updateUI();
+        }
+
+        toggleBatchOperationList() {
+            this.batchOperationList = !this.batchOperationList;
+            console.log('批量操作（列表）:', this.batchOperationList);
+
+            if (this.batchOperationList) {
+                document.getElementById('batchOperationRange').disabled = true; // 互斥
+                document.getElementById('batchOperationRange').check = false; // 互斥
+                this.batchOperationRange = false; // 互斥
+                this.saveSettings();
+            }
+            else {
+                document.getElementById('batchOperationRange').disabled = false; // 互斥
+                this.saveSettings();
+            }
+        }
+        toggleBatchOperationRange() {
+            this.batchOperationRange = !this.batchOperationRange;
+            console.log('批量操作（范围）:', this.batchOperationRange);
+
+            if (this.batchOperationRange) {
+                document.getElementById('batchOperationList').disabled = true; // 互斥
+                document.getElementById('batchOperationList').checked = false; // 互
+                this.batchOperationList = false; // 互斥
+                this.saveSettings();
+            }
+            else {
+                document.getElementById('batchOperationList').disabled = false; // 互斥
+                this.saveSettings();
+            }
+        }
+        toggleLockContent() {
+            this.lockContent = !this.lockContent;
+            console.log('锁定内容:', this.lockContent);
+            this.saveSettings();
+        }
+        toggleAutoNext() {
+            this.autoNext = !this.autoNext;
+            console.log('自动切换下一张:', this.autoNext);
+            this.saveSettings();
+        }
+        toggleAutoCommit() {
+            this.autoCommit = !this.autoCommit;
+            console.log('评分自动提交:', this.autoCommit);
+            this.saveSettings();
+        }
+
+        outputSettings() {
+            let arr = {
+                batchOperationList: this.batchOperationList,
+                batchOperationRange: this.batchOperationRange,
+                lockContent: this.lockContent,
+                autoNext: this.autoNext,
+                autoCommit: this.autoCommit
+            }
+            return arr;
+        }
+        saveSettings() {
+            let settings = this.outputSettings();
+            // cookie
+            setCookie('review_settings', JSON.stringify(settings), 365);
+        }
+        updateUI() {
+            document.getElementById('batchOperationList').checked = this.batchOperationList;
+            document.getElementById('batchOperationRange').checked = this.batchOperationRange;
+            document.getElementById('lockContent').checked = this.lockContent;
+            document.getElementById('autoNext').checked = this.autoNext;
+            document.getElementById('autoCommit').checked = this.autoCommit;
+
+            // 互斥
+            if (this.batchOperationList) {
+                document.getElementById('batchOperationRange').disabled = true; // 互斥
+            }
+            else {
+                document.getElementById('batchOperationRange').disabled = false; // 互斥
+            }
+
+            if (this.batchOperationRange) {
+                document.getElementById('batchOperationList').disabled = true; // 互斥
+            }
+            else {
+                document.getElementById('batchOperationList').disabled = false; // 互斥
+            }
+        }
+    }
+
+    // 图片列表类
+    class classPhotoList {
+        constructor() {
+            this.photoList = [];
+            this.page = 0;
+        }
+
+        getScore() {
+            let checkedRadio = document.querySelector('#scoreRadios input[name="opt"]:checked');
+            return checkedRadio ? checkedRadio.value : 0;
+        }
+        selectRadio(num) {
+            const radios = document.querySelectorAll('#scoreRadios input[type="radio"]');
+            radios.forEach(radio => {
+                radio.checked = (parseInt(radio.value) === num);
+            });
+        }
+
+        //以photoid为索引获取tempid
+        getTempidByPhotoid(photoid) {
+            for (let i = 0; i < this.photoList.length; i++) {
+                if (this.photoList[i].photoid === photoid) {
+                    return i;
+                }
+            }
+            return -1; // 如果未找到，返回-1
+        }
+
+        // 以tempid闭区间范围获取photoid数组列表
+        getPhotoidListByRange(start, end) {
+            let photoidList = [];
+            for (let i = start; i <= end; i++) {
+                if (this.photoList[i]) {
+                    photoidList.push(this.photoList[i].photoid);
+                }
+            }
+            return photoidList;
+        }
+
+
+        // 更新页面照片
+        updatePhoto(tempid = this.page) {
+            pageView.html_img.src = '';
+            pageView.html_img.src = 'proj/' + proj_name + '/' + this.photoList[tempid].name;
+            //修改数据
+            pageView.html_photoid.innerHTML = this.photoList[tempid].photoid;
+            pageView.html_tempid.innerHTML = tempid;
+            pageView.html_status.innerHTML = this.photoList[tempid].status === true ? '已评分' : '未评分';
+            pageView.html_status.style.color = this.photoList[tempid].status === true ? 'limegreen' : 'red';
+            pageView.html_remaining.innerHTML = this.remaining;
+            //修改html评分
+            if (!settings.lockContent) {
+                this.selectRadio(this.photoList[tempid].score);
+                pageView.html_note.value = this.photoList[tempid].note || '';
+            }
+        }
+
+        // 更新数组数据
+        updateArray(id, score, note) {
+            score = Number(score);
+            this.photoList[id].score = score;
+            this.photoList[id].note = note;
+            this.photoList[id].status = true;
+        }
+
+        // 提交
+        async submit() {
+            // 获取评分
+            const score = this.getScore();
+            // 获取评论
+            const note = pageView.html_note.value.trim();
+            let Unote = encodeURIComponent(note)
+            console.log(note);
+            // 检查评分
+            if (score === 0) {
+                showBubble("评分为空", 'red', '#fff');
+                return;
+            }
+            // 正则表达式
+            const regex = /^\d+(,\d+)*$/;
+
+            // 批量提交（列表）
+            if (settings.batchOperationList) {
+                // 获取List数据
+                const list = document.getElementById('html_list').value.trim();
+                if (!list) {
+                    showBubble("Tempid 列表为空", 'red', '#fff');
+                    return;
+                }
+                if (!regex.test(list)) {
+                    showBubble("Tempid 列表格式错误", 'red', '#fff');
+                    return;
+                }
+                let this_tempid_list = list.split(',').map(item => item.trim());
+                console.log(this_tempid_list)
+                // 将tempid列表转换为photoid列表
+                let this_photoid_list = [];
+                for (let i = 0; i < this_tempid_list.length; i++) {
+                    let tempid = parseInt(this_tempid_list[i]);
+                    if (isNaN(tempid) || tempid < 0 || tempid >= this.photoList.length) {
+                        showBubble(`Tempid ${tempid} 未找到`, 'red', '#fff');
+                        return;
+                    }
+                    this_photoid_list.push(this.photoList[tempid].photoid);
+                }
+                let json_photoid_list = JSON.stringify(this_photoid_list);
+                // 合成url
+                let url = `https://lzzxsyb.cn/review/api/syb_submit.php?uid=${user_uid}&token=${user_token}&proj_name=${proj_name}&submit_type=batch&score=${score}&note=${Unote}&photoid=${json_photoid_list}`;
+                // 提交
+                let obj = await get_api(url);
+                // 判断结果
+                if (!obj.result) {
+                    await openModal("Error", obj.text);
+                    return;
+                }
+                showBubble("提交成功，影响了" + obj.data + "项", 'blue', '#fff');
+                // 更新
+                this_photoid_list.forEach((photoid, index) => {
+                    let tempid = this.getTempidByPhotoid(photoid);
+                    if (tempid !== -1) {
+                        // 减少剩余
+                        if (!this.photoList[tempid].status) {
+                            this.remaining -= 1;
+                        }
+                        this.updateArray(tempid, score, note);
+                    }
+                });
+
+            }
+
+            // 批量提交（范围）
+            else if (settings.batchOperationRange) {
+                // 获取Range数据
+                const range = document.getElementById('html_range').value.trim();
+                if (!range) {
+                    showBubble("Tempid 范围为空", 'red', '#fff');
+                    return;
+                }
+                if (!regex.test(range)) {
+                    showBubble("Tempid 范围格式错误", 'red', '#fff');
+                    return;
+                }
+                let this_tempid_range = range.split(',').map(item => item.trim());
+                // 检查范围格式
+                if (this_tempid_range.length !== 2) {
+                    showBubble("Tempid 范围格式错误", 'red', '#fff');
+                    return;
+                }
+                let start = parseInt(this_tempid_range[0]);
+                let end = parseInt(this_tempid_range[1]);
+                if (end >= this.photoList.length) {
+                    showBubble("Tempid 范围格式错误", 'red', '#fff');
+                    return;
+                }
+                // 转为photoid列表
+                let this_photoid_list = this.getPhotoidListByRange(start, end);
+                let json_photoid_list = JSON.stringify(this_photoid_list);
+                // 合成url
+                let url = `https://lzzxsyb.cn/review/api/syb_submit.php?uid=${user_uid}&token=${user_token}&proj_name=${proj_name}&submit_type=batch&score=${score}&note=${Unote}&photoid=${json_photoid_list}`;
+                // 提交
+                let obj = await get_api(url);
+                // 判断结果
+                if (!obj.result) {
+                    await openModal("Error", obj.text);
+                    return;
+                }
+                showBubble("提交成功，影响了" + obj.data + "项", 'blue', '#fff');
+                // 更新
+                this_photoid_list.forEach((photoid, index) => {
+                    let tempid = this.getTempidByPhotoid(photoid);
+                    if (tempid !== -1) {
+                        // 减少剩余
+                        if (!this.photoList[tempid].status) {
+                            this.remaining -= 1;
+                        }
+                        this.updateArray(tempid, score, note);
+                    }
+                });
+
+            }
+
+            // 单次提交
+            else {
+
+                // 获取当前page图片数据
+                const this_photoid = this.photoList[this.page].photoid;
+                // 合成url
+                let url = `https://lzzxsyb.cn/review/api/syb_submit.php?uid=${user_uid}&token=${user_token}&proj_name=${proj_name}&submit_type=single&score=${score}&note=${Unote}&photoid=${this_photoid}`
+                // 提交
+                let obj = await get_api(url);
+                // 判断结果
+                if (!obj.result) {
+                    await openModal("Error", obj.text);
+                    return;
+                }
+                showBubble("提交成功，影响了1项", 'blue', '#fff');
+                // 减少剩余
+                if (!this.photoList[this.page].status) {
+                    this.remaining -= 1;
+                }
+                // 更新当前页面数据
+                this.updateArray(this.page, score, note);
+
+                // 自动切换下一张
+                if (settings.autoNext) {
+                    /*
+                    if (this.page < this.photoList.length - 1) {
+                        this.page++;
+                        this.updatePhoto(this.page);
+                    } else {
+                        showBubble("This is the last photo.", 'red', '#fff');
+                    }
+                        */
+                    pageView.nextPage();
+                }
+
+            }
+
+            this.updatePhoto(this.page);
+
+        }
+
+        // 切换模式
+        switchMode() {
+            if (mode === 'project') {
+                go_url('?proj_name=' + proj_name + '&type=history', 0);
+            } else {
+                go_url('?proj_name=' + proj_name + '&type=project', 0);
+            }
+        }
+
+        // 首次加载
+        async fectchList() {
+            const obj = await get_api('https://lzzxsyb.cn/review/api/syb_photolist.php?uid=' + user_uid + '&token=' + user_token + '&proj_name=' + getUrlGet('proj_name'));
+
+            if (!obj.result) {
+                await openModal("Error", obj.text);
+                window.location.href = "javascript:history.back()";
+                return;
+            }
+
+            // 获取工程mode
+            switch (getUrlGet('type')) {
+
+                case 'project':
+                    this.type = 'project';
+                    // 列表
+                    this.photoList = obj.data.list.unread;
+                    // 判断
+                    if (this.photoList.length === 0) {
+                        pageView.rightPane.innerHTML = '<h1>Task Completed.</h1><h1>Congratulations!</h1>';
+                        return;
+                    }
+                    pageView.html_mode.innerHTML = "工程";
+                    break;
+
+                case 'history':
+                    this.type = 'history';
+                    // 列表
+                    this.photoList = obj.data.list.read;
+                    // 判断
+                    if (this.photoList.length === 0) {
+                        pageView.rightPane.innerHTML = '<h1>There is no history record.</h1>';
+                        return;
+                    }
+                    pageView.html_mode.innerHTML = "历史";
+                    break;
+
+                default:
+                    await openModal("Error", "Unknown mode");
+                    window.location.href = "javascript:history.back()";
+                    return;
+
+            }
+
+            switch (obj.data.type) {
+                case 0:
+                    pageView.html_proj_name.innerHTML = proj_name + " ( 审片模式 )";
+                    break;
+
+                case 1:
+                    pageView.html_proj_name.innerHTML = proj_name + " ( 筛片模式 )";
+                    break;
+            }
+
+            this.photoList.forEach(element => {
+                saveCache.list.push("https://lzzxsyb.cn/review/proj/" + proj_name + '/' + element.name)
+            });
+
+            // 修改title
+            document.title = 'proj - ' + proj_name;
+            // 总量
+            this.all = obj.data.all;
+            // 剩余
+            this.remaining = obj.data.remaining;
+            pageView.html_all.innerHTML = this.all;
+            pageView.html_remaining.innerHTML = this.remaining;
+            // 更新照片
+            this.updatePhoto();
+            setWatermark("用户: " + user_uid, document.querySelector('.watermark'));
+        }
+    }
+
+    //页面类
+    class classPageView {
+        constructor() {
+            this.rightPane = document.getElementById('rightPane'),
+                this.html_proj_name = document.getElementById('html_proj_name'),
+                this.html_mode = document.getElementById('html_mode'),
+                this.html_img = document.getElementById('html_img'),
+                this.html_goPage_1 = document.getElementById('html_goPage_1'),
+                this.html_goPage_2 = document.getElementById('html_goPage_2'),
+                this.html_photoid = document.getElementById('html_photoid'),
+                this.html_tempid = document.getElementById('html_tempid'),
+                this.html_status = document.getElementById('html_status'),
+                this.html_all = document.getElementById('html_all'),
+                this.html_remaining = document.getElementById('html_remaining'),
+                this.html_score = document.querySelector('#scoreRadios'),
+                this.html_note = document.getElementById('html_note'),
+                this.html_list = document.getElementById('html_list'),
+                this.html_range = document.getElementById('html_range');
+            this.img_width_percent = 70;
+
+            this.html_score.addEventListener('change', () => {
+
+                if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
+                    photoList.submit();
+                }
+
+            })
+        }
+
+        // 清除Edit
+        clear() {
+            // 清除评分
+            const radios = document.querySelectorAll('#scoreRadios input[type="radio"]');
+            radios.forEach(radio => {
+                radio.checked = false;
+            });
+            // 清除
+            this.html_note.value = '';
+        }
+
+        // 图片放大
+        zoomIn() {
+            if (this.img_width_percent >= 110) {
+                showBubble("Image has reached the maximum size.", 'red', '#fff');
+                return;
+            }
+            this.img_width_percent += 5;
+            this.html_img.style.width = this.img_width_percent + '%';
+        }
+        // 图片缩小
+        zoomOut() {
+            if (this.img_width_percent <= 20) {
+                showBubble("Image has reached the minimum size.", 'red', '#fff');
+                return;
+            }
+            this.img_width_percent -= 5;
+            this.html_img.style.width = this.img_width_percent + '%';
+        }
+
+        // 下一页
+        nextPage() {
+            if (photoList.page < photoList.photoList.length - 1) {
+                photoList.page++;
+                photoList.updatePhoto();
+            } else {
+                showBubble("到底了", 'red', '#fff');
+            }
+        }
+        // 上一页
+        prevPage() {
+            if (photoList.page > 0) {
+                photoList.page--;
+                photoList.updatePhoto();
+            } else {
+                showBubble("到顶了", 'red', '#fff');
+            }
+        }
+
+        // 旋转照片90度
+        rotate() {
+            let currentRotation = this.html_img.style.transform.replace(/[^0-9]/g, '');
+            if (!currentRotation) currentRotation = 0;
+            let newRotation = (parseInt(currentRotation) + 90) % 360;
+            this.html_img.style.transform = `rotate(${newRotation}deg)`;
+        }
+
+        // 通过tempid切换图片
+        goPageByTemp(id) {
+            if (id > photoList.photoList.length - 1 || id < 0) {
+                showBubble("没有此Tempid", 'red', '#fff');
+            }
+            else {
+                photoList.page = id;
+                photoList.updatePhoto()
+            }
+        }
+
+        // 通过photoid切换图片
+        goPageByPhoto(id) {
+            id = photoList.getTempidByPhotoid(id);
+            if (id === -1) {
+                showBubble("没有此Photoid", 'red', '#fff');
+                return;
+            }
+            console.log(id);
+            this.goPageByTemp(id)
+        }
+
+    }
+
+    // 快捷键类
+    class classKeyShortcuts {
+        constructor() {
+            this["arrowleft"] = [
+                () => pageView.prevPage()
+            ],
+                this["arrowright"] = [
+                    () => pageView.nextPage()
+                ],
+                this["arrowup"] = [
+                    () => pageView.zoomIn()
+                ],
+                this["arrowdown"] = [
+                    () => pageView.zoomOut()
+                ],
+                this["z"] = [
+                    () => pageView.rotate()
+                ],
+                this["q"] = [
+                    () => {
+                        photoList.selectRadio(1);
+                        if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
+                            photoList.submit();
+                        }
+                    }
+                ],
+                this["w"] = [
+                    () => {
+                        photoList.selectRadio(2);
+                        if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
+                            photoList.submit();
+                        }
+                    }
+                ],
+                this["e"] = [
+                    () => {
+                        photoList.selectRadio(3);
+                        if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
+                            photoList.submit();
+                        }
+                    }
+                ],
+                this["r"] = [
+                    () => {
+                        photoList.selectRadio(4);
+                        if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
+                            photoList.submit();
+                        }
+                    }
+                ],
+                this["f"] = [
+                    () => {
+                        photoList.submit();
+                    }
+                ]
+
+            document.addEventListener("keydown", (e) => {
+                const tag = e.target.tagName.toLowerCase();
+                const isEditable = e.target.isContentEditable;
+                // 如果焦点在输入框、文本域或可编辑区域，就不触发快捷键
+                if (tag === "input" || tag === "textarea" || isEditable) {
+                    return;
+                }
+
+                const key = e.key.toLowerCase();
+                if (keyShortcuts[key]) {
+                    e.preventDefault();
+                    keyShortcuts[key].forEach(fn => fn());
+                }
+            });
+            /*
+            pageView.html_goPage_1.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault(); // 阻止默认提交表单
+                    pageView.goPageByPhoto(pageView.html_goPage_1.value)
+                }
+            });
+            pageView.html_goPage_2.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault(); // 阻止默认提交表单
+                    pageView.goPageByTemp(pageView.html_goPage_2.value)
+                }
+            });
+            */
+            pageView.html_goPage_1.oninput = () => {
+                let a = pageView.html_goPage_1.value;
+                a = Number(a);
+                if (a) {
+                    pageView.goPageByPhoto(a)
+                }
+            }
+            pageView.html_goPage_2.oninput = () => {
+                let a = pageView.html_goPage_2.value;
+                if (a) {
+                    a = Number(a);
+                    pageView.goPageByTemp(pageView.html_goPage_2.value)
+                }
+            }
+        }
+
+        debounce(func, wait) {
+            let timeout;
+            return function () {
+                const context = this, args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+    }
+
+    // 缓存类
+    class classSaveCache {
+        constructor() {
+            this.CACHE_NAME = 'review_img_cache',
+                this.list = []
+        }
+
+        async cacheImages(urls = this.list) {
+            showBubble("加载中...", 'blue', '#fff')
+            const cache = await caches.open(this.CACHE_NAME);
+            let done = 0, saved = 0, failed = 0;
+            const fill = document.getElementById("bar-fill");
+            const resultEl = document.getElementById("bar-text");
+            const loading_bar = document.getElementById("loading_bar")
+            loading_bar.style.display = 'block'
+            for (const url of urls) {
+                try {
+                    const hit = await cache.match(url);
+                    if (!hit) {
+                        const res = await fetch(url, { cache: 'reload' });
+                        if (!res.ok && res.type !== 'opaque') throw new Error();
+                        await cache.put(url, res);
+                        saved++;
+                    }
+                } catch {
+                    failed++;
+                } finally {
+                    done++;
+                    let r = Math.round((done / urls.length) * 100) + '%'
+                    fill.style.width = r;
+                    resultEl.innerHTML = 'Loading... ' + r
+                }
+            }
+            loading_bar.style.display = 'none'
+            showBubble("成功: " + saved + " , 失败: " + failed, 'blue', '#fff')
+        }
+    }
+
+    const settings = new classSetting();
+    // 实例化图片列表类
+    const photoList = new classPhotoList();
+    // 实例化页面类
+    const pageView = new classPageView();
+    // 实例化快捷键类
+    const keyShortcuts = new classKeyShortcuts();
+    // 实例化缓存类
+    const saveCache = new classSaveCache();
+
+    (async () => {
+        const dark = getCookie('darkmode');
+        setDarkMode(dark === '1');
+        await photoList.fectchList();
+        // 检查cookie
+        if (!user_uid || !user_token) {
+            document.body.innerHTML = '';
+            window.location.href = "./login.html";
+            return false;
+        }
+
+        check_login();
+    })()
+</script>

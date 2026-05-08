@@ -350,6 +350,49 @@ public class ProjAPI {
     }
 
     /**
+     * 修改分发任务
+     * param id 工程ID
+     * param task 分发任务JSON字符串
+     * return 修改结果
+     */
+    @PostMapping("/update_task")
+    public Respond<String> update_task(
+            @RequestBody HashMap<String, Object> body
+    ) {
+        // 检查参数
+        if (!body.containsKey("projId") || !body.containsKey("task") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("projId") instanceof String) || !(body.get("task") instanceof String) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
+            return new Respond<>(false, "1", null);
+        }
+
+        String projId = (String) body.get("projId");
+        String task = (String) body.get("task");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
+
+        // 检查token
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+
+        // 获取原工程信息
+        Optional<EntityReviewProj> projOpt = projMapper.getProjById(projId);
+        if (projOpt.isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+
+        // 更新数据库
+        Boolean result = projMapper.updateProjTask(projId, task);
+        if (!result) {
+            return new Respond<>(false, "0", null);
+        }
+
+        return new Respond<>(true, "success", null);
+    }
+
+    /**
      * 图片上传
      * param file
      * param proj

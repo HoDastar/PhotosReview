@@ -15,6 +15,7 @@ let selectedUploadToProjName;
  */
 let currentTaskList;
 let photosPool = {};
+let currentManagePhotosList = [];
 
 panelBtns.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -400,6 +401,7 @@ async function loadManageDist(index, id) {
     const editTask = (uid, n, first, end) => {
         const uidStr = String(uid);
         currentTaskList[uidStr][n] = [first, end];
+        render();
     }
     /**
      * 新增此uid用户一项任务
@@ -448,6 +450,7 @@ async function loadManageDist(index, id) {
         addUidTdEl.classList.add("text-edit");
         const addUidInputEl = document.createElement("input");
         addUidInputEl.classList.add("text-input", "on-distribution");
+        addUidInputEl.setAttribute("autocomplete", "off");
         addUidInputEl.placeholder = "UID";
         addUidTdEl.appendChild(addUidInputEl);
         addEl.appendChild(addUidTdEl);
@@ -457,6 +460,7 @@ async function loadManageDist(index, id) {
         addFirstTdEl.classList.add("text-edit");
         const addFirstInputEl = document.createElement("input");
         addFirstInputEl.classList.add("text-input", "on-distribution");
+        addFirstInputEl.setAttribute("autocomplete", "off");
         addFirstInputEl.placeholder = i18n.lookUp("first");
         addFirstTdEl.appendChild(addFirstInputEl);
         addEl.appendChild(addFirstTdEl);
@@ -466,6 +470,7 @@ async function loadManageDist(index, id) {
         addLastTdEl.classList.add("text-edit");
         const addLastInputEl = document.createElement("input");
         addLastInputEl.classList.add("text-input", "on-distribution");
+        addLastInputEl.setAttribute("autocomplete", "off");
         addLastInputEl.placeholder = i18n.lookUp("last");
         addLastTdEl.appendChild(addLastInputEl);
         addEl.appendChild(addLastTdEl);
@@ -673,7 +678,30 @@ async function saveManageProj() {
 }
 
 // Save Manage Distribution
-async function saveManageDist() {}
+async function saveManageDist() {
+    const task = JSON.stringify(currentTaskList);
+    const param = {
+        projId: currentManageProjId,
+        task: task,
+        adminUid: uid,
+        adminToken: token
+    }
+    const result = await postApi(window.location.origin + "/api/proj/update_task", param);
+    if (!result.result) {
+        const msg = parseInt(result.message, 10);
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+    } else {
+        await openModal(
+            i18n.lookUp("modal_content_success")[0].title,
+            i18n.lookUp("modal_content_success")[0].message
+        );
+        getProj();
+        goPage("projList");
+    }
+}
 
 // Delete Project
 async function deleteProj(id) {
@@ -808,6 +836,12 @@ async function uploadImages() {
         return;
     }
 
+    const limit = 3; // 限制同时上传的数量
+    const uuids = Object.keys(photosPool);
+    const queue = Object.values(photosPool);
+    let index = 0;
+    let successCount = 0;
+
     const f = async (fileX, uuid) => {
         const progressBar = fileX.progressBar;
         const labelEl = fileX.labelEl
@@ -840,14 +874,10 @@ async function uploadImages() {
             labelEl.classList.add("label", "color_green");
             labelEl.innerHTML = "SUCCESS";
             delete photosPool[uuid];
+            successCount += 1;
         }
 
     }
-
-    const limit = 3; // 限制同时上传的数量
-    const uuids = Object.keys(photosPool);
-    const queue = Object.values(photosPool);
-    let index = 0;
 
     const runNext = () => {
         if (index < queue.length) {
@@ -856,6 +886,8 @@ async function uploadImages() {
             index++;
             f(fileX, uuid)
                 .then(runNext);
+        } else {
+            loadManagePhotosList();
         }
     }
     for (let i = 0; i < limit && i < queue.length; i++) {
@@ -869,7 +901,7 @@ function cleanPhotosPool() {
     Object.keys(photosPool).forEach(key => delete photosPool[key]);
 }
 
-async function loadManagePhotosList(author = null) {
+async function loadManagePhotosList(author = null, loading = 1) {
     if (author === null) {
         author = "";
     }
@@ -896,42 +928,33 @@ async function loadManagePhotosList(author = null) {
         return;
     }
 
-    const photos = result.data;
-    photosTotalEl.innerHTML = photos.length;
+    currentManagePhotosList = [];
+    currentManagePhotosList = result.data;
     let page = 0;
     const pageSize = 10;
 
-    // 删除单个照片
-    const delPhoto = async (photoId, tr, index) => {
-        let confirm = await openModal(
-            i18n.lookUp("modal_content_confirm")[4].title,
-            i18n.lookUp("modal_content_confirm")[4].message
-        );
-        if (confirm) {
-            const resultDel = await postApi(window.location.origin + "/api/proj/delete_photo", {
-                id: photoId,
-                adminUid: uid,
-                adminToken: token
-            });
-            if (!resultDel.result) {
-                const msg = parseInt(resultDel.message, 10);
-                await openModal(
-                    i18n.lookUp("modal_content_fail")[msg].title,
-                    i18n.lookUp("modal_content_fail")[msg].message
-                );
-            } else {
-                showBubble(i18n.lookUp("modal_content_success")[0].message, "blue", "#fff");
-                tr.remove();
-                // 从数组中删除
-                photos.splice(index, 1);
-            }
-        }
+    // 加载按钮
+    const addLoadBtn = () => {
+        const loadMoreTrEl = document.createElement("tr");
+        const loadMoreTdEl = document.createElement("td");
+        loadMoreTdEl.colSpan = 4;
+        const loadMoreBtnEl = document.createElement("button");
+        loadMoreBtnEl.id = "loadMorePhotos";
+        loadMoreBtnEl.classList.add("button-common");
+        loadMoreBtnEl.innerHTML = i18n.lookUp("load_more");
+        loadMoreBtnEl.addEventListener("click", () => {
+            load(loadMoreTrEl);
+        });
+        loadMoreTdEl.appendChild(loadMoreBtnEl);
+        loadMoreTrEl.appendChild(loadMoreTdEl);
+        managePhotosTableBodyEl.appendChild(loadMoreTrEl);
     }
 
     // 加载更多
-     const load = (btn) => {
+    const load = (btn) => {
         const newPage = page + 1;
-        const length = photos.length;
+        const length = currentManagePhotosList.length;
+        photosTotalEl.innerHTML = String(length);
         const start = (newPage - 1) * pageSize;
         const end = Math.min(start + pageSize, length);
         // 新一页超过总长度
@@ -943,9 +966,11 @@ async function loadManagePhotosList(author = null) {
         if (btn != null) {
             btn.remove();
         }
-        photos.forEach((photo, index) => {
+        currentManagePhotosList.forEach((photo, index) => {
             if (start <= index && index < end) {
                 const trEl = document.createElement("tr");
+                trEl.setAttribute("data-photo-id", photo.id);
+                trEl.setAttribute("data-photo-index", index);
 
                 const photoIdTdEl = document.createElement("td");
                 photoIdTdEl.innerHTML = `<label class="checkbox">
@@ -973,8 +998,14 @@ async function loadManagePhotosList(author = null) {
                 delBtnEl.classList.add("btn", "del");
                 delBtnEl.title = i18n.lookUp("delete");
                 delBtnEl.innerHTML = `<i class="fa-solid fa-trash"></i>`;
-                delBtnEl.addEventListener("click", () => {
-                    delPhoto(photo.id, trEl, index);
+                delBtnEl.addEventListener("click", async () => {
+                    const confirm = await openModal(
+                        i18n.lookUp("modal_content_confirm")[4].title,
+                        i18n.lookUp("modal_content_confirm")[4].message
+                    );
+                    if (confirm) {
+                        delPhoto(photo.id, trEl, index);
+                    }
                 });
                 actionTdEl.appendChild(delBtnEl);
                 trEl.appendChild(actionTdEl);
@@ -983,35 +1014,38 @@ async function loadManagePhotosList(author = null) {
             }
         });
 
-        // 加载更多按钮
-        if (end < length) {
-            const loadMoreTrEl = document.createElement("tr");
-            const loadMoreTdEl = document.createElement("td");
-            loadMoreTdEl.colSpan = 4;
-            const loadMoreBtnEl = document.createElement("button");
-            loadMoreBtnEl.id = "loadMorePhotos";
-            loadMoreBtnEl.classList.add("button-common");
-            loadMoreBtnEl.innerHTML = i18n.lookUp("load_more");
-            loadMoreBtnEl.addEventListener("click", () => {
-                load(loadMoreTrEl);
-            });
-            loadMoreTdEl.appendChild(loadMoreBtnEl);
-            loadMoreTrEl.appendChild(loadMoreTdEl);
-            managePhotosTableBodyEl.appendChild(loadMoreTrEl);
-        }
-
+        addLoadBtn();
      }
 
-     load(null);
+     for (let i = 0; i < loading; i++) {
+         load(null);
+     }
 }
-function filterManagePhotos() {
-    const authorInputEl = document.querySelector('#manageProj input[name="input_author_manage_photos"]');
-    let author = authorInputEl.value.trim();
-    if (!author || author === "") {
-        author = null;
+// 删除单个照片
+async function delPhoto(photoId, tr, index, isBatch = false) {
+    const resultDel = await postApi(window.location.origin + "/api/proj/delete_photo", {
+        id: photoId,
+        adminUid: uid,
+        adminToken: token
+    });
+    if (!resultDel.result) {
+        const msg = parseInt(resultDel.message, 10);
+        showBubble(i18n.lookUp("modal_content_fail")[msg].message, "red", "#fff");
+        return false;
+    } else {
+        if (!isBatch) {
+            showBubble(i18n.lookUp("modal_content_success")[0].message, "blue", "#fff");
+        }
+        tr.remove();
+        // 从数组中删除
+        currentManagePhotosList.splice(index, 1);
+        // 更新页面
+        const photosTotalEl = document.getElementById("photosTotal");
+        photosTotalEl.innerHTML = String(currentManagePhotosList.length);
+        return true;
     }
-    loadManagePhotosList(author);
 }
+// 删除选中照片
 async function deleteSelectedPhotos() {
     const arr = Array.from(document.querySelectorAll('input[name="input_manage_photo"]:checked'))
         .map(el => Number(el.value));
@@ -1030,19 +1064,24 @@ async function deleteSelectedPhotos() {
 
     let affected = 0;
     for (let i = 0; i < length; i++) {
-        const resultDel = await postApi(window.location.origin + "/api/proj/delete_photo", {
-            id: arr[i],
-            adminUid: uid,
-            adminToken: token
-        });
-        if (resultDel.result) {
-            affected++;
-        } else {
-            showBubble(i18n.lookUp("modal_content_fail")[21].message, "red", "#fff");
+        const id = arr[i];
+        const el = document.querySelector(`tr[data-photo-id="${id}"]`);
+        const index = Number(el.getAttribute("data-photo-index"));
+        const result = await delPhoto(id, el, index, true);
+        if (result) {
+            affected += 1;
         }
     }
-    showBubble(i18n.lookUp("affected_rows") + affected, "blue", "#fff");
-    filterManagePhotos();
+    showBubble(i18n.lookUp("successful_rows") + affected, "blue", "#fff");
+}
+
+function filterManagePhotos() {
+    const authorInputEl = document.querySelector('#manageProj input[name="input_author_manage_photos"]');
+    let author = authorInputEl.value.trim();
+    if (!author || author === "") {
+        author = null;
+    }
+    loadManagePhotosList(author);
 }
 
 async function loadManageUserList() {

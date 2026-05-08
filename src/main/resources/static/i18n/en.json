@@ -90,6 +90,7 @@
   "load_more": "Load More",
   "no_more": "No more photos.",
   "affected_rows": "Affected item(s): ",
+  "successful_rows": "Successful item(s): ",
   "batch_delete": "Batch Delete",
   "description_batch_delete": "Batch delete items by filtering conditions. Please be cautious when using this function.",
   "modal_content_fail": [
