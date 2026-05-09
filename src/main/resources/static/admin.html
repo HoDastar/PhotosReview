@@ -50,9 +50,10 @@
     <h1 data-config="website_url" style="cursor: pointer"><span data-config="website_name"></span> <span
             data-i18n="nav_title">Backend System</span></h1>
     <div class="nav-buttons">
+        <div class="button-circle" onclick='go_url("/", 1)' data-i18n-title="home"><i class="fa-solid fa-home"></i></div>
         <div class="button-circle" onclick='signout()' data-i18n-title="sign_out"><i class="fa-solid fa-right-to-bracket"></i></div>
         <div class="button-circle" onclick='go_url("alter_password.html", 0)' data-i18n-title="alter_password"><i class='fa-solid fa-key'></i></div>
-        <div class="nav-user" id="uidEl">UID: 10000</div>
+        <div class="nav-user" id="uidEl"></div>
     </div>
 </header>
 

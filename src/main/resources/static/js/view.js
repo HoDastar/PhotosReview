@@ -1,4 +1,4 @@
-let url;
+const url = window.location.origin;
 
 window.onload = async () => {
     const loader = document.getElementById('loading-overlay');
@@ -49,17 +49,4 @@ window.onload = async () => {
             window.location.reload();
         }
     }
-
-    // 获取网页config
-    const config = await getApi(window.location.origin + "/api/system/get_website_info");
-    if (config.result === false) {
-        console.log("获取网站信息失败，使用默认配置");
-        config.data = {
-            "website_name": "Photo Review System",
-            "website_icon": "data/icon/default_icon.jpg",
-            "website_url": window.location.origin
-        };
-    }
-    // 添加进local
-    localStorage.setItem("website_info", JSON.stringify(config.data));
 }

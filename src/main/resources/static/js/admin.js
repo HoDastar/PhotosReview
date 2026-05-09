@@ -17,19 +17,7 @@ let currentTaskList;
 let photosPool = {};
 let currentManagePhotosList = [];
 
-panelBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-        panelBtns.forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        const page = btn.getAttribute('data-page');
-        viewers.forEach(v => {
-            v.style.display = v.id === page ? 'block' : 'none';
-            history.pushState(null, "", "?p=" + page);
-        });
-    });
-});
-
-function goPage(p) {
+function goPage(p, u = true) {
     panelBtns.forEach(b => b.classList.remove('selected'));
     panelBtns.forEach(b => {
         if (b.getAttribute('data-page') == p) {
@@ -38,8 +26,27 @@ function goPage(p) {
     });
     viewers.forEach(v => {
         v.style.display = v.id === p ? 'block' : 'none';
+        if (u) {
+            history.pushState(null, "", "?p=" + p);
+        }
     });
 }
+
+panelBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+        /*
+        panelBtns.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        const page = btn.getAttribute('data-page');
+        viewers.forEach(v => {
+            v.style.display = v.id === page ? 'block' : 'none';
+            history.pushState(null, "", "?p=" + page);
+        });
+         */
+        const page = btn.getAttribute('data-page');
+        goPage(page)
+    });
+});
 
 const uid = parseInt(getCookie('review_uid'), 10);
 const token = getCookie('review_token');
@@ -47,7 +54,7 @@ const token = getCookie('review_token');
 // 检查登录情况（2分钟一次）
 async function check_login() {
     // 获取结果
-    let login_result = await getApi(window.location.origin + `/api/user/check_token?uid=${uid}&token=${token}`);
+    let login_result = await getApi(url + `/api/user/check_token?uid=${uid}&token=${token}`);
     if (!login_result.result) {
         await openModal(
             i18n.lookUp("modal_content_fail")[12].title,
@@ -91,7 +98,7 @@ async function createProj() {
         adminUid: uid,
         adminToken: token
     }
-    const result = await postApiWithFile(window.location.origin + "/api/proj/create_proj", param, fileInput);
+    const result = await postApiWithFile(url + "/api/proj/create_proj", param, fileInput);
     const msg = parseInt(result.message, 10);
     if (!result.result) {
         await openModal(
@@ -120,7 +127,7 @@ function cleanCreateProj() {
 
 // Get Project List
 async function getProj() {
-    const result = await getApi(window.location.origin + `/api/proj/get_proj_list_admin?adminUid=${uid}&adminToken=${token}`);
+    const result = await getApi(url + `/api/proj/get_proj_list_admin?adminUid=${uid}&adminToken=${token}`);
     if (!result.result) {
         const msg = parseInt(result.message, 10);
         await openModal(
@@ -321,7 +328,7 @@ async function loadManageProj(index, id) {
         );
         return;
     }
-    goPage("manageProj");
+    goPage("manageProj", false);
 
     const projNameEl = document.querySelector('#manageProj input[name="input_project_name"]');
     const reviewDisplayInput = document.querySelectorAll('#manageProj input[name="review_display"]');
@@ -367,7 +374,7 @@ async function loadManageDist(index, id) {
         return;
     }
     // 获取工程总量
-    const resultTotal = await getApi(window.location.origin + `/api/proj/get_proj_count?proj_id=${projList[index].projId}&adminUid=${uid}&adminToken=${token}`);
+    const resultTotal = await getApi(url + `/api/proj/get_proj_count?proj_id=${projList[index].projId}&adminUid=${uid}&adminToken=${token}`);
     if (!resultTotal.result) {
         const msg = parseInt(resultTotal.message, 10);
         await openModal(
@@ -376,7 +383,7 @@ async function loadManageDist(index, id) {
         );
         return;
     }
-    goPage("manageDist");
+    goPage("manageDist", false);
 
     const distributionContainerEl = document.getElementById("distributionContainer");
     const manageDistProjNameEl = document.getElementById("manageDistProjName");
@@ -659,7 +666,7 @@ async function saveManageProj() {
         adminUid: uid,
         adminToken: token
     };
-    const result = await postApiWithFile(window.location.origin + "/api/proj/update_proj", param, fileInput);
+    const result = await postApiWithFile(url + "/api/proj/update_proj", param, fileInput);
     console.log(result);
     const msg = parseInt(result.message, 10);
     if (!result.result) {
@@ -686,7 +693,7 @@ async function saveManageDist() {
         adminUid: uid,
         adminToken: token
     }
-    const result = await postApi(window.location.origin + "/api/proj/update_task", param);
+    const result = await postApi(url + "/api/proj/update_task", param);
     if (!result.result) {
         const msg = parseInt(result.message, 10);
         await openModal(
@@ -711,7 +718,7 @@ async function deleteProj(id) {
         true
     );
     if (confirm) {
-        const result = await postApi(window.location.origin + "/api/proj/delete_proj", {
+        const result = await postApi(url + "/api/proj/delete_proj", {
             projId: id,
             adminUid: uid,
             adminToken: token
@@ -858,7 +865,7 @@ async function uploadImages() {
         labelEl.innerHTML = 'UPLOADING';
 
         const result = await postApiWithFileOnProgress(
-            window.location.origin + "/api/proj/upload_image",
+            url + "/api/proj/upload_image",
             param,
             fileX.file,
             progressBar
@@ -905,7 +912,7 @@ async function loadManagePhotosList(author = null, loading = 1) {
     if (author === null) {
         author = "";
     }
-    const result = await getApi(window.location.origin + `/api/photos/fetch_photo_list_all?projId=${currentManageProjId}&author=${author}&adminUid=${uid}&adminToken=${token}`);
+    const result = await getApi(url + `/api/photos/fetch_photo_list_all?projId=${currentManageProjId}&author=${author}&adminUid=${uid}&adminToken=${token}`);
     if (!result.result) {
         const msg = parseInt(result.message, 10);
         await openModal(
@@ -925,6 +932,7 @@ async function loadManagePhotosList(author = null, loading = 1) {
         tdEl.innerHTML = i18n.lookUp("no_photo");
         trEl.appendChild(tdEl);
         managePhotosTableBodyEl.appendChild(trEl);
+        photosTotalEl.innerHTML = "0";
         return;
     }
 
@@ -1015,15 +1023,16 @@ async function loadManagePhotosList(author = null, loading = 1) {
         });
 
         addLoadBtn();
-     }
+    }
 
-     for (let i = 0; i < loading; i++) {
-         load(null);
-     }
+    for (let i = 0; i < loading; i++) {
+        load(null);
+    }
 }
+
 // 删除单个照片
 async function delPhoto(photoId, tr, index, isBatch = false) {
-    const resultDel = await postApi(window.location.origin + "/api/proj/delete_photo", {
+    const resultDel = await postApi(url + "/api/proj/delete_photo", {
         id: photoId,
         adminUid: uid,
         adminToken: token
@@ -1085,7 +1094,7 @@ function filterManagePhotos() {
 }
 
 async function loadManageUserList() {
-    const result = await getApi(window.location.origin + `/api/user/get_user_list_admin?adminUid=${uid}&adminToken=${token}`);
+    const result = await getApi(url + `/api/user/get_user_list_admin?adminUid=${uid}&adminToken=${token}`);
     if (!result.result) {
         return;
     }
@@ -1204,7 +1213,7 @@ async function registerUser() {
         );
         return;
     }
-    const result = await postApi(window.location.origin + "/api/user/register", {
+    const result = await postApi(url + "/api/user/register", {
         uid: targetUid,
         allname,
         status: parseInt(statusEl.value, 10),
@@ -1229,7 +1238,7 @@ async function resetUserPassword(targetUid = getManageUserUid()) {
     if (!targetUid) {
         return;
     }
-    const result = await postApi(window.location.origin + "/api/user/reset_password", {
+    const result = await postApi(url + "/api/user/reset_password", {
         uid: targetUid,
         adminUid: uid,
         adminToken: token
@@ -1252,7 +1261,7 @@ async function banUser(targetUid = getManageUserUid()) {
     if (!targetUid) {
         return;
     }
-    const result = await postApi(window.location.origin + "/api/user/ban_user", {
+    const result = await postApi(url + "/api/user/ban_user", {
         uid: targetUid,
         adminUid: uid,
         adminToken: token
@@ -1275,7 +1284,7 @@ async function unbanUser(targetUid = getManageUserUid()) {
     if (!targetUid) {
         return;
     }
-    const result = await postApi(window.location.origin + "/api/user/unban_user", {
+    const result = await postApi(url + "/api/user/unban_user", {
         uid: targetUid,
         adminUid: uid,
         adminToken: token
@@ -1307,7 +1316,7 @@ async function deleteUser(targetUid = getManageUserUid()) {
         return;
     }
 
-    const result = await postApi(window.location.origin + "/api/user/delete_user", {
+    const result = await postApi(url + "/api/user/delete_user", {
         uid: targetUid,
         adminUid: uid,
         adminToken: token
@@ -1328,10 +1337,9 @@ async function deleteUser(targetUid = getManageUserUid()) {
 }
 
 async function loadWebsiteInfo() {
-    const info = await getApi(window.location.origin + "/api/system/get_website_info");
+    const info = await getApi(url + "/api/system/get_website_info");
     if (info) {
         const infoObj = info.data;
-        url = infoObj.website_url;
 
         const link = document.createElement("link");
         link.rel = "icon";
@@ -1345,7 +1353,7 @@ async function loadWebsiteInfo() {
             }
             if (key === "website_url") {
                 el.addEventListener("click", () => {
-                    window.location.href = infoObj.website_url + "/admin";
+                    window.location.href = url + "/admin.html";
                 });
             }
         });

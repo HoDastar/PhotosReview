@@ -156,7 +156,7 @@
     </div>
 
     <div class="footer">
-        <p>&copy; 2025 Flare. 信号弹. <span class="click_me" onclick="go_url('https://github.com/Flare9900/PhotosReview/', 1)">Click me.</span></p>
+        <p>&copy; 2025 Flare. 信号弹. <span class="click_me" onclick="go_url('https://github.com/HoDastar/PhotosReview/', 1)">Click me.</span></p>
     </div>
 </body>
 
@@ -173,7 +173,7 @@
     // 检查登录情况（2分钟一次）
     async function check_login() {
         // 获取结果
-        let login_result = await getApi(window.location.origin + `/api/user/check_token?uid=${uid}&token=${token}`);
+        let login_result = await getApi(url + `/api/user/check_token?uid=${uid}&token=${token}`);
         if (!login_result.result) {
             await openModal(
                 i18n.lookUp("modal_content_fail")[12].title,
@@ -189,7 +189,7 @@
     }
     // 获取工程列表
     async function get_proj(){
-        let obj = await getApi(window.location.origin + "/api/proj/get_proj_list");
+        let obj = await getApi(url + "/api/proj/get_proj_list");
         let cardContent = document.getElementById('cardContent');
         cardContent.innerHTML = '';
         // foreach循环
@@ -252,10 +252,10 @@
             let card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <div class="card_background" style="background:url('${window.location.origin}/data/proj/${proj.proj_id + '/icon/' + proj.proj_thumbnail}') center/cover;">
+                <div class="card_background" style="background:url('${url}/data/proj/${proj.proj_id + '/icon/' + proj.proj_thumbnail}') center/cover;">
                 </div>
                 <div style="z-index: 1;">
-                    <img src="${window.location.origin}/data/proj/${proj.proj_id + '/icon/' + proj.proj_thumbnail}" alt="Thumbnail">
+                    <img src="${url}/data/proj/${proj.proj_id + '/icon/' + proj.proj_thumbnail}" alt="Thumbnail">
                     <div class="card_text">
                         <h3>${proj.proj_name}</h3>
                         <p>
@@ -294,10 +294,9 @@
     }
 
     async function loadWebsiteInfo() {
-        const info = await getApi(window.location.origin + "/api/system/get_website_info");
+        const info = await getApi(url + "/api/system/get_website_info");
         if (info) {
             const infoObj = info.data;
-            url = infoObj.website_url;
 
             const link = document.createElement("link");
             link.rel = "icon";
@@ -313,7 +312,7 @@
                 }
                 if (key === "website_url") {
                     el.addEventListener("click", () => {
-                        window.location.href = infoObj.website_url;
+                        window.location.href = url;
                     });
                 }
             });
@@ -339,11 +338,11 @@
         }
         check_login();
         // 获取用户信息
-        let user_info = await getApi(window.location.origin + `/api/user/get_user_info?uid=${uid}&token=${token}`);
+        let user_info = await getApi(url + `/api/user/get_user_info?uid=${uid}&token=${token}`);
         if (user_info.result) {
             if (user_info.data.status == 0) {
                 document.getElementById("widget_user_info").innerHTML += `
-                <p><button class="button-long" onclick='go_url("admin.html", 0)'><i class="fa-solid fa-gear"></i> <span data-i18n="backed_system">${i18n.lookUp("backed_system")}</span></button></p>
+                <p><button class="button-long" onclick='go_url("admin.html", 1)'><i class="fa-solid fa-gear"></i> <span data-i18n="backed_system">${i18n.lookUp("backed_system")}</span></button></p>
                 `
             }
         }
