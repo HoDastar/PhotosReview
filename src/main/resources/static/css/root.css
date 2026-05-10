@@ -127,8 +127,9 @@ body {
 /* 夜间模式切换按钮 */
 .dark-toggle {
     position: fixed;
-    bottom: 24px;
-    right: 24px;
+    top: 50%;
+    right: 20px;
+    transform: translateY(28px);
     z-index: 1000;
     background: var(--color-bg);
     color: var(--color-fg);
@@ -141,8 +142,16 @@ body {
     justify-content: center;
     font-size: 1.3rem;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: background 0.3s, color 0.3s, border 0.3s;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s;
+}
+
+.dark-toggle:hover {
+    transform: translateY(28px) scale(1.06);
+}
+
+.lang-toggle:hover {
+    transform: translateY(-28px) scale(1.06);
 }
 
 .dark-toggle.active {
@@ -153,12 +162,13 @@ body {
 
 .lang-toggle {
     position: fixed;
-    bottom: 24px;
-    right: 80px;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-28px);
     z-index: 1000;
     background: var(--color-bg);
     color: var(--color-fg);
-    border: 1px solid var(--color-bg);
+    border: 1px solid var(--color-border);
     border-radius: 50%;
     width: 48px;
     height: 48px;
@@ -167,8 +177,8 @@ body {
     justify-content: center;
     font-size: 1.3rem;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: background 0.3s, color 0.3s, border 0.3s;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s;
 }
 
 /* 加载页面样式 */
@@ -268,4 +278,61 @@ body {
     text-align: center;
     cursor: pointer;
     margin: 3px;
+}
+
+@media (max-width: 768px) {
+    .dark-toggle,
+    .lang-toggle {
+        top: auto;
+        transform: none;
+        bottom: 16px;
+    }
+
+    .dark-toggle {
+        right: 16px;
+    }
+
+    .lang-toggle {
+        right: 72px;
+    }
+
+    .dark-toggle:hover,
+    .lang-toggle:hover {
+        transform: scale(1.06);
+    }
+}
+
+
+
+/* 透明图标切换按钮（admin/index 指定区域使用） */
+.icon-toggle-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    margin: 8px 0 12px;
+}
+
+.icon-toggle {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-fg);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.3s ease, background-color 0.2s ease;
+}
+
+.icon-toggle:hover {
+    transform: scale(1.08);
+    background: color-mix(in srgb, var(--color-fg) 10%, transparent);
+}
+
+.icon-toggle:active {
+    transform: scale(0.95);
 }

@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/input.css">
     <link rel="stylesheet" href="css/modal.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 </head>
 
 <body>
@@ -36,14 +36,6 @@
 </div>
 <!-- 气泡弹窗 -->
 <div class="bubble-container" id="bubbleContainer"></div>
-<!-- 按钮 -->
-<button class="dark-toggle" id="darkToggle">
-    <i class="fa-regular fa-moon" id="darkIcon"></i>
-</button>
-<button class="lang-toggle" id="languageSelect">
-    <i class="fa-solid fa-language"></i>
-</button>
-
 <header class="nav">
     <h1 data-config="website_url" style="cursor: pointer"><span data-config="website_name"></span> <span
             data-i18n="nav_title">Backend System</span></h1>
@@ -64,6 +56,14 @@
                     data-i18n="create_project">Create project</span></button>
             <button class="panel-btn" data-page="manageUser"><i class="fa-solid fa-users-gear"></i> <span
                     data-i18n="manage_user">Manage User</span></button>
+            <div class="icon-toggle-group">
+                <button class="icon-toggle" id="darkToggle" data-i18n-title="switch_theme">
+                    <i class="fa-regular fa-moon" id="darkIcon"></i>
+                </button>
+                <button class="icon-toggle" id="languageSelect" data-i18n-title="switch_language">
+                    <i class="fa-solid fa-language"></i>
+                </button>
+            </div>
         </aside>
 
         <section class="viewer" id="projList">
