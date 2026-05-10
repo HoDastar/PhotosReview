@@ -1,5 +1,6 @@
 {
   "home": "Home",
+  "proj": "Project",
   "project_name": "Project Name",
   "project_type": "Project Type",
   "project_list": "Project List",
@@ -214,6 +215,21 @@
       "index": 23,
       "title": "Warning",
       "message": "Error occurred while obtaining system information. Please refresh and try again."
+    },
+    {
+      "index": 24,
+      "title": "Warning",
+      "message": "The current status of the project is not editable."
+    },
+    {
+      "index": 25,
+      "title": "Warning",
+      "message": "This Photoid does not exist."
+    },
+    {
+      "index": 26,
+      "title": "Warning",
+      "message": "This Photoid does not belong to the project."
     }
   ],
   "modal_content_success": [

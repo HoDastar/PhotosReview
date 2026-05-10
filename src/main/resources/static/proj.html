@@ -5,16 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>proj - default</title>
-    <link rel="icon" href="https://xinhaodan.top/root/lzzxsyb.jpg" type="image/x-icon">
-    <!-- 引入 Google Fonts 固定字体 -->
-    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
     <!-- 引入 Font Awesome 图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="css/root.css?v=0.1">
-    <link rel="stylesheet" href="css/modal.css?v=0.1">
-    <link rel="stylesheet" href="css/radio.css?v=0.3">
-    <link rel="stylesheet" href="css/switch.css?v=0.3">
-    <link rel="stylesheet" href="css/watermark.css">
+    <link rel="stylesheet" href="css/root.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="css/input.css">
+    <link rel="stylesheet" href="css/switch.css">
     <style>
         /* 基本重置 */
         * {
@@ -306,8 +302,10 @@
 
 <body>
     <div id="loading-overlay">
-        页面加载中，请稍候...<br>
-        首次加载时较慢，请耐心等待
+        <div>
+            <span data-i18n="loading-1"></span><br>
+            <span data-i18n="loading-2"></span>
+        </div>
     </div>
     <!-- 遮罩层 -->
     <div class="modal-overlay" id="modalOverlay"></div>
@@ -326,8 +324,6 @@
     </div>
     <!-- 气泡弹窗 -->
     <div class="bubble-container" id="bubbleContainer"></div>
-    <!-- 水印层 -->
-    <div class="watermark" aria-hidden="true"></div>
 
     <section class="pane left">
         <h1 id="html_proj_name" class="proj_name">alpha_test_0 ( Review )</h1>
@@ -467,7 +463,7 @@
                         class="fa-regular fa-moon" id="darkIcon"></i> 切换外观</button>
             </p>
         </div>
-        <p>&copy; 2025 LZMSPD. Flare. 信号弹</p>
+        <p>&copy; 2025 Flare. 信号弹. <span class="click_me" onclick="go_url('https://github.com/HoDastar/PhotosReview/', 1)">Click me.</span></p>
     </aside>
 </body>
 
@@ -477,28 +473,12 @@
 <script src="js/modal.js"></script>
 <script src="js/view.js"></script>
 <script src="js/url.js"></script>
-<script src="js/watermark.js"></script>
 <script>
     const user_uid = getCookie('review_uid');
     const user_token = getCookie('review_token');
     const mode = getUrlGet('type');
-    const proj_name = getUrlGet('proj_name');
-
-    // 检查登录情况（2分钟一次）
-    async function check_login() {
-        // 获取结果
-        let login_result = await get_api(`https://lzzxsyb.cn/review/api/check_token.php?uid=${user_uid}&token=${user_token}`)
-        if (!login_result.result) {
-            await openModal("Error", "Login Expired");
-            document.body.innerHTML = '';
-            window.location.href = "./loginout.html";
-            return false;
-        }
-        console.log(true)
-        setTimeout(() => {
-            check_login();
-        }, 2000 * 60);
-    }
+    const proj = getUrlGet('proj');
+    let projName;
 
     // 设置类
     class classSetting {
@@ -623,7 +603,7 @@
 
         getScore() {
             let checkedRadio = document.querySelector('#scoreRadios input[name="opt"]:checked');
-            return checkedRadio ? checkedRadio.value : 0;
+            return checkedRadio ? parseInt(checkedRadio.value) : 0;
         }
         selectRadio(num) {
             const radios = document.querySelectorAll('#scoreRadios input[type="radio"]');
@@ -657,7 +637,7 @@
         // 更新页面照片
         updatePhoto(tempid = this.page) {
             pageView.html_img.src = '';
-            pageView.html_img.src = 'proj/' + proj_name + '/' + this.photoList[tempid].name;
+            pageView.html_img.src = '/data/proj/' + proj + '/proxy/' + this.photoList[tempid].name + '.webp';
             //修改数据
             pageView.html_photoid.innerHTML = this.photoList[tempid].photoid;
             pageView.html_tempid.innerHTML = tempid;
@@ -720,13 +700,23 @@
                     this_photoid_list.push(this.photoList[tempid].photoid);
                 }
                 let json_photoid_list = JSON.stringify(this_photoid_list);
-                // 合成url
-                let url = `https://lzzxsyb.cn/review/api/syb_submit.php?uid=${user_uid}&token=${user_token}&proj_name=${proj_name}&submit_type=batch&score=${score}&note=${Unote}&photoid=${json_photoid_list}`;
+                let param = {
+                    uid: parseInt(user_uid),
+                    token: user_token,
+                    proj: proj,
+                    photoid: this_photoid_list,
+                    score: score,
+                    note: note
+                }
                 // 提交
-                let obj = await get_api(url);
+                let obj = await postApi(url + "/api/photos/submit?submit_type=batch&proj=" + proj, param);
                 // 判断结果
                 if (!obj.result) {
-                    await openModal("Error", obj.text);
+                    const msg = parseInt(obj.message);
+                    await openModal(
+                        i18n.lookUp("modal_content_fail")[msg].title,
+                        i18n.lookUp("modal_content_fail")[msg].message
+                    );
                     return;
                 }
                 showBubble("提交成功，影响了" + obj.data + "项", 'blue', '#fff');
@@ -771,13 +761,23 @@
                 // 转为photoid列表
                 let this_photoid_list = this.getPhotoidListByRange(start, end);
                 let json_photoid_list = JSON.stringify(this_photoid_list);
-                // 合成url
-                let url = `https://lzzxsyb.cn/review/api/syb_submit.php?uid=${user_uid}&token=${user_token}&proj_name=${proj_name}&submit_type=batch&score=${score}&note=${Unote}&photoid=${json_photoid_list}`;
+                let param = {
+                    uid: parseInt(user_uid),
+                    token: user_token,
+                    proj: proj,
+                    photoid: this_photoid_list,
+                    score: score,
+                    note: note
+                }
                 // 提交
-                let obj = await get_api(url);
+                let obj = await postApi(url + "/api/photos/submit?submit_type=batch&proj=" + proj, param);
                 // 判断结果
                 if (!obj.result) {
-                    await openModal("Error", obj.text);
+                    const msg = parseInt(obj.message);
+                    await openModal(
+                        i18n.lookUp("modal_content_fail")[msg].title,
+                        i18n.lookUp("modal_content_fail")[msg].message
+                    );
                     return;
                 }
                 showBubble("提交成功，影响了" + obj.data + "项", 'blue', '#fff');
@@ -800,13 +800,22 @@
 
                 // 获取当前page图片数据
                 const this_photoid = this.photoList[this.page].photoid;
-                // 合成url
-                let url = `https://lzzxsyb.cn/review/api/syb_submit.php?uid=${user_uid}&token=${user_token}&proj_name=${proj_name}&submit_type=single&score=${score}&note=${Unote}&photoid=${this_photoid}`
+                let param = {
+                    uid: parseInt(user_uid),
+                    token: user_token,
+                    photoid: this_photoid,
+                    score: score,
+                    note: note
+                }
                 // 提交
-                let obj = await get_api(url);
+                let obj = await postApi(url + "/api/photos/submit?submit_type=single&proj=" + proj, param);
                 // 判断结果
                 if (!obj.result) {
-                    await openModal("Error", obj.text);
+                    const msg = parseInt(obj.message);
+                    await openModal(
+                        i18n.lookUp("modal_content_fail")[msg].title,
+                        i18n.lookUp("modal_content_fail")[msg].message
+                    );
                     return;
                 }
                 showBubble("提交成功，影响了1项", 'blue', '#fff');
@@ -839,15 +848,15 @@
         // 切换模式
         switchMode() {
             if (mode === 'project') {
-                go_url('?proj_name=' + proj_name + '&type=history', 0);
+                go_url('?proj=' + proj + '&type=history', 0);
             } else {
-                go_url('?proj_name=' + proj_name + '&type=project', 0);
+                go_url('?proj=' + proj + '&type=project', 0);
             }
         }
 
         // 首次加载
-        async fectchList() {
-            const obj = await get_api('https://lzzxsyb.cn/review/api/syb_photolist.php?uid=' + user_uid + '&token=' + user_token + '&proj_name=' + getUrlGet('proj_name'));
+        async fetchList() {
+            const obj = await getApi(url + '/api/photos/fetch_photo_list?uid=' + user_uid + '&token=' + user_token + '&proj=' + getUrlGet('proj'));
 
             if (!obj.result) {
                 await openModal("Error", obj.text);
@@ -891,20 +900,18 @@
 
             switch (obj.data.type) {
                 case 0:
-                    pageView.html_proj_name.innerHTML = proj_name + " ( 审片模式 )";
+                    pageView.html_proj_name.innerHTML = projName + " ( 审片模式 )";
                     break;
 
                 case 1:
-                    pageView.html_proj_name.innerHTML = proj_name + " ( 筛片模式 )";
+                    pageView.html_proj_name.innerHTML = projName + " ( 筛片模式 )";
                     break;
             }
 
             this.photoList.forEach(element => {
-                saveCache.list.push("https://lzzxsyb.cn/review/proj/" + proj_name + '/' + element.name)
+                saveCache.list.push(url + '/data/proj/' + proj + '/proxy/' + element.name + '.webp')
             });
 
-            // 修改title
-            document.title = 'proj - ' + proj_name;
             // 总量
             this.all = obj.data.all;
             // 剩余
@@ -913,7 +920,6 @@
             pageView.html_remaining.innerHTML = this.remaining;
             // 更新照片
             this.updatePhoto();
-            setWatermark("用户: " + user_uid, document.querySelector('.watermark'));
         }
     }
 
@@ -1185,17 +1191,83 @@
     // 实例化缓存类
     const saveCache = new classSaveCache();
 
+    // 检查登录情况（2分钟一次）
+    async function check_login() {
+        // 获取结果
+        let login_result = await getApi(url + `/api/user/check_token?uid=${uid}&token=${token}`);
+        if (!login_result.result) {
+            await openModal(
+                i18n.lookUp("modal_content_fail")[12].title,
+                i18n.lookUp("modal_content_fail")[12].message
+            );
+            document.body.innerHTML = '';
+            window.location.href = "./loginout.html";
+            return false;
+        }
+        setTimeout(() => {
+            check_login();
+        }, 2000 * 60);
+    }
+
+    // 获取工程信息
+    async function getProjInfo() {
+        const obj = await getApi(url + `/api/proj/get_proj?uid=${user_uid}&token=${user_token}&proj=${proj}`);
+        if (!obj.result) {
+            const msg = parseInt(obj.message);
+            await openModal(
+                i18n.lookUp("modal_content_fail")[msg].title,
+                i18n.lookUp("modal_content_fail")[msg].message
+            );
+            document.getElementsByTagName("html")[0].innerHTML = '';
+            return;
+        }
+        projName = obj.data.name;
+        return;
+    }
+
+    async function loadWebsiteInfo() {
+        const info = await getApi(url + "/api/system/get_website_info");
+        if (info) {
+            const infoObj = info.data;
+
+            const link = document.createElement("link");
+            link.rel = "icon";
+            link.href = infoObj.website_icon;
+            document.head.appendChild(link);
+
+            document.querySelectorAll("[data-config]").forEach(el => {
+                const key = el.getAttribute("data-config");
+                if (key === "website_name") {
+                    el.innerText = infoObj.website_name;
+                }
+                if (key === "website_url") {
+                    el.addEventListener("click", () => {
+                        window.location.href = url + "/";
+                    });
+                }
+            });
+
+            document.getElementsByTagName("title")[0].innerText = i18n.lookUp("proj") + " - " + projName;
+
+        } else {
+            setTimeout(() => {
+                loadWebsiteInfo()
+            }, 500);
+        }
+    }
+
     (async () => {
-        const dark = getCookie('darkmode');
-        setDarkMode(dark === '1');
-        await photoList.fectchList();
+        await i18n.init();
         // 检查cookie
         if (!user_uid || !user_token) {
             document.body.innerHTML = '';
             window.location.href = "./login.html";
             return false;
         }
-
         check_login();
+
+        await getProjInfo();
+        await loadWebsiteInfo();
+        await photoList.fetchList();
     })()
 </script>

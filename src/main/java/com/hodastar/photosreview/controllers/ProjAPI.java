@@ -84,6 +84,24 @@ public class ProjAPI {
         return new Respond<>(true, "success", count);
     }
 
+    // 获取工程
+    @GetMapping("/get_proj")
+    public Respond<EntityReviewProj> get_proj(
+            @RequestParam("proj") String projId,
+            @RequestParam("uid") int uid,
+            @RequestParam("token") String token
+    ) {
+        // 检查token
+        if (!userMapper.checkToken(uid, token)) {
+            return new Respond<>(false, "4", null);
+        }
+        Optional<EntityReviewProj> projOpt = projMapper.getProjById(projId);
+        if (projOpt.isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+        return new Respond<>(true, "success", projOpt.get());
+    }
+
     /**
      * 新建工程
      * param name 工程名称
@@ -488,6 +506,15 @@ public class ProjAPI {
         // 生成缩略图
         ImageUtils.createThumbnail(dirStr, thumbnailDirStr, fileName, 300, 300);
 
+        // 代理图目录
+        String proxyDirStr = baseDir + File.separator +
+                "data" + File.separator +
+                "proj" + File.separator +
+                projId + File.separator +
+                "proxy" + File.separator;
+        // 生成代理图
+        ImageUtils.convertToWebp(dirStr, proxyDirStr, fileName);
+
         // 添加数据库
         Boolean r = projMapper.addPhoto(projId, author, fileName, value);
         if (!r) {
@@ -525,6 +552,9 @@ public class ProjAPI {
         }
         // 获取文件信息
         String name = photoOpt.get().name;
+        // webp版文件名
+        String webpName = name.substring(0, name.lastIndexOf(".")) + ".webp";
+        // 获取工程ID
         String projId = photoOpt.get().proj;
         // 删除数据
         Boolean result = projMapper.deletePhotoById(id);
@@ -543,9 +573,15 @@ public class ProjAPI {
                 "proj" + File.separator +
                 projId + File.separator +
                 "thumbnail" + File.separator;
+        String proxyDirStr = baseDir + File.separator +
+                "data" + File.separator +
+                "proj" + File.separator +
+                projId + File.separator +
+                "proxy" + File.separator;
         // 尝试删除文件
         FileUtil.deleteFile(dirStr, name);
         FileUtil.deleteFile(thumbnailDirStr, name);
+        FileUtil.deleteFile(proxyDirStr, webpName);
 
         return new Respond<>(true, "Done", null);
     }

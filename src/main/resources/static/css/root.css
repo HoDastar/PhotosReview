@@ -195,7 +195,6 @@ body {
     pointer-events: none;
 }
 
-/* 空心按钮 */
 .button-common {
     padding: 10px 25px;
     background-color: var(--color-btn);
@@ -218,6 +217,22 @@ body {
  }
 .button-common.del:hover {
     background-color: rgb(185, 28, 28);
+}
+
+.button-outline {
+    padding: 8px 16px;
+    border: 2px solid var(--color-primary);
+    background-color: transparent;
+    color: var(--color-primary);
+    font-size: 16px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.button-outline:hover {
+    background-color: var(--color-primary);
+    color: var(--color-btn-fg);
 }
 
 .button-long {

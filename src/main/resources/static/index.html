@@ -224,8 +224,8 @@
                     a_status = i18n.lookUp("progress");
                     a_status_color = 'color_green';
                     btlist = `
-                        <button onclick="go_url('proj.html?proj_name=${proj.proj_name}&type=project',1)"><i class="fa-solid fa-tools"></i> ${i18n.lookUp("project_mode")}</button>
-                        <button onclick="go_url('proj.html?proj_name=${proj.proj_name}&type=history',1)"><i class="fa-solid fa-history"></i> ${i18n.lookUp("history_mode")}</button>
+                        <button onclick="go_url('proj.html?proj=${proj.proj_id}&type=project',1)"><i class="fa-solid fa-tools"></i> ${i18n.lookUp("project_mode")}</button>
+                        <button onclick="go_url('proj.html?proj=${proj.proj_id}&type=history',1)"><i class="fa-solid fa-history"></i> ${i18n.lookUp("history_mode")}</button>
                         `
                     break;
 

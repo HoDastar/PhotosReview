@@ -1,5 +1,6 @@
 {
   "home": "主页",
+  "proj": "工程",
   "project_name": "工程名称",
   "project_type": "工程类型",
   "project_list": "工程列表",
@@ -214,8 +215,22 @@
       "index": 23,
       "title": "警告",
       "message": "获取系统信息错误，请刷新重试。"
+    },
+    {
+      "index": 24,
+      "title": "警告",
+      "message": "工程当前状态不可编辑。"
+    },
+    {
+      "index": 25,
+      "title": "警告",
+      "message": "不存在此Photoid。"
+    },
+    {
+      "index": 26,
+      "title": "警告",
+      "message": "该Photoid不属于本工程。"
     }
-
   ],
   "modal_content_success": [
     {
