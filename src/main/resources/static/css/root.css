@@ -309,7 +309,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    justify-content: flex-end;
+    justify-content: center;
     margin: 8px 0 12px;
 }
 

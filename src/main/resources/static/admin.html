@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/input.css">
     <link rel="stylesheet" href="css/modal.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 </head>
 
 <body>
@@ -50,6 +50,12 @@
 <main class="main">
     <div class="panel">
         <aside class="toolbar">
+            <button class="panel-btn selected" data-page="projList"><i class="fa-solid fa-tools"></i> <span
+                    data-i18n="project_list">Project List</span></button>
+            <button class="panel-btn" data-page="createProj"><i class="fa-solid fa-add"></i> <span
+                    data-i18n="create_project">Create project</span></button>
+            <button class="panel-btn" data-page="manageUser"><i class="fa-solid fa-users-gear"></i> <span
+                    data-i18n="manage_user">Manage User</span></button>
             <div class="icon-toggle-group">
                 <button class="icon-toggle" id="darkToggle" data-i18n-title="switch_theme">
                     <i class="fa-regular fa-moon" id="darkIcon"></i>
@@ -58,12 +64,6 @@
                     <i class="fa-solid fa-language"></i>
                 </button>
             </div>
-            <button class="panel-btn selected" data-page="projList"><i class="fa-solid fa-tools"></i> <span
-                    data-i18n="project_list">Project List</span></button>
-            <button class="panel-btn" data-page="createProj"><i class="fa-solid fa-add"></i> <span
-                    data-i18n="create_project">Create project</span></button>
-            <button class="panel-btn" data-page="manageUser"><i class="fa-solid fa-users-gear"></i> <span
-                    data-i18n="manage_user">Manage User</span></button>
         </aside>
 
         <section class="viewer" id="projList">
