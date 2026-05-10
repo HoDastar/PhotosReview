@@ -43,14 +43,6 @@
         <div class="button-circle" onclick='go_url("/", 1)' data-i18n-title="home"><i class="fa-solid fa-home"></i></div>
         <div class="button-circle" onclick='signout()' data-i18n-title="sign_out"><i class="fa-solid fa-right-to-bracket"></i></div>
         <div class="button-circle" onclick='go_url("alter_password.html", 0)' data-i18n-title="alter_password"><i class='fa-solid fa-key'></i></div>
-        <div class="page-toggle-group">
-            <button class="dark-toggle inline-toggle" id="darkToggle">
-                <i class="fa-regular fa-moon" id="darkIcon"></i>
-            </button>
-            <button class="lang-toggle inline-toggle" id="languageSelect">
-                <i class="fa-solid fa-language"></i>
-            </button>
-        </div>
         <div class="nav-user" id="uidEl"></div>
     </div>
 </header>
@@ -58,6 +50,14 @@
 <main class="main">
     <div class="panel">
         <aside class="toolbar">
+            <div class="icon-toggle-group">
+                <button class="icon-toggle" id="darkToggle" data-i18n-title="switch_theme">
+                    <i class="fa-regular fa-moon" id="darkIcon"></i>
+                </button>
+                <button class="icon-toggle" id="languageSelect" data-i18n-title="switch_language">
+                    <i class="fa-solid fa-language"></i>
+                </button>
+            </div>
             <button class="panel-btn selected" data-page="projList"><i class="fa-solid fa-tools"></i> <span
                     data-i18n="project_list">Project List</span></button>
             <button class="panel-btn" data-page="createProj"><i class="fa-solid fa-add"></i> <span

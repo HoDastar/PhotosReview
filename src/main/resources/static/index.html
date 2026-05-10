@@ -37,14 +37,6 @@
     </div>
 
     <div class="first_div">
-        <div class="page-toggle-group">
-            <button class="dark-toggle inline-toggle" id="darkToggle">
-                <i class="fa-regular fa-moon" id="darkIcon"></i>
-            </button>
-            <button class="lang-toggle inline-toggle" id="languageSelect">
-                <i class="fa-solid fa-language"></i>
-            </button>
-        </div>
         <div class="top_title">
             <h1 data-config="website_url"><span data-config="website_name"></span></h1>
         </div>
@@ -149,6 +141,14 @@
                 </p>
             </div>
             <div class="widget" id="widget_user_info">
+                <div class="icon-toggle-group">
+                    <button class="icon-toggle" id="darkToggle" data-i18n-title="switch_theme">
+                        <i class="fa-regular fa-moon" id="darkIcon"></i>
+                    </button>
+                    <button class="icon-toggle" id="languageSelect" data-i18n-title="switch_language">
+                        <i class="fa-solid fa-language"></i>
+                    </button>
+                </div>
                 <p style="font-size: 20px;">UID：<span id="html_uid"></span></p>
                 <p><button class="button-long" onclick='go_url("alter_password.html", 0)'><i class="fa-solid fa-key"></i> <span data-i18n="alter_password"></span></button></p>
                 <p><button class="button-long" onclick="signout()"><i class="fa-solid fa-sign-out-alt"></i> <span data-i18n="sign_out"></span></button></p>
