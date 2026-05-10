@@ -301,3 +301,34 @@ body {
         transform: scale(1.06);
     }
 }
+
+/* admin/index 页面内嵌切换按钮组 */
+.page-toggle-group {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.inline-toggle.dark-toggle,
+.inline-toggle.lang-toggle {
+    position: static;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.inline-toggle.dark-toggle:hover,
+.inline-toggle.lang-toggle:hover {
+    transform: scale(1.06);
+}
+
+@media (max-width: 768px) {
+    .page-toggle-group {
+        width: 100%;
+        justify-content: flex-end;
+        margin-bottom: 10px;
+    }
+}
