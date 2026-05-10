@@ -1,286 +1,323 @@
 {
-  "home": "Home",
-  "proj": "Project",
-  "project_name": "Project Name",
-  "project_type": "Project Type",
-  "project_list": "Project List",
-  "project_status": "Project Status",
-  "author": "Author",
-  "upload": "Upload",
-  "photos_pool": "Photos Pool",
-  "create_project": "Create Project",
-  "create_user": "Create User",
-  "manage_project": "Manage Project",
-  "manage_user": "Manage User",
-  "manage_distribution": "Manage Distribution",
-  "manage_photos": "Manage Photos",
-  "no_project": "No project yet.",
-  "project_info": "Project Information",
-  "input_project_name": "Project name...",
-  "description_input_project_name": "The maximum number of characters should not exceed 100.",
-  "description_project_type": "Please select project type, which will cannot be changed on create.",
-  "description_project_status": "Please select project status in four options.",
-  "description_input_author": "Please input the author of photos.",
-  "description_choose_photos": "Select a series of photos by this author to upload.",
-  "project_thumbnail": "Project Thumbnail",
-  "description_project_thumbnail": "Supports jpg, jpeg, png, webp formats, and the file size should not exceed 10MB.",
-  "description_project_thumbnail_2": "If you don't want to change the thumbnail, please leave it blank.",
-  "screening_review_type": "Screening",
-  "review_review_type": "Review",
-  "choose_an_image": "Choose an image",
-  "choose_images": "Choose images",
-  "choose_a_project": "Choose a project",
-  "description_choose_a_project": "Projects in Closing / Finished status will not be shown.",
-  "you_havent_chosen": "You haven't chosen",
-  "show_hide": "Show / Hide",
-  "description_show_hide": "Show or hide the project on the homepage.",
-  "input_author": "Author...",
-  "clean": "Clean",
-  "submit": "Submit",
-  "save": "Save",
-  "cancel": "Cancel",
-  "hide": "Hide",
-  "show": "Show",
-  "delete": "Delete",
-  "pending": "Pending",
-  "progress": "Progressing",
-  "closing": "Closing",
-  "finished": "Finished",
-  "coming_soon": "Coming Soon",
-  "project_mode": "Project Mode",
-  "history_mode": "History Mode",
-  "view_results": "View Results",
-  "nav_title": "Backend System",
-  "login": "Login",
-  "sign_in": "Sign in",
-  "signing_in": "Signing in...",
-  "sign_out": "Sign out",
-  "password": "Password",
-  "new_password": "New Password",
-  "confirm_password": "Confirm New Password",
-  "alter_password": "Alter Password",
-  "alter": "Alter",
-  "altering": "Altering...",
-  "backed_system": "Backend System",
-  "total": "Total",
-  "no_task": "No task arrangement yet.",
-  "first": "First",
-  "last": "Last",
-  "add": "Add",
-  "filter": "Filter",
-  "operation": "Operation",
-  "add_task": "Add Task",
-  "task_list": "Task List",
-  "dblclick_to_edit": "Double click to edit",
-  "allname": "Name",
-  "input_allname": "Name...",
-  "description_input_allname": "Please input user name (up to 10 characters).",
-  "description_input_uid": "Please input user UID (10000-999999999).",
-  "user_role": "User Role",
-  "description_user_role": "Please choose the role for registration.",
-  "description_input_author_manage_photos": "Filter photos by author.",
-  "admin_user": "Administrator",
-  "normal_user": "Normal User",
-  "user_list": "User List",
-  "banned_user": "Banned User",
-  "no_user": "No users yet.",
-  "register_user": "Register User",
-  "reset_password_default": "Reset Password",
-  "ban_user": "Ban User",
-  "unban_user": "Unban User",
-  "no_photo": "No photos yet.",
-  "load_more": "Load More",
-  "no_more": "No more photos.",
-  "affected_rows": "Affected item(s): ",
-  "successful_rows": "Successful item(s): ",
-  "batch_delete": "Batch Delete",
-  "description_batch_delete": "Batch delete items by filtering conditions. Please be cautious when using this function.",
-  "modal_content_fail": [
-    {
-      "index": 0,
-      "title": "Error.",
-      "message": "An error occurred while processing your request."
-    },
-    {
-      "index": 1,
-      "title": "Warning",
-      "message": "Parameter error."
-    },
-    {
-      "index": 2,
-      "title": "Warning",
-      "message": "Incorrect UID or password."
-    },
-    {
-      "index": 3,
-      "title": "Warning",
-      "message": "UID already exists."
-    },
-    {
-      "index": 4,
-      "title": "Warning",
-      "message": "Invalid token."
-    },
-    {
-      "index": 5,
-      "title": "Warning",
-      "message": "Insufficient permissions."
-    },
-    {
-      "index": 6,
-      "title": "Warning",
-      "message": "Character limit exceeded."
-    },
-    {
-      "index": 7,
-      "title": "Warning",
-      "message": "Invalid UID."
-    },
-    {
-      "index": 8,
-      "title": "Warning",
-      "message": "Unsupported file format."
-    },
-    {
-      "index": 9,
-      "title": "Warning",
-      "message": "File size exceeds the limit."
-    },
-    {
-      "index": 10,
-      "title": "Warning",
-      "message": "File does not exist."
-    },
-    {
-      "index": 11,
-      "title": "Warning",
-      "message": "Please fill in all required fields."
-    },
-    {
-      "index": 12,
-      "title": "Warning",
-      "message": "Login required."
-    },
-    {
-      "index": 13,
-      "title": "Warning",
-      "message": "This project name already exists."
-    },
-    {
-      "index": 14,
-      "title": "Warning",
-      "message": "This project does not exist."
-    },
-    {
-      "index": 15,
-      "title": "Warning",
-      "message": "Password must be 6-30 characters."
-    },
-    {
-      "index": 16,
-      "title": "Warning",
-      "message": "The new password does not match the confirmed password."
-    },
-    {
-      "index": 17,
-      "title": "Warning",
-      "message": "The format of the form content is incorrect."
-    },
-    {
-      "index": 18,
-      "title": "Warning",
-      "message": "The Last exceeds the total amount of the project."
-    },
-    {
-      "index": 19,
-      "title": "Warning",
-      "message": "Upload failed."
-    },
-    {
-      "index": 20,
-      "title": "Warning",
-      "message": "This user does not exist."
-    },
-    {
-      "index": 21,
-      "title": "Warning",
-      "message": "Delete failed."
-    },
-    {
-      "index": 22,
-      "title": "Warning",
-      "message": "Save failed."
-    },
-    {
-      "index": 23,
-      "title": "Warning",
-      "message": "Error occurred while obtaining system information. Please refresh and try again."
-    },
-    {
-      "index": 24,
-      "title": "Warning",
-      "message": "The current status of the project is not editable."
-    },
-    {
-      "index": 25,
-      "title": "Warning",
-      "message": "This Photoid does not exist."
-    },
-    {
-      "index": 26,
-      "title": "Warning",
-      "message": "This Photoid does not belong to the project."
-    }
-  ],
-  "modal_content_success": [
-    {
-      "index": 0,
-      "title": "Info",
-      "message": "Operation successful."
-    },
-    {
-      "index": 1,
-      "title": "Info",
-      "message": "Login successful."
-    },
-    {
-      "index": 2,
-      "title": "Info",
-      "message": "Password altered successfully."
-    },
-    {
-      "index": 3,
-      "title": "Info",
-      "message": "Upload successful."
-    }
-  ],
-  "modal_content_confirm": [
-    {
-      "index": 0,
-      "title": "Warming",
-      "message": "Are you sure you want to login out?"
-    },
-    {
-      "index": 1,
-      "title": "Warming",
-      "message": "Are you sure you want to delete this project?"
-    },
-    {
-      "index": 2,
-      "title": "Warming",
-      "message": "Are you sure you want to delete this user?"
-    },
-    {
-      "index": 3,
-      "title": "Warming",
-      "message": "Are you sure of saving change?"
-    },
-    {
-      "index": 4,
-      "title": "Warming",
-      "message": "Are you sure you want to delete?"
-    }
-  ],
-  "loading-1": "Please wait while the page loads...",
-  "loading-2": "The first time loading may take a while, please be patient."
+    "home": "Home",
+    "proj": "Project",
+    "project_name": "Project Name",
+    "project_type": "Project Type",
+    "project_list": "Project List",
+    "project_status": "Project Status",
+    "author": "Author",
+    "upload": "Upload",
+    "photos_pool": "Photos Pool",
+    "create_project": "Create Project",
+    "create_user": "Create User",
+    "manage_project": "Manage Project",
+    "manage_user": "Manage User",
+    "manage_distribution": "Manage Distribution",
+    "manage_photos": "Manage Photos",
+    "no_project": "No project yet.",
+    "project_info": "Project Information",
+    "input_project_name": "Project name...",
+    "description_input_project_name": "The maximum number of characters should not exceed 100.",
+    "description_project_type": "Please select project type, which will cannot be changed on create.",
+    "description_project_status": "Please select project status in four options.",
+    "description_input_author": "Please input the author of photos.",
+    "description_choose_photos": "Select a series of photos by this author to upload.",
+    "project_thumbnail": "Project Thumbnail",
+    "description_project_thumbnail": "Supports jpg, jpeg, png, webp formats, and the file size should not exceed 10MB.",
+    "description_project_thumbnail_2": "If you don't want to change the thumbnail, please leave it blank.",
+    "screening_review_type": "Screening",
+    "review_review_type": "Review",
+    "choose_an_image": "Choose an image",
+    "choose_images": "Choose images",
+    "choose_a_project": "Choose a project",
+    "description_choose_a_project": "Projects in Closing / Finished status will not be shown.",
+    "you_havent_chosen": "You haven't chosen",
+    "show_hide": "Show / Hide",
+    "description_show_hide": "Show or hide the project on the homepage.",
+    "input_author": "Author...",
+    "clean": "Clean",
+    "submit": "Submit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "hide": "Hide",
+    "show": "Show",
+    "delete": "Delete",
+    "pending": "Pending",
+    "progress": "Progressing",
+    "closing": "Closing",
+    "finished": "Finished",
+    "coming_soon": "Coming Soon",
+    "project_mode": "Project Mode",
+    "history_mode": "History Mode",
+    "view_results": "View Results",
+    "nav_title": "Backend System",
+    "login": "Login",
+    "sign_in": "Sign in",
+    "signing_in": "Signing in...",
+    "sign_out": "Sign out",
+    "password": "Password",
+    "new_password": "New Password",
+    "confirm_password": "Confirm New Password",
+    "alter_password": "Alter Password",
+    "alter": "Alter",
+    "altering": "Altering...",
+    "backed_system": "Backend System",
+    "total": "Total",
+    "no_task": "No task arrangement yet.",
+    "first": "First",
+    "last": "Last",
+    "add": "Add",
+    "filter": "Filter",
+    "operation": "Operation",
+    "add_task": "Add Task",
+    "task_list": "Task List",
+    "dblclick_to_edit": "Double click to edit",
+    "allname": "Name",
+    "input_allname": "Name...",
+    "description_input_allname": "Please input user name (up to 10 characters).",
+    "description_input_uid": "Please input user UID (10000-999999999).",
+    "user_role": "User Role",
+    "description_user_role": "Please choose the role for registration.",
+    "description_input_author_manage_photos": "Filter photos by author.",
+    "admin_user": "Administrator",
+    "normal_user": "Normal User",
+    "user_list": "User List",
+    "banned_user": "Banned User",
+    "no_user": "No users yet.",
+    "register_user": "Register User",
+    "reset_password_default": "Reset Password",
+    "ban_user": "Ban User",
+    "unban_user": "Unban User",
+    "no_photo": "No photos yet.",
+    "load_more": "Load More",
+    "no_more": "No more photos.",
+    "affected_rows": "Affected item(s): ",
+    "successful_rows": "Successful item(s): ",
+    "batch_delete": "Batch Delete",
+    "description_batch_delete": "Batch delete items by filtering conditions. Please be cautious when using this function.",
+    "modal_content_fail": [
+        {
+            "index": 0,
+            "title": "Error.",
+            "message": "An error occurred while processing your request."
+        },
+        {
+            "index": 1,
+            "title": "Warning",
+            "message": "Parameter error."
+        },
+        {
+            "index": 2,
+            "title": "Warning",
+            "message": "Incorrect UID or password."
+        },
+        {
+            "index": 3,
+            "title": "Warning",
+            "message": "UID already exists."
+        },
+        {
+            "index": 4,
+            "title": "Warning",
+            "message": "Invalid token."
+        },
+        {
+            "index": 5,
+            "title": "Warning",
+            "message": "Insufficient permissions."
+        },
+        {
+            "index": 6,
+            "title": "Warning",
+            "message": "Character limit exceeded."
+        },
+        {
+            "index": 7,
+            "title": "Warning",
+            "message": "Invalid UID."
+        },
+        {
+            "index": 8,
+            "title": "Warning",
+            "message": "Unsupported file format."
+        },
+        {
+            "index": 9,
+            "title": "Warning",
+            "message": "File size exceeds the limit."
+        },
+        {
+            "index": 10,
+            "title": "Warning",
+            "message": "File does not exist."
+        },
+        {
+            "index": 11,
+            "title": "Warning",
+            "message": "Please fill in all required fields."
+        },
+        {
+            "index": 12,
+            "title": "Warning",
+            "message": "Login required."
+        },
+        {
+            "index": 13,
+            "title": "Warning",
+            "message": "This project name already exists."
+        },
+        {
+            "index": 14,
+            "title": "Warning",
+            "message": "This project does not exist."
+        },
+        {
+            "index": 15,
+            "title": "Warning",
+            "message": "Password must be 6-30 characters."
+        },
+        {
+            "index": 16,
+            "title": "Warning",
+            "message": "The new password does not match the confirmed password."
+        },
+        {
+            "index": 17,
+            "title": "Warning",
+            "message": "The format of the form content is incorrect."
+        },
+        {
+            "index": 18,
+            "title": "Warning",
+            "message": "The Last exceeds the total amount of the project."
+        },
+        {
+            "index": 19,
+            "title": "Warning",
+            "message": "Upload failed."
+        },
+        {
+            "index": 20,
+            "title": "Warning",
+            "message": "This user does not exist."
+        },
+        {
+            "index": 21,
+            "title": "Warning",
+            "message": "Delete failed."
+        },
+        {
+            "index": 22,
+            "title": "Warning",
+            "message": "Save failed."
+        },
+        {
+            "index": 23,
+            "title": "Warning",
+            "message": "Error occurred while obtaining system information. Please refresh and try again."
+        },
+        {
+            "index": 24,
+            "title": "Warning",
+            "message": "The current status of the project is not editable."
+        },
+        {
+            "index": 25,
+            "title": "Warning",
+            "message": "This Photoid does not exist."
+        },
+        {
+            "index": 26,
+            "title": "Warning",
+            "message": "This Photoid does not belong to the project."
+        }
+    ],
+    "modal_content_success": [
+        {
+            "index": 0,
+            "title": "Info",
+            "message": "Operation successful."
+        },
+        {
+            "index": 1,
+            "title": "Info",
+            "message": "Login successful."
+        },
+        {
+            "index": 2,
+            "title": "Info",
+            "message": "Password altered successfully."
+        },
+        {
+            "index": 3,
+            "title": "Info",
+            "message": "Upload successful."
+        }
+    ],
+    "modal_content_confirm": [
+        {
+            "index": 0,
+            "title": "Warming",
+            "message": "Are you sure you want to login out?"
+        },
+        {
+            "index": 1,
+            "title": "Warming",
+            "message": "Are you sure you want to delete this project?"
+        },
+        {
+            "index": 2,
+            "title": "Warming",
+            "message": "Are you sure you want to delete this user?"
+        },
+        {
+            "index": 3,
+            "title": "Warming",
+            "message": "Are you sure of saving change?"
+        },
+        {
+            "index": 4,
+            "title": "Warming",
+            "message": "Are you sure you want to delete?"
+        }
+    ],
+    "loading-1": "Please wait while the page loads...",
+    "loading-2": "The first time loading may take a while, please be patient.",
+    "ok": "OK",
+    "loading": "Loading",
+    "mode_suffix": " Mode",
+    "information": "Information",
+    "photoid": "Photoid",
+    "tempid": "Tempid",
+    "status": "Status",
+    "all": "Total",
+    "remaining": "Remaining",
+    "undone": "Undone",
+    "edit": "Edit",
+    "score": "Score",
+    "comment": "Comment",
+    "say_something": "Say something...",
+    "batch_operation": "Batch Operation",
+    "tempid_list": "Tempid List",
+    "input_example_list": "Example input: (0,3,4)",
+    "tempid_range": "Tempid Range",
+    "input_example_range": "Example input: (2,7)",
+    "settings": "Settings",
+    "batch_operation_list": "Batch operation (list)",
+    "batch_operation_range": "Batch operation (range)",
+    "lock_content": "Lock scoring panel",
+    "auto_next": "Auto next photo",
+    "auto_commit": "Auto submit score",
+    "switch_mode": "Switch mode",
+    "cache_project": "Cache project",
+    "switch_theme": "Switch theme",
+    "switch_language": "Switch language",
+    "click_me": "Click me.",
+    "task_completed": "Task Completed.",
+    "congratulations": "Congratulations!",
+    "no_history_record": "There is no history record.",
+    "project": "Project",
+    "history": "History",
+    "error": "Error",
+    "unknown_mode": "Unknown mode"
 }

@@ -319,20 +319,20 @@
             <p></p>
         </div>
         <div class="modal-footer">
-            <button class="confirm-btn" id="confirmBtn">OK</button>
+            <button class="confirm-btn" id="confirmBtn" data-i18n="ok">OK</button>
         </div>
     </div>
     <!-- 气泡弹窗 -->
     <div class="bubble-container" id="bubbleContainer"></div>
 
     <section class="pane left">
-        <h1 id="html_proj_name" class="proj_name">alpha_test_0 ( Review )</h1>
+        <h1 id="html_proj_name" class="proj_name"></h1>
         <div style="display: none" id="loading_bar" class="loading_bar">
             <!-- 进度条 -->
             <div class="bar">
                 <div class="fill" id="bar-fill"></div>
             </div>
-            <div class="bar-text" id="bar-text">Loading</div>
+            <div class="bar-text" id="bar-text" data-i18n="loading">Loading</div>
         </div>
 
         <div class="div_img">
@@ -344,27 +344,27 @@
             <button class="button-outline" onclick="pageView.zoomIn()">&nbsp;+&nbsp;</button>
             <button class="button-outline" onclick="pageView.zoomOut()">&nbsp;-&nbsp;</button>
             <button class="button-outline" onclick="pageView.rotate()">↻</button>
-            <input type="text" id="html_goPage_1" class="small-input" placeholder="Photoid"
+            <input type="text" id="html_goPage_1" class="small-input" data-i18n-placeholder="photoid" placeholder="Photoid"
                 style="display: inline-block;">
-            <input type="text" id="html_goPage_2" class="small-input" placeholder="Tempid"
+            <input type="text" id="html_goPage_2" class="small-input" data-i18n-placeholder="tempid" placeholder="Tempid"
                 style="display: inline-block;">
         </div>
     </section>
 
     <aside class="pane right" id="rightPane">
-        <h1><i class="fa-solid fa-square-up-right"></i> <span id="html_mode">Project</span>模式</h1>
+        <h1><i class="fa-solid fa-square-up-right"></i> <span id="html_mode"></span><span data-i18n="mode_suffix"></span></h1>
         <div class="widget">
-            <h3><i class="fa-solid fa-circle-info"></i> 信息</h3>
-            <p>Photoid: <span class="p_right" id="html_photoid">1100</span></p>
-            <p>Tempid: <span class="p_right" id="html_tempid">0</span></p>
-            <p>状态: <span class="p_right" style="color: red;font-weight: bold;" id="html_status">Undone</span></p>
-            <p>全部: <span class="p_right" id="html_all">100</span></p>
-            <p>剩余: <span class="p_right" id="html_remaining">50</span></p>
+            <h3><i class="fa-solid fa-circle-info"></i> <span data-i18n="information"></span></h3>
+            <p><span data-i18n="photoid"></span>: <span class="p_right" id="html_photoid">1100</span></p>
+            <p><span data-i18n="tempid"></span>: <span class="p_right" id="html_tempid">0</span></p>
+            <p><span data-i18n="status"></span>: <span class="p_right" style="color: red;font-weight: bold;" id="html_status" data-i18n="undone">Undone</span></p>
+            <p><span data-i18n="all"></span>: <span class="p_right" id="html_all">100</span></p>
+            <p><span data-i18n="remaining"></span>: <span class="p_right" id="html_remaining">50</span></p>
         </div>
 
         <div class="widget">
-            <h3><i class="fa-solid fa-edit"></i> 编辑</h3>
-            <p>评分: </p>
+            <h3><i class="fa-solid fa-edit"></i> <span data-i18n="edit"></span></h3>
+            <p><span data-i18n="score"></span>: </p>
             <div class="radio-group" id="scoreRadios" style="">
                 <label>
                     <input type="radio" name="opt" value="1">
@@ -387,26 +387,26 @@
                     <span>4</span>
                 </label>
             </div>
-            <p>批注: </p>
-            <textarea placeholder="说点什么吧..." id="html_note"></textarea>
+            <p><span data-i18n="comment"></span>: </p>
+            <textarea data-i18n-placeholder="say_something" placeholder="说点什么吧..." id="html_note"></textarea>
             <button class="button-long" onclick="photoList.submit()">
                 <i class="fa-solid fa-check"></i>
-                提交
+                <span data-i18n="submit"></span>
             </button>
         </div>
 
         <div class="widget">
-            <h3><i class="fa-solid fa-sliders"></i> 批量操作</h3>
-            <p>Tempid 列表: </p>
-            <input type="text" id="html_list" class="mid-input" placeholder="输入示例：(0,3,4)" style="display: block;">
-            <p>Tempid 范围: </p>
-            <input type="text" id="html_range" class="mid-input" placeholder="输入示例： (2,7)" style="display: block;">
+            <h3><i class="fa-solid fa-sliders"></i> <span data-i18n="batch_operation"></span></h3>
+            <p><span data-i18n="tempid_list"></span>: </p>
+            <input type="text" id="html_list" class="mid-input" data-i18n-placeholder="input_example_list" placeholder="输入示例：(0,3,4)" style="display: block;">
+            <p><span data-i18n="tempid_range"></span>: </p>
+            <input type="text" id="html_range" class="mid-input" data-i18n-placeholder="input_example_range" placeholder="输入示例： (2,7)" style="display: block;">
         </div>
 
         <div class="widget">
-            <h3><i class="fa-solid fa-gear" style="animation: spin 2s linear infinite;"></i> 设置</h3>
+            <h3><i class="fa-solid fa-gear" style="animation: spin 2s linear infinite;"></i> <span data-i18n="settings"></span></h3>
             <div class="switch-row">
-                <span class="label-text">批量操作（列表）</span>
+                <span class="label-text" data-i18n="batch_operation_list"></span>
                 <label>
                     <input type="checkbox" id="batchOperationList">
                     <div class="switch">
@@ -415,7 +415,7 @@
                 </label>
             </div>
             <div class="switch-row">
-                <span class="label-text">批量操作（范围）</span>
+                <span class="label-text" data-i18n="batch_operation_range"></span>
                 <label>
                     <input type="checkbox" id="batchOperationRange">
                     <div class="switch">
@@ -424,7 +424,7 @@
                 </label>
             </div>
             <div class="switch-row">
-                <span class="label-text">锁定评分面板</span>
+                <span class="label-text" data-i18n="lock_content"></span>
                 <label>
                     <input type="checkbox" id="lockContent">
                     <div class="switch">
@@ -433,7 +433,7 @@
                 </label>
             </div>
             <div class="switch-row">
-                <span class="label-text">自动下一张</span>
+                <span class="label-text" data-i18n="auto_next"></span>
                 <label>
                     <input type="checkbox" id="autoNext">
                     <div class="switch">
@@ -442,7 +442,7 @@
                 </label>
             </div>
             <div class="switch-row">
-                <span class="label-text">评分自动提交</span>
+                <span class="label-text" data-i18n="auto_commit"></span>
                 <label>
                     <input type="checkbox" id="autoCommit">
                     <div class="switch">
@@ -452,18 +452,23 @@
             </div>
             <p style="text-align: center;">
                 <button class="button-long" style="width: 47%;" onclick="pageView.clear()"><i
-                        class="fa-solid fa-remove"></i> 清除</button>
+                        class="fa-solid fa-remove"></i> <span data-i18n="clean"></span></button>
                 <button class="button-long" style="width: 47%;" onclick="photoList.switchMode()"><i
-                        class="fa-solid fa-square-up-right"></i> 切换模式</button>
+                        class="fa-solid fa-square-up-right"></i> <span data-i18n="switch_mode"></span></button>
             </p>
             <p style="text-align: center;">
                 <button class="button-long" style="width: 47%;font-size: 12px;margin-top: 0;"
-                    onclick="saveCache.cacheImages()"><i class="fa-solid fa-archive"></i> 缓存工程</button>
+                    onclick="saveCache.cacheImages()"><i class="fa-solid fa-archive"></i> <span data-i18n="cache_project"></span></button>
                 <button class="button-long" style="width: 47%;font-size: 12px;margin-top: 0;" id="darkToggle"><i
-                        class="fa-regular fa-moon" id="darkIcon"></i> 切换外观</button>
+                        class="fa-regular fa-moon" id="darkIcon"></i> <span data-i18n="switch_theme"></span></button>
+            </p>
+            <p style="text-align: center;">
+                <button class="button-long" style="width: 47%;font-size: 12px;margin-top: 0;" id="languageSelect">
+                    <i class="fa-solid fa-language"></i> <span data-i18n="switch_language"></span>
+                </button>
             </p>
         </div>
-        <p>&copy; 2025 Flare. 信号弹. <span class="click_me" onclick="go_url('https://github.com/HoDastar/PhotosReview/', 1)">Click me.</span></p>
+        <p>&copy; 2025 Flare. 信号弹. <span class="click_me" onclick="go_url('https://github.com/HoDastar/PhotosReview/', 1)" data-i18n="click_me">Click me.</span></p>
     </aside>
 </body>
 
@@ -873,10 +878,16 @@
                     this.photoList = obj.data.list.unread;
                     // 判断
                     if (this.photoList.length === 0) {
-                        pageView.rightPane.innerHTML = '<h1>Task Completed.</h1><h1>Congratulations!</h1>';
+                        pageView.rightPane.innerHTML = `
+                            <h1>${i18n.lookUp('task_completed')}</h1>
+                            <h1>${i18n.lookUp('congratulations')}</h1>
+                            <p style="text-align: center;">
+                                <button class="button-long" style="width: 47%;" onclick="photoList.switchMode()"><i class="fa-solid fa-square-up-right"></i> ${i18n.lookUp('switch_mode')}</button>
+                            </p>
+                        `;
                         return;
                     }
-                    pageView.html_mode.innerHTML = "工程";
+                    pageView.html_mode.innerHTML = i18n.lookUp("project");
                     break;
 
                 case 'history':
@@ -885,14 +896,19 @@
                     this.photoList = obj.data.list.read;
                     // 判断
                     if (this.photoList.length === 0) {
-                        pageView.rightPane.innerHTML = '<h1>There is no history record.</h1>';
+                        pageView.rightPane.innerHTML = `
+                            <h1>${i18n.lookUp('no_history_record')}</h1>
+                            <p style="text-align: center;">
+                                <button class="button-long" style="width: 47%;" onclick="photoList.switchMode()"><i class="fa-solid fa-square-up-right"></i> ${i18n.lookUp('switch_mode')}</button>
+                            </p>
+                        `;
                         return;
                     }
-                    pageView.html_mode.innerHTML = "历史";
+                    pageView.html_mode.innerHTML = i18n.lookUp("history");
                     break;
 
                 default:
-                    await openModal("Error", "Unknown mode");
+                    await openModal(i18n.lookUp("error"), i18n.lookUp("unknown_mode"));
                     window.location.href = "javascript:history.back()";
                     return;
 
@@ -900,11 +916,11 @@
 
             switch (obj.data.type) {
                 case 0:
-                    pageView.html_proj_name.innerHTML = projName + " ( 审片模式 )";
+                    pageView.html_proj_name.innerHTML = `${projName} (${i18n.lookUp("review_review_type")})`;
                     break;
 
                 case 1:
-                    pageView.html_proj_name.innerHTML = projName + " ( 筛片模式 )";
+                    pageView.html_proj_name.innerHTML = `${projName} (${i18n.lookUp("screening_review_type")})`;
                     break;
             }
 

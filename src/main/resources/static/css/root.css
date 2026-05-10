@@ -127,7 +127,7 @@ body {
 /* 夜间模式切换按钮 */
 .dark-toggle {
     position: fixed;
-    bottom: 24px;
+    top: 84px;
     right: 24px;
     z-index: 1000;
     background: var(--color-bg);
@@ -153,7 +153,7 @@ body {
 
 .lang-toggle {
     position: fixed;
-    bottom: 24px;
+    top: 84px;
     right: 80px;
     z-index: 1000;
     background: var(--color-bg);
@@ -268,4 +268,16 @@ body {
     text-align: center;
     cursor: pointer;
     margin: 3px;
+}
+
+@media (max-width: 768px) {
+    .dark-toggle {
+        top: 16px;
+        right: 16px;
+    }
+
+    .lang-toggle {
+        top: 16px;
+        right: 72px;
+    }
 }
