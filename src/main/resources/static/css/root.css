@@ -127,8 +127,9 @@ body {
 /* 夜间模式切换按钮 */
 .dark-toggle {
     position: fixed;
-    top: 84px;
-    right: 24px;
+    top: 50%;
+    right: 20px;
+    transform: translateY(28px);
     z-index: 1000;
     background: var(--color-bg);
     color: var(--color-fg);
@@ -141,8 +142,16 @@ body {
     justify-content: center;
     font-size: 1.3rem;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: background 0.3s, color 0.3s, border 0.3s;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s;
+}
+
+.dark-toggle:hover {
+    transform: translateY(28px) scale(1.06);
+}
+
+.lang-toggle:hover {
+    transform: translateY(-28px) scale(1.06);
 }
 
 .dark-toggle.active {
@@ -153,12 +162,13 @@ body {
 
 .lang-toggle {
     position: fixed;
-    top: 84px;
-    right: 80px;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-28px);
     z-index: 1000;
     background: var(--color-bg);
     color: var(--color-fg);
-    border: 1px solid var(--color-bg);
+    border: 1px solid var(--color-border);
     border-radius: 50%;
     width: 48px;
     height: 48px;
@@ -167,8 +177,8 @@ body {
     justify-content: center;
     font-size: 1.3rem;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: background 0.3s, color 0.3s, border 0.3s;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s;
 }
 
 /* 加载页面样式 */
@@ -271,13 +281,23 @@ body {
 }
 
 @media (max-width: 768px) {
+    .dark-toggle,
+    .lang-toggle {
+        top: auto;
+        transform: none;
+        bottom: 16px;
+    }
+
     .dark-toggle {
-        top: 16px;
         right: 16px;
     }
 
     .lang-toggle {
-        top: 16px;
         right: 72px;
+    }
+
+    .dark-toggle:hover,
+    .lang-toggle:hover {
+        transform: scale(1.06);
     }
 }
