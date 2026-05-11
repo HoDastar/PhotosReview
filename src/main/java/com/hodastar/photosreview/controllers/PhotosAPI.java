@@ -136,6 +136,10 @@ public class PhotosAPI {
                 );
         List<List<Integer>> taskList = taskAll.get(String.valueOf(uid));
 
+        if (taskList == null || taskList.isEmpty()) {
+            return new Respond<>(false, "27", null);
+        }
+
         Set<EntityReviewPhotos> photosSet = new LinkedHashSet<>();
         // 循环每个任务
         for (List<Integer> list : taskList) {

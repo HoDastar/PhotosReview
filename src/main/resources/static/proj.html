@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>proj - default</title>
     <!-- 引入 Font Awesome 图标库 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <link rel="stylesheet" href="css/root.css">
     <link rel="stylesheet" href="css/modal.css">
     <link rel="stylesheet" href="css/input.css">
@@ -640,7 +640,8 @@
 
 
         // 更新页面照片
-        updatePhoto(tempid = this.page) {
+        updatePhoto() {
+            const tempid = this.page
             pageView.html_img.src = '';
             pageView.html_img.src = '/data/proj/' + proj + '/proxy/' + this.photoList[tempid].name + '.webp';
             //修改数据
@@ -654,6 +655,8 @@
                 this.selectRadio(this.photoList[tempid].score);
                 pageView.html_note.value = this.photoList[tempid].note || '';
             }
+            // 存储位置
+            setCookie("review_last_photoid", this.photoList[tempid].photoid, 365);
         }
 
         // 更新数组数据
@@ -846,7 +849,7 @@
 
             }
 
-            this.updatePhoto(this.page);
+            this.updatePhoto();
 
         }
 
@@ -864,7 +867,11 @@
             const obj = await getApi(url + '/api/photos/fetch_photo_list?uid=' + user_uid + '&token=' + user_token + '&proj=' + getUrlGet('proj'));
 
             if (!obj.result) {
-                await openModal("Error", obj.text);
+                const msg = parseInt(obj.message);
+                await openModal(
+                    i18n.lookUp("modal_content_fail")[msg].title,
+                    i18n.lookUp("modal_content_fail")[msg].message
+                );
                 window.location.href = "javascript:history.back()";
                 return;
             }
@@ -909,7 +916,10 @@
                     break;
 
                 default:
-                    await openModal(i18n.lookUp("error"), i18n.lookUp("unknown_mode"));
+                    await openModal(
+                        i18n.lookUp("error"),
+                        i18n.lookUp("unknown_mode")
+                    );
                     window.location.href = "javascript:history.back()";
                     return;
 
@@ -935,8 +945,15 @@
             this.remaining = obj.data.remaining;
             pageView.html_all.innerHTML = this.all;
             pageView.html_remaining.innerHTML = this.remaining;
-            // 更新照片
-            this.updatePhoto();
+            // 获取Cookie中的上一次浏览位置
+            let lastPhotoid = parseInt(getCookie("review_last_photoid"));
+            // 判断如果存在且有效，则跳转到该位置；否则默认显示第一张
+            if (this.getTempidByPhotoid(lastPhotoid) === -1 || !lastPhotoid) {
+                this.updatePhoto();
+            }
+            else {
+                pageView.goPageByPhoto(lastPhotoid);
+            }
         }
     }
 
@@ -1211,7 +1228,7 @@
     // 检查登录情况（2分钟一次）
     async function check_login() {
         // 获取结果
-        let login_result = await getApi(url + `/api/user/check_token?uid=${uid}&token=${token}`);
+        let login_result = await getApi(url + `/api/user/check_token?uid=${user_uid}&token=${user_token}`);
         if (!login_result.result) {
             await openModal(
                 i18n.lookUp("modal_content_fail")[12].title,

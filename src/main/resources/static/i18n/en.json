@@ -231,6 +231,11 @@
             "index": 26,
             "title": "Warning",
             "message": "This Photoid does not belong to the project."
+        },
+        {
+            "index": 27,
+            "title": "Warning",
+            "message": "You haven't joined this project."
         }
     ],
     "modal_content_success": [
@@ -329,7 +334,7 @@
     "out_of_range": " is out of range",
     "reached_max_size": "Image has reached the maximum size",
     "reached_min_size": "Image has reached the minimum size",
-    "reached_top": "This is the fist photo",
+    "reached_top": "This is the first photo",
     "reached_bottom": "This is the last photo",
     "no_this_photoid": "This Photoid does not exist",
     "no_this_tempid": "This Tempid does not exist"
