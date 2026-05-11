@@ -1,0 +1,55 @@
+// Create Project
+async function createProj() {
+    const fileInput = document.getElementById("imgInputCreateThumbnail");
+    const projName = document.querySelector('#createProj input[name="input_project_name"]').value;
+    const reviewTypeInput = document.querySelector('#createProj input[name="review_type"]:checked');
+    // 非空
+    if (!projName || projName.trim() === "" || !reviewTypeInput || fileInput.value === '') {
+        openModal(
+            i18n.lookUp("modal_content_fail")[11].title,
+            i18n.lookUp("modal_content_fail")[11].message
+        );
+        return;
+    }
+
+    if (projName.length > 100) {
+        openModal(
+            i18n.lookUp("modal_content_fail")[6].title,
+            i18n.lookUp("modal_content_fail")[6].message
+        );
+        return;
+    }
+
+    const reviewType = parseInt(reviewTypeInput.value, 10);
+    const param = {
+        name: projName,
+        type: reviewType,
+        adminUid: uid,
+        adminToken: token
+    }
+    const result = await postApiWithFile(url + "/api/proj/create_proj", param, fileInput);
+    const msg = parseInt(result.message, 10);
+    if (!result.result) {
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg]["title"],
+            i18n.lookUp("modal_content_fail")[msg]["message"]
+        );
+    } else {
+        await openModal(
+            i18n.lookUp("modal_content_success")[0].title,
+            i18n.lookUp("modal_content_success")[0].message
+        );
+        cleanCreateProj();
+        getProj();
+    }
+}
+
+// Clean Create Project Form
+function cleanCreateProj() {
+    document.querySelector("#createProj .text-input").value = "";
+    document.querySelector('input[name="review_type"][value="0"]').checked = true;
+    const fileInput = document.getElementById("imgInputCreateThumbnail");
+    fileInput.value = "";
+    const display = document.getElementById("imgInputCreateThumbnailDisplay");
+    display.innerHTML = `<span>${i18n.lookUp("you_havent_chosen")}</span>`;
+}

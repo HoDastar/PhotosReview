@@ -129,16 +129,6 @@
         </div>
         <!-- 右侧小组件区 -->
         <aside class="contents_right">
-            <div class="widget">
-                <img src="" style="width: 100px;border-radius: 10px;" id="contents_right_logo">
-                <h3>LZMSPD<br>廉州中学摄影部</h3>
-                <p>
-                    Lianzhou Middle School Photograph Department Review System, which is used for photo post-production.
-                    Not only can this system efficiently assign large-scale tasks
-                    to members, but also display data in the form of text, tables, or charts based on the results.
-                    Moreover, the simple interface and the fast operation are key advantages of this system.
-                </p>
-            </div>
             <div class="widget" id="widget_user_info">
                 <p style="font-size: 20px;">UID：<span id="html_uid"></span></p>
                 <p><button class="button-long" onclick='go_url("alter_password.html", 0)'><i class="fa-solid fa-key"></i> <span data-i18n="alter_password"></span></button></p>
@@ -301,9 +291,6 @@
             const link = document.createElement("link");
             link.rel = "icon";
             link.href = infoObj.website_icon;
-            const widgetLogo = document.getElementById("contents_right_logo");
-            widgetLogo.src = infoObj.website_icon;
-            document.head.appendChild(link);
 
             document.querySelectorAll("[data-config]").forEach(el => {
                 const key = el.getAttribute("data-config");
