@@ -1,32 +1,34 @@
 # PhotosReview
 
-PhotosReview 是一个基于 **Spring Boot + SQLite** 的照片评审系统，提供：
+[中文](./README-zh.md) | [English](./README.md)
 
-- 用户登录与令牌校验。
-- 后台项目管理（创建项目、分配任务、管理用户、上传与删除照片）。
-- 前台项目浏览与评审模式（Project / History）。
-- 中英双语切换与深浅色外观切换。
+PhotosReview is a photo review system built with **Spring Boot + SQLite**, providing:
 
-## 仓库结构
+- User login and token validation.
+- Admin-side project management (create projects, assign tasks, manage users, upload and delete photos).
+- Frontend project browsing and review modes (Project / History).
+- Chinese/English language switching and light/dark theme switching.
 
-- `src/main/java/com/hodastar/photosreview/`：后端 Java 代码（Controller / Mapper / Config / Utils / Entity）。
-- `src/main/resources/static/`：前端静态页面与脚本（`index.html`、`admin.html`、`proj.html` 等）。
-- `src/main/resources/static/i18n/`：国际化文案（`zh.json`、`en.json`）。
-- `data/`：运行时数据目录（如默认图标、项目资源）。
+## Repository Structure
 
-## 环境要求
+- `src/main/java/com/hodastar/photosreview/`: Backend Java code (Controller / Mapper / Config / Utils / Entity).
+- `src/main/resources/static/`: Frontend static pages and scripts (`index.html`, `admin.html`, `proj.html`, etc.).
+- `src/main/resources/static/i18n/`: Internationalization resources (`zh.json`, `en.json`).
+- `data/`: Runtime data directory (e.g., default icons, project assets).
+
+## Requirements
 
 - JDK 17+
-- Maven 3.9+（或使用仓库自带 `mvnw`）
+- Maven 3.9+ (or use the bundled `mvnw`)
 
-## 本地启动
+## Run Locally
 
 ```bash
-# 1) 克隆并进入项目
+# 1) Clone and enter the project
 git clone <your-repo-url>
 cd PhotosReview
 
-# 2) 启动
+# 2) Start
 ./mvnw spring-boot:run
 ```
 
@@ -36,24 +38,24 @@ Windows PowerShell:
 .\mvnw.cmd spring-boot:run
 ```
 
-启动后默认访问：
+Default URLs after startup:
 
-- 前台：`http://localhost:8080/`
-- 后台：`http://localhost:8080/admin.html`
+- Frontend: `http://localhost:8080/`
+- Admin: `http://localhost:8080/admin.html`
 
-## 打包
+## Build
 
 ```bash
 ./mvnw clean package
 java -jar target/*.jar
 ```
 
-## 常见说明
+## Notes
 
-- 前端语言切换依赖 `localStorage.lang`，文案来源于 `static/i18n/*.json`。
-- 外观切换依赖 `localStorage.darkmode`。
-- 首次运行时会根据后端初始化逻辑创建所需数据表与基础数据（若不存在）。
+- Frontend language switching relies on `localStorage.lang`, with copy from `static/i18n/*.json`.
+- Theme switching relies on `localStorage.darkmode`.
+- On first run, required tables and base data are initialized by backend logic if absent.
 
-## 贡献
+## Contributing
 
-欢迎通过 Issue / Pull Request 提交问题与改进建议。
+Issues and Pull Requests are welcome.
