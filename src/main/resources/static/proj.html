@@ -357,7 +357,7 @@
             <h3><i class="fa-solid fa-circle-info"></i> <span data-i18n="information"></span></h3>
             <p><span data-i18n="photoid"></span>: <span class="p_right" id="html_photoid">1100</span></p>
             <p><span data-i18n="tempid"></span>: <span class="p_right" id="html_tempid">0</span></p>
-            <p><span data-i18n="status"></span>: <span class="p_right" style="color: red;font-weight: bold;" id="html_status" data-i18n="undone">Undone</span></p>
+            <p><span data-i18n="status"></span>: <span class="p_right" style="color: red;font-weight: bold;" id="html_status"></span></p>
             <p><span data-i18n="all"></span>: <span class="p_right" id="html_all">100</span></p>
             <p><span data-i18n="remaining"></span>: <span class="p_right" id="html_remaining">50</span></p>
         </div>
@@ -387,7 +387,7 @@
                     <span>4</span>
                 </label>
             </div>
-            <p><span data-i18n="comment"></span>: </p>
+            <p><span data-i18n="note"></span>: </p>
             <textarea data-i18n-placeholder="say_something" placeholder="说点什么吧..." id="html_note"></textarea>
             <button class="button-long" onclick="photoList.submit()">
                 <i class="fa-solid fa-check"></i>
@@ -451,24 +451,24 @@
                 </label>
             </div>
             <p style="text-align: center;">
-                <button class="button-long" style="width: 47%;;font-size: 12px;" onclick="pageView.clear()"><i
-                        class="fa-solid fa-remove"></i> <span data-i18n="clean"></span></button>
-                <button class="button-long" style="width: 47%;;font-size: 12px;" onclick="photoList.switchMode()"><i
+                <button class="button-long" style="width: 98%;;font-size: 12px;" onclick="photoList.switchMode()"><i
                         class="fa-solid fa-square-up-right"></i> <span data-i18n="switch_mode"></span></button>
             </p>
             <p style="text-align: center;">
+                <button class="button-long" style="width: 47%;;font-size: 12px;margin-top: 0;" onclick="pageView.clear()"><i
+                        class="fa-solid fa-remove"></i> <span data-i18n="clean"></span></button>
                 <button class="button-long" style="width: 47%;font-size: 12px;margin-top: 0;"
-                    onclick="saveCache.cacheImages()"><i class="fa-solid fa-archive"></i> <span data-i18n="cache_project"></span></button>
-                <button class="button-long" style="width: 47%;font-size: 12px;margin-top: 0;" id="darkToggle"><i
-                        class="fa-regular fa-moon" id="darkIcon"></i> <span data-i18n="switch_theme"></span></button>
+                        onclick="saveCache.cacheImages()"><i class="fa-solid fa-archive"></i> <span data-i18n="cache_project"></span></button>
             </p>
             <p style="text-align: center;">
-                <button class="button-long" style="width: 98%;font-size: 12px;margin-top: 0;" id="languageSelect">
+                <button class="button-long" style="width: 47%;font-size: 12px;margin-top: 0;" id="darkToggle"><i
+                        class="fa-regular fa-moon" id="darkIcon"></i> <span data-i18n="switch_theme"></span></button>
+                <button class="button-long" style="width: 47%;font-size: 12px;margin-top: 0;" id="languageSelect">
                     <i class="fa-solid fa-language"></i> <span data-i18n="switch_language"></span>
                 </button>
             </p>
         </div>
-        <p>&copy; 2025 Flare. 信号弹. <span class="click_me" onclick="go_url('https://github.com/HoDastar/PhotosReview/', 1)" data-i18n="click_me">Click me.</span></p>
+        <p>&copy; 2025 Flare. 信号弹. <span class="click_me" onclick="go_url('https://github.com/HoDastar/PhotosReview/', 1)" style="text-decoration: underline">Click me.</span></p>
     </aside>
 </body>
 
@@ -646,7 +646,7 @@
             //修改数据
             pageView.html_photoid.innerHTML = this.photoList[tempid].photoid;
             pageView.html_tempid.innerHTML = tempid;
-            pageView.html_status.innerHTML = this.photoList[tempid].status === true ? '已评分' : '未评分';
+            pageView.html_status.innerHTML = this.photoList[tempid].status === true ? i18n.lookUp("done") : i18n.lookUp("undone");
             pageView.html_status.style.color = this.photoList[tempid].status === true ? 'limegreen' : 'red';
             pageView.html_remaining.innerHTML = this.remaining;
             //修改html评分
@@ -674,7 +674,7 @@
             console.log(note);
             // 检查评分
             if (score === 0) {
-                showBubble("评分为空", 'red', '#fff');
+                showBubble(i18n.lookUp("score_empty"), 'red', '#fff');
                 return;
             }
             // 正则表达式
@@ -685,11 +685,11 @@
                 // 获取List数据
                 const list = document.getElementById('html_list').value.trim();
                 if (!list) {
-                    showBubble("Tempid 列表为空", 'red', '#fff');
+                    showBubble(i18n.lookUp("temp_list_empty"), 'red', '#fff');
                     return;
                 }
                 if (!regex.test(list)) {
-                    showBubble("Tempid 列表格式错误", 'red', '#fff');
+                    showBubble(i18n.lookUp("temp_list_invalid"), 'red', '#fff');
                     return;
                 }
                 let this_tempid_list = list.split(',').map(item => item.trim());
@@ -699,7 +699,7 @@
                 for (let i = 0; i < this_tempid_list.length; i++) {
                     let tempid = parseInt(this_tempid_list[i]);
                     if (isNaN(tempid) || tempid < 0 || tempid >= this.photoList.length) {
-                        showBubble(`Tempid ${tempid} 未找到`, 'red', '#fff');
+                        showBubble("Tempid: " + tempid + i18n.lookUp("out_of_range"), 'red', '#fff');
                         return;
                     }
                     this_photoid_list.push(this.photoList[tempid].photoid);
@@ -724,7 +724,7 @@
                     );
                     return;
                 }
-                showBubble("提交成功，影响了" + obj.data + "项", 'blue', '#fff');
+                showBubble(i18n.lookUp("affected_rows") + obj.data, 'blue', '#fff');
                 // 更新
                 this_photoid_list.forEach((photoid, index) => {
                     let tempid = this.getTempidByPhotoid(photoid);
@@ -744,23 +744,23 @@
                 // 获取Range数据
                 const range = document.getElementById('html_range').value.trim();
                 if (!range) {
-                    showBubble("Tempid 范围为空", 'red', '#fff');
+                    showBubble(i18n.lookUp("temp_range_empty"), 'red', '#fff');
                     return;
                 }
                 if (!regex.test(range)) {
-                    showBubble("Tempid 范围格式错误", 'red', '#fff');
+                    showBubble(i18n.lookUp("temp_range_invalid"), 'red', '#fff');
                     return;
                 }
                 let this_tempid_range = range.split(',').map(item => item.trim());
                 // 检查范围格式
                 if (this_tempid_range.length !== 2) {
-                    showBubble("Tempid 范围格式错误", 'red', '#fff');
+                    showBubble(i18n.lookUp("temp_range_invalid"), 'red', '#fff');
                     return;
                 }
                 let start = parseInt(this_tempid_range[0]);
                 let end = parseInt(this_tempid_range[1]);
                 if (end >= this.photoList.length) {
-                    showBubble("Tempid 范围格式错误", 'red', '#fff');
+                    showBubble(i18n.lookUp("temp_range_invalid"), 'red', '#fff');
                     return;
                 }
                 // 转为photoid列表
@@ -785,7 +785,7 @@
                     );
                     return;
                 }
-                showBubble("提交成功，影响了" + obj.data + "项", 'blue', '#fff');
+                showBubble(i18n.lookUp("affected_rows") + obj.data, 'blue', '#fff');
                 // 更新
                 this_photoid_list.forEach((photoid, index) => {
                     let tempid = this.getTempidByPhotoid(photoid);
@@ -823,7 +823,7 @@
                     );
                     return;
                 }
-                showBubble("提交成功，影响了1项", 'blue', '#fff');
+                showBubble(i18n.lookUp("affected_rows") + "1", 'blue', '#fff');
                 // 减少剩余
                 if (!this.photoList[this.page].status) {
                     this.remaining -= 1;
@@ -880,10 +880,10 @@
                     if (this.photoList.length === 0) {
                         pageView.rightPane.innerHTML = `
                             <h1>${i18n.lookUp('task_completed')}</h1>
-                            <h1>${i18n.lookUp('congratulations')}</h1>
-                            <p style="text-align: center;">
-                                <button class="button-long" style="width: 47%;" onclick="photoList.switchMode()"><i class="fa-solid fa-square-up-right"></i> ${i18n.lookUp('switch_mode')}</button>
-                            </p>
+            <p style="text-align: center;">
+                <button class="button-long" style="width: 98%;font-size: 12px;" onclick="photoList.switchMode()"><i
+                        class="fa-solid fa-square-up-right"></i> <span>${i18n.lookUp('switch_mode')}</span></button>
+            </p>
                         `;
                         return;
                     }
@@ -898,9 +898,10 @@
                     if (this.photoList.length === 0) {
                         pageView.rightPane.innerHTML = `
                             <h1>${i18n.lookUp('no_history_record')}</h1>
-                            <p style="text-align: center;">
-                                <button class="button-long" style="width: 47%;" onclick="photoList.switchMode()"><i class="fa-solid fa-square-up-right"></i> ${i18n.lookUp('switch_mode')}</button>
-                            </p>
+            <p style="text-align: center;">
+                <button class="button-long" style="width: 98%;font-size: 12px;" onclick="photoList.switchMode()"><i
+                        class="fa-solid fa-square-up-right"></i> <span>${i18n.lookUp('switch_mode')}</span></button>
+            </p>
                         `;
                         return;
                     }
@@ -982,7 +983,7 @@
         // 图片放大
         zoomIn() {
             if (this.img_width_percent >= 110) {
-                showBubble("Image has reached the maximum size.", 'red', '#fff');
+                showBubble(i18n.lookUp("reached_max_size"), 'red', '#fff');
                 return;
             }
             this.img_width_percent += 5;
@@ -991,7 +992,7 @@
         // 图片缩小
         zoomOut() {
             if (this.img_width_percent <= 20) {
-                showBubble("Image has reached the minimum size.", 'red', '#fff');
+                showBubble(i18n.lookUp("reached_min_size"), 'red', '#fff');
                 return;
             }
             this.img_width_percent -= 5;
@@ -1004,7 +1005,7 @@
                 photoList.page++;
                 photoList.updatePhoto();
             } else {
-                showBubble("到底了", 'red', '#fff');
+                showBubble(i18n.lookUp("reached_bottom"), 'red', '#fff');
             }
         }
         // 上一页
@@ -1013,7 +1014,7 @@
                 photoList.page--;
                 photoList.updatePhoto();
             } else {
-                showBubble("到顶了", 'red', '#fff');
+                showBubble(i18n.lookUp("reached_top"), 'red', '#fff');
             }
         }
 
@@ -1028,7 +1029,7 @@
         // 通过tempid切换图片
         goPageByTemp(id) {
             if (id > photoList.photoList.length - 1 || id < 0) {
-                showBubble("没有此Tempid", 'red', '#fff');
+                showBubble(i18n.lookUp("no_this_tempid"), 'red', '#fff');
             }
             else {
                 photoList.page = id;
@@ -1040,7 +1041,7 @@
         goPageByPhoto(id) {
             id = photoList.getTempidByPhotoid(id);
             if (id === -1) {
-                showBubble("没有此Photoid", 'red', '#fff');
+                showBubble(i18n.lookUp("no_this_photoid"), 'red', '#fff');
                 return;
             }
             console.log(id);
@@ -1167,7 +1168,7 @@
         }
 
         async cacheImages(urls = this.list) {
-            showBubble("加载中...", 'blue', '#fff')
+            showBubble(i18n.lookUp("loading"), 'blue', '#fff')
             const cache = await caches.open(this.CACHE_NAME);
             let done = 0, saved = 0, failed = 0;
             const fill = document.getElementById("bar-fill");
@@ -1193,7 +1194,7 @@
                 }
             }
             loading_bar.style.display = 'none'
-            showBubble("成功: " + saved + " , 失败: " + failed, 'blue', '#fff')
+            showBubble(i18n.lookUp("successful_rows") + saved + " , " + i18n.lookUp("failed_rows") + failed, 'blue', '#fff')
         }
     }
 
