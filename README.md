@@ -1,54 +1,61 @@
-# PhotoReview Server
+# PhotosReview
 
-Overview
+[中文](./README-zh.md) | [English](./README.md)
 
-- Provides auth (JWT), email verification.
+PhotosReview is a photo review system built with **Spring Boot + SQLite**, providing:
 
-Quick start
+- User login and token validation.
+- Admin-side project management (create projects, assign tasks, manage users, upload and delete photos).
+- Frontend project browsing and review modes (Project / History).
+- Chinese/English language switching and light/dark theme switching.
+
+## Repository Structure
+
+- `src/main/java/com/hodastar/photosreview/`: Backend Java code (Controller / Mapper / Config / Utils / Entity).
+- `src/main/resources/static/`: Frontend static pages and scripts (`index.html`, `admin.html`, `proj.html`, etc.).
+- `src/main/resources/static/i18n/`: Internationalization resources (`zh.json`, `en.json`).
+- `data/`: Runtime data directory (e.g., default icons, project assets).
+
+## Requirements
+
+- JDK 17+
+- Maven 3.9+ (or use the bundled `mvnw`)
+
+## Run Locally
 
 ```bash
-git clone https://github.com/yourname/ReclightServer.git
-cd ReclightServer
+# 1) Clone and enter the project
+git clone <your-repo-url>
+cd PhotosReview
 
-# Set minimal env vars
-export SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/reclight
-export SPRING_DATASOURCE_USERNAME=root
-export SPRING_DATASOURCE_PASSWORD=pass
-export JWT_SECRET=change_this_secret
-
-# Run (Unix)
+# 2) Start
 ./mvnw spring-boot:run
-
-# Windows (PowerShell)
-.\mvnw spring-boot:run
 ```
 
-Modal error code
+Windows PowerShell:
 
-```aiignore
- * 0: 数据库操作失败
- * 1: 参数错误
- * 2: uid或密码错误
- * 3: uid已占用
- * 4: Token无效
- * 5: 操作权限不足
- * 6: 字符过长
- * 7: uid无效
- * 8: 不支持的文件类型
- * 9: 文件过大
- * 10: 文件不存在
- * 11: 有未填写的必填字段
- * 12：登录已过期
+```powershell
+.\mvnw.cmd spring-boot:run
 ```
 
-Build
+Default URLs after startup:
+
+- Frontend: `http://localhost:8080/`
+- Admin: `http://localhost:8080/admin.html`
+
+## Build
 
 ```bash
-./mvnw clean package -DskipTests
+./mvnw clean package
 java -jar target/*.jar
 ```
 
-Notes
+## Notes
 
-- Redis is optional. Use secrets for production credentials.
-- Open an issue or PR on GitHub for contributions.
+- Frontend language switching relies on `localStorage.lang`, with copy from `static/i18n/*.json`.
+- Theme switching relies on `localStorage.darkmode`.
+- On first run, required tables and base data are initialized by backend logic if absent.
+
+## Contributing
+
+Issues and Pull Requests are welcome.

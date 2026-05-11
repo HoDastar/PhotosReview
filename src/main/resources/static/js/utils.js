@@ -48,3 +48,8 @@ function go_url(url, method) {
         window.open(url);
     }
 }
+
+function getUrlGet(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name) || '';
+}

@@ -30,7 +30,7 @@ public class SqliteInitiate {
                     """);
             jdbcTemplate.execute("""
                     INSERT INTO review_users(uid, password, login_time, allname, status)
-                    SELECT 10000, '$2a$10$3WrOZ89bEfspgEEm3.u5Ku5DDJHfHQ1dFb4c9F83NbhRv6Wp6W2He', 0, 'root', 0
+                    SELECT 10000, '$2a$10$3WrOZ89bEfspgEEm3.u5Ku5DDJHfHQ1dFb4c9F83NbhRv6Wp6W2He', 0, 'Administrator', 0
                     WHERE NOT EXISTS (
                         SELECT 1 FROM review_users WHERE uid = 10000
                     );
@@ -86,14 +86,6 @@ public class SqliteInitiate {
                     SELECT 1, 'website_icon', 'data/icon/default_icon.jpg'
                     WHERE NOT EXISTS (
                         SELECT 1 FROM review_config WHERE id = 1
-                    );
-                """);
-            jdbcTemplate.execute("""
-                    -- 初始化设置 --
-                    INSERT INTO review_config(id, name, value)
-                    SELECT 2, 'website_url', 'http://127.0.0.1:8080'
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM review_config WHERE id = 2
                     );
                 """);
         };

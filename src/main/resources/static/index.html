@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title></title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <link rel="stylesheet" href="css/modal.css">
     <link rel="stylesheet" href="css/root.css?v=0.1">
     <link rel="stylesheet" href="css/index.css?v=0.1">
@@ -35,13 +34,6 @@
             <button class="confirm-btn" id="confirmBtn">OK</button>
         </div>
     </div>
-    <!-- 按钮 -->
-    <button class="dark-toggle" id="darkToggle">
-        <i class="fa-regular fa-moon" id="darkIcon"></i>
-    </button>
-    <button class="lang-toggle" id="languageSelect">
-        <i class="fa-solid fa-language"></i>
-    </button>
 
     <div class="first_div">
         <div class="top_title">
@@ -137,26 +129,24 @@
         </div>
         <!-- 右侧小组件区 -->
         <aside class="contents_right">
-            <div class="widget">
-                <img src="" style="width: 100px;border-radius: 10px;" id="contents_right_logo">
-                <h3>LZMSPD<br>廉州中学摄影部</h3>
-                <p>
-                    Lianzhou Middle School Photograph Department Review System, which is used for photo post-production.
-                    Not only can this system efficiently assign large-scale tasks
-                    to members, but also display data in the form of text, tables, or charts based on the results.
-                    Moreover, the simple interface and the fast operation are key advantages of this system.
-                </p>
-            </div>
             <div class="widget" id="widget_user_info">
                 <p style="font-size: 20px;">UID：<span id="html_uid"></span></p>
                 <p><button class="button-long" onclick='go_url("alter_password.html", 0)'><i class="fa-solid fa-key"></i> <span data-i18n="alter_password"></span></button></p>
                 <p><button class="button-long" onclick="signout()"><i class="fa-solid fa-sign-out-alt"></i> <span data-i18n="sign_out"></span></button></p>
+                <div class="icon-toggle-group">
+                    <button class="icon-toggle" id="darkToggle" data-i18n-title="switch_theme">
+                        <i class="fa-regular fa-moon" id="darkIcon"></i>
+                    </button>
+                    <button class="icon-toggle" id="languageSelect" data-i18n-title="switch_language">
+                        <i class="fa-solid fa-language"></i>
+                    </button>
+                </div>
             </div>
         </aside>
     </div>
 
     <div class="footer">
-        <p>&copy; 2025 Flare. 信号弹. <span class="click_me" onclick="go_url('https://github.com/Flare9900/PhotosReview/', 1)">Click me.</span></p>
+        <p>&copy; 2025 Flare. 信号弹. <span class="click_me" onclick="go_url('https://github.com/HoDastar/PhotosReview/', 1)">Click me.</span></p>
     </div>
 </body>
 
@@ -173,7 +163,7 @@
     // 检查登录情况（2分钟一次）
     async function check_login() {
         // 获取结果
-        let login_result = await getApi(window.location.origin + `/api/user/check_token?uid=${uid}&token=${token}`);
+        let login_result = await getApi(url + `/api/user/check_token?uid=${uid}&token=${token}`);
         if (!login_result.result) {
             await openModal(
                 i18n.lookUp("modal_content_fail")[12].title,
@@ -189,7 +179,7 @@
     }
     // 获取工程列表
     async function get_proj(){
-        let obj = await getApi(window.location.origin + "/api/proj/get_proj_list");
+        let obj = await getApi(url + "/api/proj/get_proj_list");
         let cardContent = document.getElementById('cardContent');
         cardContent.innerHTML = '';
         // foreach循环
@@ -224,8 +214,8 @@
                     a_status = i18n.lookUp("progress");
                     a_status_color = 'color_green';
                     btlist = `
-                        <button onclick="go_url('proj.html?proj_name=${proj.proj_name}&type=project',1)"><i class="fa-solid fa-tools"></i> ${i18n.lookUp("project_mode")}</button>
-                        <button onclick="go_url('proj.html?proj_name=${proj.proj_name}&type=history',1)"><i class="fa-solid fa-history"></i> ${i18n.lookUp("history_mode")}</button>
+                        <button onclick="go_url('proj.html?proj=${proj.proj_id}&type=project',1)"><i class="fa-solid fa-tools"></i> ${i18n.lookUp("project_mode")}</button>
+                        <button onclick="go_url('proj.html?proj=${proj.proj_id}&type=history',1)"><i class="fa-solid fa-history"></i> ${i18n.lookUp("history_mode")}</button>
                         `
                     break;
 
@@ -252,10 +242,10 @@
             let card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <div class="card_background" style="background:url('${window.location.origin}/data/proj/${proj.proj_id + '/icon/' + proj.proj_thumbnail}') center/cover;">
+                <div class="card_background" style="background:url('${url}/data/proj/${proj.proj_id + '/icon/' + proj.proj_thumbnail}') center/cover;">
                 </div>
                 <div style="z-index: 1;">
-                    <img src="${window.location.origin}/data/proj/${proj.proj_id + '/icon/' + proj.proj_thumbnail}" alt="Thumbnail">
+                    <img src="${url}/data/proj/${proj.proj_id + '/icon/' + proj.proj_thumbnail}" alt="Thumbnail">
                     <div class="card_text">
                         <h3>${proj.proj_name}</h3>
                         <p>
@@ -294,17 +284,13 @@
     }
 
     async function loadWebsiteInfo() {
-        const info = await getApi(window.location.origin + "/api/system/get_website_info");
+        const info = await getApi(url + "/api/system/get_website_info");
         if (info) {
             const infoObj = info.data;
-            url = infoObj.website_url;
 
             const link = document.createElement("link");
             link.rel = "icon";
             link.href = infoObj.website_icon;
-            const widgetLogo = document.getElementById("contents_right_logo");
-            widgetLogo.src = infoObj.website_icon;
-            document.head.appendChild(link);
 
             document.querySelectorAll("[data-config]").forEach(el => {
                 const key = el.getAttribute("data-config");
@@ -313,7 +299,7 @@
                 }
                 if (key === "website_url") {
                     el.addEventListener("click", () => {
-                        window.location.href = infoObj.website_url;
+                        window.location.href = url;
                     });
                 }
             });
@@ -339,17 +325,18 @@
         }
         check_login();
         // 获取用户信息
-        let user_info = await getApi(window.location.origin + `/api/user/get_user_info?uid=${uid}&token=${token}`);
+        let user_info = await getApi(url + `/api/user/get_user_info?uid=${uid}&token=${token}`);
         if (user_info.result) {
             if (user_info.data.status == 0) {
-                document.getElementById("widget_user_info").innerHTML += `
-                <p><button class="button-long" onclick='go_url("admin.html", 0)'><i class="fa-solid fa-gear"></i> <span data-i18n="backed_system">${i18n.lookUp("backed_system")}</span></button></p>
-                `
+                const pEl = document.createElement("p");
+                pEl.innerHTML = `
+                <button class="button-long" onclick='go_url("admin.html", 1)'><i class="fa-solid fa-gear"></i> <span data-i18n="backed_system">${i18n.lookUp("backed_system")}</span></button>`
+                document.getElementById("widget_user_info").insertBefore(pEl, document.getElementById("widget_user_info").children[2]);
             }
         }
         // 获取工程列表
         await get_proj();
-        document.getElementById("html_uid").innerHTML = getCookie("review_uid")
+        document.getElementById("html_uid").innerHTML = getCookie("review_uid");
     })()
 
 </script>

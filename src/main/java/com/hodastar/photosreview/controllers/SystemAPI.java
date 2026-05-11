@@ -26,7 +26,6 @@ public class SystemAPI {
         Map<String, Object> data = new HashMap<>();
         data.put("website_name", systemMapper.getWebsiteName());
         data.put("website_icon", systemMapper.getWebsiteIcon());
-        data.put("website_url", systemMapper.getWebsiteUrl());
         return new Respond<>(true, "true", data);
     }
 }
