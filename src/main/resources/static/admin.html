@@ -56,7 +56,7 @@
                     data-i18n="create_project">Create project</span></button>
             <button class="panel-btn" data-page="manageUser"><i class="fa-solid fa-users-gear"></i> <span
                     data-i18n="manage_user">Manage User</span></button>
-            <button class="panel-btn" data-page="systemSettings"><i class="fa-solid fa-gear"></i> <span>设置</span></button>
+            <button class="panel-btn" data-page="systemSettings"><i class="fa-solid fa-gear"></i> <span data-i18n="settings"></span></button>
             <div class="icon-toggle-group">
                 <button class="icon-toggle" id="darkToggle" data-i18n-title="switch_theme">
                     <i class="fa-regular fa-moon" id="darkIcon"></i>
@@ -165,17 +165,17 @@
                     <div class="file-upload">
                         <input type="file" id="systemWebsiteIcon" accept=".jpg,.jpeg,.png,.webp"/>
                         <label for="systemWebsiteIcon" class="file-btn">
-                            <i class="fa-solid fa-file"></i> 选择图标
+                            <i class="fa-solid fa-file"></i> <span data-i18n="choose_an_image"></span>
                         </label>
                         <div class="file-display" id="systemWebsiteIconDisplay">
-                            <span>当前图标将显示在下方</span>
+                            <span data-i18n="you_havent_chosen"></span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="form-submit">
-                <button class="button-common" id="saveSystemSettings">保存设置</button>
+                <button class="button-common" id="saveSystemSettings" data-i18n="save"></button>
             </div>
         </section>
 
@@ -500,4 +500,5 @@
 <script src="./js/admin-create.js"></script>
 <script src="./js/admin-proj-list.js"></script>
 <script src="./js/admin-user.js"></script>
+<script src="./js/admin-settings.js"></script>
 <script src="./js/admin.js"></script>

@@ -142,43 +142,6 @@ async function signout() {
     }
 }
 
-
-async function loadSystemSettingsForm() {
-    const info = await getApi(url + "/api/system/get_website_info");
-    if (!info || !info.result) {
-        return;
-    }
-    document.getElementById("systemWebsiteName").value = info.data.website_name || "";
-    const iconDisplay = document.getElementById("systemWebsiteIconDisplay");
-    iconDisplay.innerHTML = "";
-    const imgEl = document.createElement("img");
-    imgEl.classList.add("file-preview");
-    imgEl.src = info.data.website_icon || "";
-    iconDisplay.appendChild(imgEl);
-}
-
-async function saveSystemSettings() {
-    const websiteName = document.getElementById("systemWebsiteName").value.trim();
-    const fileInput = document.getElementById("systemWebsiteIcon");
-
-    if (!websiteName || !fileInput.files || fileInput.files.length === 0) {
-        showBubble("系统名称不能为空，且必须上传系统图标", 'red', '#fff');
-        return;
-    }
-
-    const body = {
-        adminUid: uid,
-        adminToken: token,
-        websiteName
-    };
-    const result = await postApiWithFile(url + "/api/system/update_website_info", body, fileInput);
-    if (!result || !result.result) {
-        showBubble("保存失败，请检查登录状态", 'red', '#fff');
-        return;
-    }
-    showBubble("设置已保存", 'green', '#fff');
-    await loadWebsiteInfo();
-}
 (async () => {
     await i18n.init();
 

@@ -38,7 +38,7 @@ public class SystemAPI {
 
     @PostMapping("/update_website_info")
     public Respond<String> updateWebsiteInfo(
-            @RequestParam("file") MultipartFile iconFile,
+            @RequestParam(value = "file", required = false) MultipartFile iconFile,
             @RequestParam("json") String json
     ) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
@@ -50,9 +50,6 @@ public class SystemAPI {
         if (!(body.get("adminUid") instanceof Integer) ||
                 !(body.get("adminToken") instanceof String) ||
                 !(body.get("websiteName") instanceof String)) {
-            return new Respond<>(false, "1", null);
-        }
-        if (iconFile == null || iconFile.isEmpty()) {
             return new Respond<>(false, "1", null);
         }
 
@@ -67,24 +64,31 @@ public class SystemAPI {
             return new Respond<>(false, "1", null);
         }
 
-        String extension = FileUtil.getFileExtension(iconFile.getOriginalFilename());
-        if (extension.isEmpty() || !FileUtil.isValidImg(extension)) {
-            return new Respond<>(false, "8", null);
-        }
-        if (iconFile.getSize() > 10 * 1024 * 1024) {
-            return new Respond<>(false, "9", null);
-        }
+        if (iconFile == null || iconFile.isEmpty()) {
+            boolean resultName = systemMapper.updateWebsiteName(websiteName);
+            if (!resultName) {
+                return new Respond<>(false, "0", null);
+            }
+            return new Respond<>(true, "success", null);
+        } else {
+            String extension = FileUtil.getFileExtension(iconFile.getOriginalFilename());
+            if (extension.isEmpty() || !FileUtil.isValidImg(extension)) {
+                return new Respond<>(false, "8", null);
+            }
+            if (iconFile.getSize() > 10 * 1024 * 1024) {
+                return new Respond<>(false, "9", null);
+            }
 
-        String fileName = Utilities.generateUUID() + "." + extension;
-        String dirStr = System.getProperty("user.dir") + File.separator + "data" + File.separator + "icon" + File.separator;
-        FileUtil.saveMultipartFile(iconFile, dirStr, fileName);
-        String iconPath = "data/icon/" + fileName;
-
-        boolean resultName = systemMapper.updateWebsiteName(websiteName);
-        boolean resultIcon = systemMapper.updateWebsiteIcon(iconPath);
-        if (!resultName || !resultIcon) {
-            return new Respond<>(false, "0", null);
+            String fileName = Utilities.generateUUID() + "." + extension;
+            String dirStr = System.getProperty("user.dir") + File.separator + "data" + File.separator + "icon" + File.separator;
+            FileUtil.saveMultipartFile(iconFile, dirStr, fileName);
+            String iconPath = "data/icon/" + fileName;
+            boolean resultIcon = systemMapper.updateWebsiteIcon(iconPath);
+            boolean resultName = systemMapper.updateWebsiteName(websiteName);
+            if (!resultName || !resultIcon) {
+                return new Respond<>(false, "0", null);
+            }
+            return new Respond<>(true, "success", null);
         }
-        return new Respond<>(true, "success", null);
     }
 }
