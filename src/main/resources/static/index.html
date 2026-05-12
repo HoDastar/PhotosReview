@@ -291,6 +291,7 @@
             const link = document.createElement("link");
             link.rel = "icon";
             link.href = infoObj.website_icon;
+            document.head.appendChild(link);
 
             document.querySelectorAll("[data-config]").forEach(el => {
                 const key = el.getAttribute("data-config");
