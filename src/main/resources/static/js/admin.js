@@ -149,25 +149,29 @@ async function loadSystemSettingsForm() {
         return;
     }
     document.getElementById("systemWebsiteName").value = info.data.website_name || "";
-    document.getElementById("systemWebsiteIcon").value = info.data.website_icon || "";
+    const iconDisplay = document.getElementById("systemWebsiteIconDisplay");
+    iconDisplay.innerHTML = "";
+    const imgEl = document.createElement("img");
+    imgEl.classList.add("file-preview");
+    imgEl.src = info.data.website_icon || "";
+    iconDisplay.appendChild(imgEl);
 }
 
 async function saveSystemSettings() {
     const websiteName = document.getElementById("systemWebsiteName").value.trim();
-    const websiteIcon = document.getElementById("systemWebsiteIcon").value.trim();
+    const fileInput = document.getElementById("systemWebsiteIcon");
 
-    if (!websiteName || !websiteIcon) {
-        showBubble("系统名称和系统图标不能为空", 'red', '#fff');
+    if (!websiteName || !fileInput.files || fileInput.files.length === 0) {
+        showBubble("系统名称不能为空，且必须上传系统图标", 'red', '#fff');
         return;
     }
 
     const body = {
         adminUid: uid,
         adminToken: token,
-        websiteName,
-        websiteIcon
+        websiteName
     };
-    const result = await postApi(url + "/api/system/update_website_info", body);
+    const result = await postApiWithFile(url + "/api/system/update_website_info", body, fileInput);
     if (!result || !result.result) {
         showBubble("保存失败，请检查登录状态", 'red', '#fff');
         return;
@@ -214,6 +218,9 @@ async function saveSystemSettings() {
     });
     document.getElementById("imgInputManageThumbnail").addEventListener("change", () => {
         fileInputChange("imgInputManageThumbnail");
+    });
+    document.getElementById("systemWebsiteIcon").addEventListener("change", () => {
+        fileInputChange("systemWebsiteIcon");
     });
     document.getElementById("cleanPhotosPool").addEventListener("click", cleanPhotosPool);
     document.getElementById("uploadPhotosPool").addEventListener("click", uploadImages);

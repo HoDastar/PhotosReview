@@ -162,7 +162,15 @@
                     <div class="desc">填写图标路径或 URL（建议 .jpg/.png/.webp）</div>
                 </div>
                 <div class="form-control">
-                    <input type="text" class="text-input" id="systemWebsiteIcon" maxlength="255" placeholder="例如 data/icon/default_icon.jpg"/>
+                    <div class="file-upload">
+                        <input type="file" id="systemWebsiteIcon" accept=".jpg,.jpeg,.png,.webp"/>
+                        <label for="systemWebsiteIcon" class="file-btn">
+                            <i class="fa-solid fa-file"></i> 选择图标
+                        </label>
+                        <div class="file-display" id="systemWebsiteIconDisplay">
+                            <span>当前图标将显示在下方</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
