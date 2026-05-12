@@ -142,6 +142,39 @@ async function signout() {
     }
 }
 
+
+async function loadSystemSettingsForm() {
+    const info = await getApi(url + "/api/system/get_website_info");
+    if (!info || !info.result) {
+        return;
+    }
+    document.getElementById("systemWebsiteName").value = info.data.website_name || "";
+    document.getElementById("systemWebsiteIcon").value = info.data.website_icon || "";
+}
+
+async function saveSystemSettings() {
+    const websiteName = document.getElementById("systemWebsiteName").value.trim();
+    const websiteIcon = document.getElementById("systemWebsiteIcon").value.trim();
+
+    if (!websiteName || !websiteIcon) {
+        showBubble("系统名称和系统图标不能为空", 'red', '#fff');
+        return;
+    }
+
+    const body = {
+        adminUid: uid,
+        adminToken: token,
+        websiteName,
+        websiteIcon
+    };
+    const result = await postApi(url + "/api/system/update_website_info", body);
+    if (!result || !result.result) {
+        showBubble("保存失败，请检查登录状态", 'red', '#fff');
+        return;
+    }
+    showBubble("设置已保存", 'green', '#fff');
+    await loadWebsiteInfo();
+}
 (async () => {
     await i18n.init();
 
@@ -163,6 +196,7 @@ async function signout() {
     await loadWebsiteInfo();
     await getProj();
     await loadManageUserList();
+    await loadSystemSettingsForm();
 
     // Loading Button Events
     document.getElementById("submitCreateProj").addEventListener("click", createProj);
@@ -185,6 +219,7 @@ async function signout() {
     document.getElementById("uploadPhotosPool").addEventListener("click", uploadImages);
     document.getElementById("submitRegisterUser").addEventListener("click", registerUser);
     document.getElementById("filterManagePhotos").addEventListener("click", filterManagePhotos);
+    document.getElementById("saveSystemSettings").addEventListener("click", saveSystemSettings);
     document.getElementById("deleteSelectedPhotos").addEventListener("click", deleteSelectedPhotos);
 
     const imgInputUploadEl = document.getElementById("imgInputUpload")

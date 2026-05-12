@@ -1,10 +1,8 @@
 package com.hodastar.photosreview.mappers;
 
-import com.hodastar.photosreview.entities.EntityReviewConfig;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 
 @Repository
 public class SystemMapper {
@@ -48,5 +46,21 @@ public class SystemMapper {
                 String.class
         );
         return url;
+    }
+
+    public Boolean updateWebsiteName(String websiteName) {
+        int updated = jdbcTemplate.update(
+                "UPDATE review_config SET value = ? WHERE id = 0",
+                websiteName
+        );
+        return updated > 0;
+    }
+
+    public Boolean updateWebsiteIcon(String websiteIcon) {
+        int updated = jdbcTemplate.update(
+                "UPDATE review_config SET value = ? WHERE id = 1",
+                websiteIcon
+        );
+        return updated > 0;
     }
 }
