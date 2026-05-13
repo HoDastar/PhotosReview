@@ -60,6 +60,11 @@ public class ProjAPI {
         }
 
         ObjectMapper jsonMapper = new ObjectMapper();
+        List<EntityReviewUsers> users = userMapper.getUserList();
+        Map<String, String> uidNameMap = new HashMap<>();
+        for (EntityReviewUsers user : users) {
+            uidNameMap.put(String.valueOf(user.uid), user.allname);
+        }
         HashMap<String, List<List<Integer>>> taskAll = jsonMapper.readValue(
                 projOpt.get().task,
                 new tools.jackson.core.type.TypeReference<HashMap<String, List<List<Integer>>>>() {}
@@ -113,6 +118,7 @@ public class ProjAPI {
 
             HashMap<String, Object> userProgress = new HashMap<>();
             userProgress.put("uid", uid);
+            userProgress.put("allname", uidNameMap.getOrDefault(uid, uid));
             userProgress.put("all", all);
             userProgress.put("read", read);
             userProgress.put("remaining", all - read);

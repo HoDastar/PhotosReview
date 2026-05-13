@@ -61,13 +61,7 @@ async function queryProjProgress() {
         return;
     }
 
-    const users = await getApi(url + `/api/user/get_user_list_admin?adminUid=${uid}&adminToken=${token}`);
-    const nameMap = {};
-    if (users && users.result) {
-        (users.data || []).forEach(u => nameMap[String(u.uid)] = u.allname);
-    }
-    const data = (res.data || []).map(x => ({...x, allname: nameMap[String(x.uid)] || x.uid}));
-    renderProgressList('singleProjProgressList', data);
+    renderProgressList('singleProjProgressList', res.data || []);
 }
 
 function initProgressPage() {
