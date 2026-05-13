@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class PhotosMapper {
+public class ReviewMapper {
     private final JdbcTemplate jdbcTemplate;
 
-    public PhotosMapper(JdbcTemplate jdbcTemplate) {
+    public ReviewMapper(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

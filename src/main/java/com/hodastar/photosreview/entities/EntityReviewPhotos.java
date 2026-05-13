@@ -1,7 +1,5 @@
 package com.hodastar.photosreview.entities;
 
-import com.hodastar.photosreview.mappers.PhotosMapper;
-
 public class EntityReviewPhotos {
     public int id;
     public String name;

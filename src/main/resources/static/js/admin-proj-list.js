@@ -683,7 +683,7 @@ async function loadManagePhotosList(author = null, loading = 1) {
     if (author === null) {
         author = "";
     }
-    const result = await getApi(url + `/api/photos/fetch_photo_list_all?projId=${currentManageProjId}&author=${author}&adminUid=${uid}&adminToken=${token}`);
+    const result = await getApi(url + `/api/review/fetch_photo_list_all?projId=${currentManageProjId}&author=${author}&adminUid=${uid}&adminToken=${token}`);
     if (!result.result) {
         const msg = parseInt(result.message, 10);
         await openModal(

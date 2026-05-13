@@ -237,7 +237,7 @@ class classPhotoList {
                 note: note
             }
             // 提交
-            let obj = await postApi(url + "/api/photos/submit?submit_type=batch&proj=" + proj, param);
+            let obj = await postApi(url + "/api/review/submit?submit_type=batch&proj=" + proj, param);
             // 判断结果
             if (!obj.result) {
                 const msg = parseInt(obj.message);
@@ -298,7 +298,7 @@ class classPhotoList {
                 note: note
             }
             // 提交
-            let obj = await postApi(url + "/api/photos/submit?submit_type=batch&proj=" + proj, param);
+            let obj = await postApi(url + "/api/review/submit?submit_type=batch&proj=" + proj, param);
             // 判断结果
             if (!obj.result) {
                 const msg = parseInt(obj.message);
@@ -336,7 +336,7 @@ class classPhotoList {
                 note: note
             }
             // 提交
-            let obj = await postApi(url + "/api/photos/submit?submit_type=single&proj=" + proj, param);
+            let obj = await postApi(url + "/api/review/submit?submit_type=single&proj=" + proj, param);
             // 判断结果
             if (!obj.result) {
                 const msg = parseInt(obj.message);
@@ -384,7 +384,7 @@ class classPhotoList {
 
     // 首次加载
     async fetchList() {
-        const obj = await getApi(url + '/api/photos/fetch_photo_list?uid=' + user_uid + '&token=' + user_token + '&proj=' + getUrlGet('proj'));
+        const obj = await getApi(url + '/api/review/fetch_photo_list?uid=' + user_uid + '&token=' + user_token + '&proj=' + getUrlGet('proj'));
 
         if (!obj.result) {
             const msg = parseInt(obj.message);

@@ -2,7 +2,7 @@ package com.hodastar.photosreview.controllers;
 
 import com.hodastar.photosreview.entities.EntityReviewPhotos;
 import com.hodastar.photosreview.entities.EntityReviewProj;
-import com.hodastar.photosreview.mappers.PhotosMapper;
+import com.hodastar.photosreview.mappers.ReviewMapper;
 import com.hodastar.photosreview.mappers.ProjMapper;
 import com.hodastar.photosreview.mappers.UserMapper;
 import com.hodastar.photosreview.utils.Respond;
@@ -15,18 +15,18 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/photos")
-public class PhotosAPI {
+@RequestMapping("/api/review")
+public class ReviewAPI {
     private final UserMapper userMapper;
     private final ProjMapper projMapper;
     private static final Logger log =
-            LoggerFactory.getLogger(PhotosAPI.class);
-    private final PhotosMapper photosMapper;
+            LoggerFactory.getLogger(ReviewAPI.class);
+    private final ReviewMapper reviewMapper;
 
-    public PhotosAPI(ProjMapper projMapper, UserMapper userMapper, PhotosMapper photosMapper) {
+    public ReviewAPI(ProjMapper projMapper, UserMapper userMapper, ReviewMapper reviewMapper) {
         this.projMapper = projMapper;
         this.userMapper = userMapper;
-        this.photosMapper = photosMapper;
+        this.reviewMapper = reviewMapper;
     }
 
     // 检查int是否存在多个集合中的其中一个
@@ -81,7 +81,7 @@ public class PhotosAPI {
             String newValueStr = jsonMapper.writeValueAsString(value);
 
             // 更新数据库
-            Boolean updateResult = photosMapper.updatePhotoValue(photoid, newValueStr);
+            Boolean updateResult = reviewMapper.updatePhotoValue(photoid, newValueStr);
             if (!updateResult) {
                 return false;
             }
@@ -95,7 +95,7 @@ public class PhotosAPI {
             String newValueStr = jsonMapper.writeValueAsString(newValue);
 
             // 更新数据库
-            Boolean updateResult = photosMapper.updatePhotoValue(photoid, newValueStr);
+            Boolean updateResult = reviewMapper.updatePhotoValue(photoid, newValueStr);
             if (!updateResult) {
                 return false;
             }
@@ -144,7 +144,7 @@ public class PhotosAPI {
         // 循环每个任务
         for (List<Integer> list : taskList) {
             // 获取照片列表
-            List<EntityReviewPhotos> photos = photosMapper.getPhotos(projId, list.get(0), list.get(1));
+            List<EntityReviewPhotos> photos = reviewMapper.getPhotos(projId, list.get(0), list.get(1));
             // 添加集合
             photosSet.addAll(photos);
         }
@@ -251,7 +251,7 @@ public class PhotosAPI {
         if (author == null || author.isBlank()) {
             author = null;
         }
-        List<EntityReviewPhotos> data = photosMapper.getAllPhotos(projId, author);
+        List<EntityReviewPhotos> data = reviewMapper.getAllPhotos(projId, author);
         return new Respond<>(true, "true", data);
     }
 
@@ -317,7 +317,7 @@ public class PhotosAPI {
                 // 获取photoid
                 int photoid = (int) body.get("photoid");
                 // 获取photo信息
-                Optional<EntityReviewPhotos> photoOpt = photosMapper.getPhotoById(photoid);
+                Optional<EntityReviewPhotos> photoOpt = reviewMapper.getPhotoById(photoid);
 
                 if (photoOpt.isEmpty()) {
                     return new Respond<>(false, "25", null);
@@ -350,7 +350,7 @@ public class PhotosAPI {
 
                     int id = (int) obj;
                     // 获取photo信息
-                    Optional<EntityReviewPhotos> photoOptBatch = photosMapper.getPhotoById(id);
+                    Optional<EntityReviewPhotos> photoOptBatch = reviewMapper.getPhotoById(id);
                     if (photoOptBatch.isEmpty()) {
                         continue;
                     }
