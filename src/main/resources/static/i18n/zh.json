@@ -237,9 +237,14 @@
             "message": "该Photoid不属于本工程。"
         },
         {
-          "index": 27,
-          "title": "警告",
-          "message": "该用户未加入本工程。"
+            "index": 27,
+            "title": "警告",
+            "message": "该用户未加入本工程。"
+        },
+        {
+            "index": 28,
+            "title": "警告",
+            "message": "请求过于频繁，请稍后重试。"
         }
     ],
     "modal_content_success": [
@@ -341,5 +346,13 @@
     "reached_top": "到顶了",
     "reached_bottom": "到底了",
     "no_this_photoid": "没有此Photoid",
-    "no_this_tempid": "没有此Tempid"
+    "no_this_tempid": "没有此Tempid",
+    "view_progress": "进度查看",
+    "user_progress": "用户进度",
+    "project_progress": "工程进度",
+    "refresh": "刷新",
+    "query": "查询",
+    "completed": "已完成",
+    "load_failed_retry": "加载失败请重试",
+    "input_project_name_for_query": "输入查询工程名"
 }

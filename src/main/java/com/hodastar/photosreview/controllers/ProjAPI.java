@@ -2,6 +2,7 @@ package com.hodastar.photosreview.controllers;
 
 import com.hodastar.photosreview.entities.EntityReviewPhotos;
 import com.hodastar.photosreview.entities.EntityReviewProj;
+import com.hodastar.photosreview.entities.EntityReviewUsers;
 import com.hodastar.photosreview.mappers.ProjMapper;
 import com.hodastar.photosreview.mappers.ReviewMapper;
 import com.hodastar.photosreview.mappers.UserMapper;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/proj")
@@ -32,6 +34,7 @@ public class ProjAPI {
     private final ReviewMapper reviewMapper;
     private static final Logger log =
             LoggerFactory.getLogger(ProjAPI.class);
+    private final Map<Integer, Long> progressAllCooldown = new ConcurrentHashMap<>();
 
     public ProjAPI(ProjMapper projMapper, UserMapper userMapper, ReviewMapper reviewMapper) {
         this.projMapper = projMapper;
@@ -119,6 +122,88 @@ public class ProjAPI {
         return new Respond<>(true, "success", data);
     }
 
+    // 获取所有工程用户审核进度（管理员，5秒冷却）
+    @GetMapping("/get_proj_progress_all")
+    public Respond<List<HashMap<String, Object>>> get_proj_progress_all(
+            @RequestParam("adminUid") int adminUid,
+            @RequestParam("adminToken") String adminToken
+    ) {
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+
+        long now = System.currentTimeMillis();
+        Long lastTime = progressAllCooldown.get(adminUid);
+        if (lastTime != null && now - lastTime < 5000) {
+            return new Respond<>(false, "28", null);
+        }
+        progressAllCooldown.put(adminUid, now);
+
+        ObjectMapper jsonMapper = new ObjectMapper();
+        List<EntityReviewProj> projList = projMapper.getProjList();
+        List<EntityReviewUsers> users = userMapper.getUserList();
+        Map<String, String> uidNameMap = new HashMap<>();
+        for (EntityReviewUsers user : users) {
+            uidNameMap.put(String.valueOf(user.uid), user.allname);
+        }
+
+        Map<String, HashMap<String, Object>> resultMap = new HashMap<>();
+        for (EntityReviewProj proj : projList) {
+            HashMap<String, List<List<Integer>>> taskAll = jsonMapper.readValue(
+                    proj.task,
+                    new tools.jackson.core.type.TypeReference<HashMap<String, List<List<Integer>>>>() {}
+            );
+            for (Map.Entry<String, List<List<Integer>>> entry : taskAll.entrySet()) {
+                String uid = entry.getKey();
+                List<List<Integer>> taskList = entry.getValue();
+                Set<EntityReviewPhotos> photosSet = new LinkedHashSet<>();
+                for (List<Integer> range : taskList) {
+                    if (range == null || range.size() < 2) {
+                        continue;
+                    }
+                    photosSet.addAll(reviewMapper.getPhotos(proj.projId, range.get(0), range.get(1)));
+                }
+                int all = photosSet.size();
+                int read = 0;
+                if (proj.type == 0) {
+                    for (EntityReviewPhotos photo : photosSet) {
+                        if (photo.value == null || photo.value.isBlank()) continue;
+                        HashMap<String, List<Object>> value = jsonMapper.readValue(
+                                photo.value,
+                                new tools.jackson.core.type.TypeReference<HashMap<String, List<Object>>>() {}
+                        );
+                        if (value.containsKey(uid) && value.get(uid) != null) read++;
+                    }
+                } else if (proj.type == 1) {
+                    for (EntityReviewPhotos photo : photosSet) {
+                        if (photo.value == null || photo.value.isBlank()) continue;
+                        List<Object> value = jsonMapper.readValue(
+                                photo.value,
+                                new tools.jackson.core.type.TypeReference<List<Object>>() {}
+                        );
+                        if (!value.isEmpty()) read++;
+                    }
+                }
+
+                HashMap<String, Object> userData = resultMap.getOrDefault(uid, new HashMap<>());
+                userData.put("uid", uid);
+                userData.put("allname", uidNameMap.getOrDefault(uid, uid));
+                userData.put("all", ((int) userData.getOrDefault("all", 0)) + all);
+                userData.put("read", ((int) userData.getOrDefault("read", 0)) + read);
+                resultMap.put(uid, userData);
+            }
+        }
+
+        List<HashMap<String, Object>> data = new java.util.ArrayList<>();
+        for (HashMap<String, Object> item : resultMap.values()) {
+            int all = (int) item.getOrDefault("all", 0);
+            int read = (int) item.getOrDefault("read", 0);
+            item.put("remaining", all - read);
+            data.add(item);
+        }
+        return new Respond<>(true, "success", data);
+    }
+
     // 获取工程列表
     @GetMapping("/get_proj_list")
     public Respond<List<HashMap<String, Object>>> get_proj_list() {
@@ -181,6 +266,23 @@ public class ProjAPI {
             return new Respond<>(false, "4", null);
         }
         Optional<EntityReviewProj> projOpt = projMapper.getProjById(projId);
+        if (projOpt.isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+        return new Respond<>(true, "success", projOpt.get());
+    }
+
+    // 获取工程（管理员通过名称）
+    @GetMapping("/get_proj_by_name")
+    public Respond<EntityReviewProj> get_proj_by_name(
+            @RequestParam("name") String name,
+            @RequestParam("adminUid") int adminUid,
+            @RequestParam("adminToken") String adminToken
+    ) {
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+        Optional<EntityReviewProj> projOpt = projMapper.getProjByName(name);
         if (projOpt.isEmpty()) {
             return new Respond<>(false, "14", null);
         }

@@ -56,6 +56,8 @@
                     data-i18n="create_project">Create project</span></button>
             <button class="panel-btn" data-page="manageUser"><i class="fa-solid fa-users-gear"></i> <span
                     data-i18n="manage_user">Manage User</span></button>
+            <button class="panel-btn" data-page="viewProgress"><i class="fa-solid fa-chart-line"></i> <span
+                    data-i18n="view_progress">View Progress</span></button>
             <button class="panel-btn" data-page="systemSettings"><i class="fa-solid fa-gear"></i> <span data-i18n="settings"></span></button>
             <div class="icon-toggle-group">
                 <button class="icon-toggle" id="darkToggle" data-i18n-title="switch_theme">
@@ -487,6 +489,28 @@
                 <tbody id="manageUserTableBody"></tbody>
             </table>
         </section>
+
+        <section class="viewer" id="viewProgress" style="display: none;">
+            <h2><span data-i18n="view_progress"></span></h2>
+
+            <h3 class="subtitle"><span data-i18n="user_progress"></span></h3>
+            <div id="allUserProgressList" class="progress-list"></div>
+            <div class="form-submit">
+                <button class="button-common" id="refreshAllProgress" data-i18n="refresh"></button>
+            </div>
+
+            <h3 class="subtitle"><span data-i18n="project_progress"></span></h3>
+            <div class="form-row">
+                <div class="form-control" style="justify-content: flex-start;">
+                    <input type="text" class="text-input" id="progressProjName" data-i18n-placeholder="input_project_name_for_query"/>
+                </div>
+            </div>
+            <div class="form-submit" style="margin-top: 0;">
+                <button class="button-common" id="queryProjProgress" data-i18n="query"></button>
+                <button class="button-common" id="clearProjProgress" data-i18n="clean"></button>
+            </div>
+            <div id="singleProjProgressList" class="progress-list"></div>
+        </section>
     </div>
 </main>
 </body>
@@ -501,4 +525,5 @@
 <script src="./js/admin-proj-list.js"></script>
 <script src="./js/admin-user.js"></script>
 <script src="./js/admin-settings.js"></script>
+<script src="./js/admin-progress.js"></script>
 <script src="./js/admin.js"></script>

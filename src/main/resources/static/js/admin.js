@@ -164,6 +164,7 @@ async function signout() {
     await getProj();
     await loadManageUserList();
     await loadSystemSettingsForm();
+    initProgressPage();
 
     // Loading Button Events
     document.getElementById("submitCreateProj").addEventListener("click", createProj);
