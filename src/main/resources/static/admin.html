@@ -70,7 +70,7 @@
         </aside>
 
         <section class="viewer" id="projList">
-            <h2><span data-i18n="project_list">Project List</span></h2>
+            <h2><i class="fa-solid fa-tools"></i> <span data-i18n="project_list">Project List</span></h2>
             <div id="projListContainer" class="projListContainer">
                 <fieldset>
                     <h3><i class="fa-solid fa-tools"></i>Example_1</h3>
@@ -91,7 +91,7 @@
         </section>
 
         <section class="viewer" id="createProj" style="display: none;">
-            <h2><span data-i18n="create_project">Create Project</span></h2>
+            <h2><i class="fa-solid fa-plus"></i> <span data-i18n="create_project">Create Project</span></h2>
 
             <div class="form-row">
                 <div class="form-label">
@@ -182,7 +182,7 @@
         </section>
 
         <section class="viewer" id="manageProj" style="display: none;">
-            <h2><span data-i18n="manage_project">Manage Project</span></h2>
+            <h2><i class="fa-solid fa-folder-open"></i> <span data-i18n="manage_project">Manage Project</span></h2>
 
             <h3 class="subtitle"><span data-i18n="project_info"></span></h3>
             <div class="form-row">
@@ -353,7 +353,7 @@
         </section>
 
         <section class="viewer" id="manageDist" style="display: none;">
-            <h2><span data-i18n="manage_distribution">Manage Distribution</span></h2>
+            <h2><i class="fa-solid fa-list-check"></i> <span data-i18n="manage_distribution">Manage Distribution</span></h2>
 
             <h3 class="subtitle"><span data-i18n="project_info"></span></h3>
             <div class="form-row">
@@ -433,7 +433,7 @@
         </section>
 
         <section class="viewer" id="manageUser" style="display: none;">
-            <h2><span data-i18n="manage_user">Manage User</span></h2>
+            <h2><i class="fa-solid fa-users-gear"></i> <span data-i18n="manage_user">Manage User</span></h2>
             <div class="form-row">
                 <div class="form-label">
                     <div class="title">UID</div>
@@ -491,21 +491,25 @@
         </section>
 
         <section class="viewer" id="viewProgress" style="display: none;">
-            <h2><span data-i18n="view_progress"></span></h2>
+            <h2><i class="fa-solid fa-chart-line"></i> <span data-i18n="view_progress"></span></h2>
 
-            <h3 class="subtitle"><span data-i18n="user_progress"></span></h3>
+            <h3 class="subtitle"><i class="fa-solid fa-users"></i> <span data-i18n="user_progress"></span></h3>
             <div id="allUserProgressList" class="progress-list"></div>
             <div class="form-submit">
                 <button class="button-common" id="refreshAllProgress" data-i18n="refresh"></button>
             </div>
 
-            <h3 class="subtitle"><span data-i18n="project_progress"></span></h3>
+            <h3 class="subtitle"><i class="fa-solid fa-diagram-project"></i> <span data-i18n="project_progress"></span></h3>
             <div class="form-row">
+                <div class="form-label">
+                    <div class="title" data-i18n="project_name"></div>
+                    <div class="desc" data-i18n="input_project_name_for_query"></div>
+                </div>
                 <div class="form-control" style="justify-content: flex-start;">
                     <input type="text" class="text-input" id="progressProjName" data-i18n-placeholder="input_project_name_for_query"/>
                 </div>
             </div>
-            <div class="form-submit" style="margin-top: 0;">
+            <div class="form-submit">
                 <button class="button-common" id="queryProjProgress" data-i18n="query"></button>
                 <button class="button-common" id="clearProjProgress" data-i18n="clean"></button>
             </div>

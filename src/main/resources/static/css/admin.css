@@ -262,7 +262,7 @@ body {
 
 .progress-list {
     max-width: 900px;
-    margin-top: 8px;
+    margin-top: 20px;
 }
 
 .progress-row {
@@ -275,7 +275,7 @@ body {
 
 .progress-user-name { font-size: 16px; font-weight: 600; }
 .progress-user-uid { font-size: 13px; opacity: 0.75; margin-top: 3px; }
-.progress-right { min-width: 280px; text-align: right; }
+.progress-right { min-width: 200px; text-align: right; }
 .progress-bar {
     height: 8px;
     border-radius: 999px;
@@ -285,7 +285,15 @@ body {
 }
 .progress-bar-inner {
     height: 100%;
-    background: var(--color-primary);
+    background: repeating-linear-gradient(
+            -45deg,
+            var(--color-primary),
+            var(--color-primary) 10px,
+            var(--color-primary-soft) 10px,
+            var(--color-primary-soft) 20px
+    );
+    background-size: 28px 28px;
+    animation: progressStripeMove 0.8s linear infinite;
 }
 .progress-done {
     color: var(--color-success);
@@ -293,6 +301,11 @@ body {
 }
 .progress-failed {
     padding: 10px 0;
+}
+
+@keyframes progressStripeMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 28px 0; }
 }
 
 .color_green {
