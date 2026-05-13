@@ -163,6 +163,7 @@ async function signout() {
     await loadWebsiteInfo();
     await getProj();
     await loadManageUserList();
+    await loadSystemSettingsForm();
 
     // Loading Button Events
     document.getElementById("submitCreateProj").addEventListener("click", createProj);
@@ -181,10 +182,14 @@ async function signout() {
     document.getElementById("imgInputManageThumbnail").addEventListener("change", () => {
         fileInputChange("imgInputManageThumbnail");
     });
+    document.getElementById("systemWebsiteIcon").addEventListener("change", () => {
+        fileInputChange("systemWebsiteIcon");
+    });
     document.getElementById("cleanPhotosPool").addEventListener("click", cleanPhotosPool);
     document.getElementById("uploadPhotosPool").addEventListener("click", uploadImages);
     document.getElementById("submitRegisterUser").addEventListener("click", registerUser);
     document.getElementById("filterManagePhotos").addEventListener("click", filterManagePhotos);
+    document.getElementById("saveSystemSettings").addEventListener("click", saveSystemSettings);
     document.getElementById("deleteSelectedPhotos").addEventListener("click", deleteSelectedPhotos);
 
     const imgInputUploadEl = document.getElementById("imgInputUpload")

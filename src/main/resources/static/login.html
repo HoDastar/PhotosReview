@@ -83,13 +83,13 @@
             window.location.href = "./";
         }
         await i18n.init();
-        loadWebsiteInfo();
+        await loadWebsiteInfo();
     })();
 
-    function loadWebsiteInfo() {
-        const info = localStorage.getItem("website_info");
+    async function loadWebsiteInfo() {
+        const info = await getApi(url + "/api/system/get_website_info");
         if (info) {
-            const infoObj = JSON.parse(info);
+            const infoObj = info.data;
 
             const link = document.createElement("link");
             link.rel = "icon";

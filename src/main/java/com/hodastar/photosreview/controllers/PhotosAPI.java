@@ -164,6 +164,7 @@ public class PhotosAPI {
                 // 如果value字段为空或null
                 if (valueStr == null) {
                     unreadList.add(addPhotoToList(photo.id, photo.name, "unread", 0, null));
+                    continue;
                 }
 
                 // 读取value字段
@@ -194,19 +195,25 @@ public class PhotosAPI {
                 // 如果value字段为空或null
                 if (valueStr == null) {
                     unreadList.add(addPhotoToList(photo.id, photo.name, "unread", 0, null));
+                    continue;
                 }
 
                 // 读取value字段
                 List<Object> value =
                         jsonMapper.readValue(
                                 valueStr,
-                                new TypeReference<List<Object>>() {}
+                                new TypeReference<List<Object>>() {
+                                }
                         );
 
-                // 添加
-                int score = (int) value.get(1);
-                String note = (String) value.get(2);
-                readList.add(addPhotoToList(photo.id, photo.name, "read", score, note));
+                if (value.isEmpty()) {
+                    unreadList.add(addPhotoToList(photo.id, photo.name, "unread", 0, null));
+                } else {
+                    // 添加
+                    int score = (int) value.get(1);
+                    String note = (String) value.get(2);
+                    readList.add(addPhotoToList(photo.id, photo.name, "read", score, note));
+                }
             }
         }
 

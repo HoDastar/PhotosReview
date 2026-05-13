@@ -483,12 +483,8 @@ async function saveManageProj() {
             i18n.lookUp("modal_content_fail")[msg].message
         );
     } else {
-        await openModal(
-            i18n.lookUp("modal_content_success")[0].title,
-            i18n.lookUp("modal_content_success")[0].message
-        );
+        showBubble(i18n.lookUp("modal_content_success")[0].message, 'blue', '#fff');
         getProj();
-        goPage("projList");
     }
 }
 
@@ -509,12 +505,8 @@ async function saveManageDist() {
             i18n.lookUp("modal_content_fail")[msg].message
         );
     } else {
-        await openModal(
-            i18n.lookUp("modal_content_success")[0].title,
-            i18n.lookUp("modal_content_success")[0].message
-        );
+        showBubble(i18n.lookUp("modal_content_success")[0].message, 'blue', '#fff');
         getProj();
-        goPage("projList");
     }
 }
 

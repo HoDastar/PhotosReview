@@ -83,7 +83,7 @@ public class SqliteInitiate {
             jdbcTemplate.execute("""
                     -- 初始化设置 --
                     INSERT INTO review_config(id, name, value)
-                    SELECT 1, 'website_icon', 'data/icon/default_icon.jpg'
+                    SELECT 1, 'website_icon', 'data/icon/default_icon.png'
                     WHERE NOT EXISTS (
                         SELECT 1 FROM review_config WHERE id = 1
                     );
