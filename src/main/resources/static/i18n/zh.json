@@ -88,10 +88,10 @@
     "user_list": "用户列表",
     "banned_user": "已封禁用户",
     "no_user": "暂无用户。",
-    "register_user": "注册用户",
+    "register": "注册",
     "reset_password_default": "重置密码",
-    "ban_user": "封禁用户",
-    "unban_user": "解封用户",
+    "ban_user": "封禁",
+    "unban_user": "解封",
     "no_photo": "暂无照片。",
     "load_more": "加载更多",
     "no_more": "没有更多照片了。",
@@ -224,7 +224,7 @@
         {
             "index": 24,
             "title": "警告",
-            "message": "工程当前状态不可编辑。"
+            "message": "该工程未开始或已结束。"
         },
         {
             "index": 25,
@@ -267,6 +267,11 @@
             "index": 3,
             "title": "提示",
             "message": "上传成功。"
+        },
+        {
+            "index": 4,
+            "title": "提示",
+            "message": "刷新成功。"
         }
     ],
     "modal_content_confirm": [

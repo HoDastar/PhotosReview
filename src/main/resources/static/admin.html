@@ -398,34 +398,6 @@
                     </tr>
                 </tbody>
             </table>
-            <hr>
-            <!--
-            <div class="form-row">
-                <div class="form-label">
-                    <div class="title"><span data-i18n="add_task">Add Task</span></div>
-                </div>
-            </div>
-            <table class="form-distribution">
-                <thead>
-                <tr>
-                    <th>UID</th>
-                    <th>First</th>
-                    <th>Last</th>
-                </tr>
-                </thead>
-                <tbody id="distributionForm">
-                <tr>
-                    <td class="text-edit"><input class="text-input on-distribution" name="uid" placeholder="UID" /></td>
-                    <td class="text-edit"><input class="text-input on-distribution" name="first" data-i18n-placeholder="first" /></td>
-                    <td class="text-edit"><input class="text-input on-distribution" name="last" data-i18n-placeholder="last" /></td>
-                </tr>
-                </tbody>
-            </table>
-            <div class="form-submit">
-                <button class="button-common" id="addTaskItem" data-i18n="add">Add</button>
-            </div>
-            <hr>
-            -->
             <div class="form-submit">
                 <button class="button-common" id="cancelManageDist" data-i18n="cancel">Cancel</button>
                 <button class="button-common" id="saveManageDist" data-i18n="save">Save</button>
@@ -434,6 +406,8 @@
 
         <section class="viewer" id="manageUser" style="display: none;">
             <h2><i class="fa-solid fa-users-gear"></i> <span data-i18n="manage_user">Manage User</span></h2>
+
+            <h3 class="subtitle"><span data-i18n="register"></span></h3>
             <div class="form-row">
                 <div class="form-label">
                     <div class="title">UID</div>
@@ -471,7 +445,7 @@
                 </div>
             </div>
             <div class="form-submit">
-                <button class="button-common" id="submitRegisterUser" data-i18n="register_user">Register</button>
+                <button class="button-common" id="submitRegisterUser" data-i18n="register">Register</button>
             </div>
 
             <hr>
@@ -493,19 +467,19 @@
         <section class="viewer" id="viewProgress" style="display: none;">
             <h2><i class="fa-solid fa-chart-line"></i> <span data-i18n="view_progress"></span></h2>
 
-            <h3 class="subtitle"><i class="fa-solid fa-users"></i> <span data-i18n="user_progress"></span></h3>
+            <h3 class="subtitle"><span data-i18n="user_progress"></span></h3>
             <div id="allUserProgressList" class="progress-list"></div>
             <div class="form-submit">
                 <button class="button-common" id="refreshAllProgress" data-i18n="refresh"></button>
             </div>
-
-            <h3 class="subtitle"><i class="fa-solid fa-diagram-project"></i> <span data-i18n="project_progress"></span></h3>
+            <hr>
+            <h3 class="subtitle"><span data-i18n="project_progress"></span></h3>
             <div class="form-row">
                 <div class="form-label">
                     <div class="title" data-i18n="project_name"></div>
                     <div class="desc" data-i18n="input_project_name_for_query"></div>
                 </div>
-                <div class="form-control" style="justify-content: flex-start;">
+                <div class="form-control">
                     <input type="text" class="text-input" id="progressProjName" data-i18n-placeholder="input_project_name_for_query"/>
                 </div>
             </div>

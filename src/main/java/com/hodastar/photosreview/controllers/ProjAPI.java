@@ -42,10 +42,10 @@ public class ProjAPI {
         this.reviewMapper = reviewMapper;
     }
 
-    // 获取工程审核进度（管理员）
+    // 获取工程审核进度
     @GetMapping("/get_proj_progress")
     public Respond<List<HashMap<String, Object>>> get_proj_progress(
-            @RequestParam("proj") String projId,
+            @RequestParam("proj") String projName,
             @RequestParam("adminUid") int adminUid,
             @RequestParam("adminToken") String adminToken
     ) {
@@ -54,9 +54,14 @@ public class ProjAPI {
             return new Respond<>(false, "5", null);
         }
 
-        Optional<EntityReviewProj> projOpt = projMapper.getProjById(projId);
+        // 获取工程
+        Optional<EntityReviewProj> projOpt = projMapper.getProjByName(projName);
         if (projOpt.isEmpty()) {
             return new Respond<>(false, "14", null);
+        }
+
+        if (projOpt.get().status != 1) {
+            return new Respond<>(false, "24", null);
         }
 
         ObjectMapper jsonMapper = new ObjectMapper();
@@ -70,7 +75,11 @@ public class ProjAPI {
                 new tools.jackson.core.type.TypeReference<HashMap<String, List<List<Integer>>>>() {}
         );
 
+        // 工程ID
+        String projId = projOpt.get().projId;
+        // 结果列表
         List<HashMap<String, Object>> data = new java.util.ArrayList<>();
+
         for (Map.Entry<String, List<List<Integer>>> entry : taskAll.entrySet()) {
             String uid = entry.getKey();
             List<List<Integer>> taskList = entry.getValue();
@@ -146,15 +155,21 @@ public class ProjAPI {
         progressAllCooldown.put(adminUid, now);
 
         ObjectMapper jsonMapper = new ObjectMapper();
-        List<EntityReviewProj> projList = projMapper.getProjList();
-        List<EntityReviewUsers> users = userMapper.getUserList();
-        Map<String, String> uidNameMap = new HashMap<>();
-        for (EntityReviewUsers user : users) {
-            uidNameMap.put(String.valueOf(user.uid), user.allname);
-        }
-
+        // 工程列表
+        List<EntityReviewProj> projList = projMapper.getProjList().stream()
+                .filter(proj -> proj.status == 1)
+                .toList();
+        // 用户列表
+        Map<String, String> uidNameMap = userMapper.getUserList().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        user -> String.valueOf(user.uid),
+                        user -> user.allname
+                ));
+        // 结果Map
         Map<String, HashMap<String, Object>> resultMap = new HashMap<>();
+
         for (EntityReviewProj proj : projList) {
+            // 任务列表
             HashMap<String, List<List<Integer>>> taskAll = jsonMapper.readValue(
                     proj.task,
                     new tools.jackson.core.type.TypeReference<HashMap<String, List<List<Integer>>>>() {}

@@ -1,5 +1,3 @@
-let allProgressInited = false;
-
 function renderProgressList(containerId, rows) {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
@@ -32,14 +30,23 @@ function renderProgressList(containerId, rows) {
     });
 }
 
-async function loadAllProgress(silentFail = false) {
+async function loadAllProgress(refresh = true) {
     const res = await getApi(url + `/api/proj/get_proj_progress_all?adminUid=${uid}&adminToken=${token}`);
     if (!res || !res.result) {
+        const msg = parseInt(res.message);
         document.getElementById('allUserProgressList').innerHTML = `<div class="progress-failed">${i18n.lookUp('load_failed_retry')}</div>`;
-        if (!silentFail && res && res.message !== '28') {
-            // no modal per requirement
+        if (msg !== 28) {
+            await openModal(
+                i18n.lookUp("modal_content_fail")[msg].title,
+                i18n.lookUp("modal_content_fail")[msg].message
+            );
+        } else {
+            showBubble(i18n.lookUp("modal_content_fail")[msg].message, 'red', "#fff");
         }
         return;
+    }
+    if (refresh) {
+        showBubble(i18n.lookUp('modal_content_success')[4].message, 'blue', "#fff");
     }
     renderProgressList('allUserProgressList', res.data || []);
 }
@@ -47,33 +54,35 @@ async function loadAllProgress(silentFail = false) {
 async function queryProjProgress() {
     const projName = document.getElementById('progressProjName').value.trim();
     if (!projName) {
-        document.getElementById('singleProjProgressList').innerHTML = `<div class="progress-failed">${i18n.lookUp('load_failed_retry')}</div>`;
+        showBubble(
+            i18n.lookUp("modal_content_fail")[11].message,
+            'red',
+            "#fff"
+        )
         return;
     }
-    const projRes = await getApi(url + `/api/proj/get_proj_by_name?name=${encodeURIComponent(projName)}&adminUid=${uid}&adminToken=${token}`);
-    if (!projRes || !projRes.result || !projRes.data || !projRes.data.projId) {
-        document.getElementById('singleProjProgressList').innerHTML = `<div class="progress-failed">${i18n.lookUp('load_failed_retry')}</div>`;
-        return;
-    }
-    const res = await getApi(url + `/api/proj/get_proj_progress?proj=${projRes.data.projId}&adminUid=${uid}&adminToken=${token}`);
+    const res = await getApi(url + `/api/proj/get_proj_progress?proj=${projName}&adminUid=${uid}&adminToken=${token}`);
     if (!res || !res.result) {
-        document.getElementById('singleProjProgressList').innerHTML = `<div class="progress-failed">${i18n.lookUp('load_failed_retry')}</div>`;
+        const msg = parseInt(res.message);
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+        cleanProjProgress();
         return;
     }
 
     renderProgressList('singleProjProgressList', res.data || []);
 }
 
-function initProgressPage() {
-    document.getElementById('refreshAllProgress').addEventListener('click', () => loadAllProgress(false));
-    document.getElementById('queryProjProgress').addEventListener('click', queryProjProgress);
-    document.getElementById('clearProjProgress').addEventListener('click', () => {
-        document.getElementById('progressProjName').value = '';
-        document.getElementById('singleProjProgressList').innerHTML = '';
-    });
+function cleanProjProgress() {
+    document.getElementById('progressProjName').value = '';
+    document.getElementById('singleProjProgressList').innerHTML = '';
+}
 
-    if (!allProgressInited) {
-        allProgressInited = true;
-        loadAllProgress(true);
-    }
+function initProgressPage() {
+    document.getElementById('refreshAllProgress').addEventListener('click', () => loadAllProgress());
+    document.getElementById('queryProjProgress').addEventListener('click', queryProjProgress);
+    document.getElementById('clearProjProgress').addEventListener('click', cleanProjProgress);
+    loadAllProgress(false);
 }
