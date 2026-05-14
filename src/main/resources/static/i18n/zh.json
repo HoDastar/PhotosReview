@@ -88,10 +88,10 @@
     "user_list": "用户列表",
     "banned_user": "已封禁用户",
     "no_user": "暂无用户。",
-    "register_user": "注册用户",
+    "register": "注册",
     "reset_password_default": "重置密码",
-    "ban_user": "封禁用户",
-    "unban_user": "解封用户",
+    "ban_user": "封禁",
+    "unban_user": "解封",
     "no_photo": "暂无照片。",
     "load_more": "加载更多",
     "no_more": "没有更多照片了。",
@@ -224,7 +224,7 @@
         {
             "index": 24,
             "title": "警告",
-            "message": "工程当前状态不可编辑。"
+            "message": "该工程未开始或已结束。"
         },
         {
             "index": 25,
@@ -237,9 +237,14 @@
             "message": "该Photoid不属于本工程。"
         },
         {
-          "index": 27,
-          "title": "警告",
-          "message": "该用户未加入本工程。"
+            "index": 27,
+            "title": "警告",
+            "message": "该用户未加入本工程。"
+        },
+        {
+            "index": 28,
+            "title": "警告",
+            "message": "请求过于频繁，请稍后重试。"
         }
     ],
     "modal_content_success": [
@@ -262,6 +267,11 @@
             "index": 3,
             "title": "提示",
             "message": "上传成功。"
+        },
+        {
+            "index": 4,
+            "title": "提示",
+            "message": "刷新成功。"
         }
     ],
     "modal_content_confirm": [
@@ -341,5 +351,13 @@
     "reached_top": "到顶了",
     "reached_bottom": "到底了",
     "no_this_photoid": "没有此Photoid",
-    "no_this_tempid": "没有此Tempid"
+    "no_this_tempid": "没有此Tempid",
+    "view_progress": "进度查看",
+    "user_progress": "用户进度",
+    "project_progress": "工程进度",
+    "refresh": "刷新",
+    "query": "查询",
+    "completed": "已完成",
+    "load_failed_retry": "加载失败请重试",
+    "input_project_name_for_query": "输入查询工程名"
 }

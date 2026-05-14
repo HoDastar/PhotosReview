@@ -56,6 +56,8 @@
                     data-i18n="create_project">Create project</span></button>
             <button class="panel-btn" data-page="manageUser"><i class="fa-solid fa-users-gear"></i> <span
                     data-i18n="manage_user">Manage User</span></button>
+            <button class="panel-btn" data-page="viewProgress"><i class="fa-solid fa-chart-line"></i> <span
+                    data-i18n="view_progress">View Progress</span></button>
             <button class="panel-btn" data-page="systemSettings"><i class="fa-solid fa-gear"></i> <span data-i18n="settings"></span></button>
             <div class="icon-toggle-group">
                 <button class="icon-toggle" id="darkToggle" data-i18n-title="switch_theme">
@@ -68,7 +70,7 @@
         </aside>
 
         <section class="viewer" id="projList">
-            <h2><span data-i18n="project_list">Project List</span></h2>
+            <h2><i class="fa-solid fa-tools"></i> <span data-i18n="project_list">Project List</span></h2>
             <div id="projListContainer" class="projListContainer">
                 <fieldset>
                     <h3><i class="fa-solid fa-tools"></i>Example_1</h3>
@@ -89,7 +91,7 @@
         </section>
 
         <section class="viewer" id="createProj" style="display: none;">
-            <h2><span data-i18n="create_project">Create Project</span></h2>
+            <h2><i class="fa-solid fa-plus"></i> <span data-i18n="create_project">Create Project</span></h2>
 
             <div class="form-row">
                 <div class="form-label">
@@ -180,7 +182,7 @@
         </section>
 
         <section class="viewer" id="manageProj" style="display: none;">
-            <h2><span data-i18n="manage_project">Manage Project</span></h2>
+            <h2><i class="fa-solid fa-folder-open"></i> <span data-i18n="manage_project">Manage Project</span></h2>
 
             <h3 class="subtitle"><span data-i18n="project_info"></span></h3>
             <div class="form-row">
@@ -351,7 +353,7 @@
         </section>
 
         <section class="viewer" id="manageDist" style="display: none;">
-            <h2><span data-i18n="manage_distribution">Manage Distribution</span></h2>
+            <h2><i class="fa-solid fa-list-check"></i> <span data-i18n="manage_distribution">Manage Distribution</span></h2>
 
             <h3 class="subtitle"><span data-i18n="project_info"></span></h3>
             <div class="form-row">
@@ -396,34 +398,6 @@
                     </tr>
                 </tbody>
             </table>
-            <hr>
-            <!--
-            <div class="form-row">
-                <div class="form-label">
-                    <div class="title"><span data-i18n="add_task">Add Task</span></div>
-                </div>
-            </div>
-            <table class="form-distribution">
-                <thead>
-                <tr>
-                    <th>UID</th>
-                    <th>First</th>
-                    <th>Last</th>
-                </tr>
-                </thead>
-                <tbody id="distributionForm">
-                <tr>
-                    <td class="text-edit"><input class="text-input on-distribution" name="uid" placeholder="UID" /></td>
-                    <td class="text-edit"><input class="text-input on-distribution" name="first" data-i18n-placeholder="first" /></td>
-                    <td class="text-edit"><input class="text-input on-distribution" name="last" data-i18n-placeholder="last" /></td>
-                </tr>
-                </tbody>
-            </table>
-            <div class="form-submit">
-                <button class="button-common" id="addTaskItem" data-i18n="add">Add</button>
-            </div>
-            <hr>
-            -->
             <div class="form-submit">
                 <button class="button-common" id="cancelManageDist" data-i18n="cancel">Cancel</button>
                 <button class="button-common" id="saveManageDist" data-i18n="save">Save</button>
@@ -431,7 +405,9 @@
         </section>
 
         <section class="viewer" id="manageUser" style="display: none;">
-            <h2><span data-i18n="manage_user">Manage User</span></h2>
+            <h2><i class="fa-solid fa-users-gear"></i> <span data-i18n="manage_user">Manage User</span></h2>
+
+            <h3 class="subtitle"><span data-i18n="register"></span></h3>
             <div class="form-row">
                 <div class="form-label">
                     <div class="title">UID</div>
@@ -469,7 +445,7 @@
                 </div>
             </div>
             <div class="form-submit">
-                <button class="button-common" id="submitRegisterUser" data-i18n="register_user">Register</button>
+                <button class="button-common" id="submitRegisterUser" data-i18n="register">Register</button>
             </div>
 
             <hr>
@@ -487,6 +463,32 @@
                 <tbody id="manageUserTableBody"></tbody>
             </table>
         </section>
+
+        <section class="viewer" id="viewProgress" style="display: none;">
+            <h2><i class="fa-solid fa-chart-line"></i> <span data-i18n="view_progress"></span></h2>
+
+            <h3 class="subtitle"><span data-i18n="user_progress"></span></h3>
+            <div id="allUserProgressList" class="progress-list"></div>
+            <div class="form-submit">
+                <button class="button-common" id="refreshAllProgress" data-i18n="refresh"></button>
+            </div>
+            <hr>
+            <h3 class="subtitle"><span data-i18n="project_progress"></span></h3>
+            <div class="form-row">
+                <div class="form-label">
+                    <div class="title" data-i18n="project_name"></div>
+                    <div class="desc" data-i18n="input_project_name_for_query"></div>
+                </div>
+                <div class="form-control">
+                    <input type="text" class="text-input" id="progressProjName" data-i18n-placeholder="input_project_name_for_query"/>
+                </div>
+            </div>
+            <div class="form-submit">
+                <button class="button-common" id="queryProjProgress" data-i18n="query"></button>
+                <button class="button-common" id="clearProjProgress" data-i18n="clean"></button>
+            </div>
+            <div id="singleProjProgressList" class="progress-list"></div>
+        </section>
     </div>
 </main>
 </body>
@@ -501,4 +503,5 @@
 <script src="./js/admin-proj-list.js"></script>
 <script src="./js/admin-user.js"></script>
 <script src="./js/admin-settings.js"></script>
+<script src="./js/admin-progress.js"></script>
 <script src="./js/admin.js"></script>

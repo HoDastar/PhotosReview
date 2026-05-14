@@ -88,10 +88,10 @@
     "user_list": "User List",
     "banned_user": "Banned User",
     "no_user": "No users yet.",
-    "register_user": "Register User",
+    "register": "Register",
     "reset_password_default": "Reset Password",
-    "ban_user": "Ban User",
-    "unban_user": "Unban User",
+    "ban_user": "Ban",
+    "unban_user": "Unban",
     "no_photo": "No photos yet.",
     "load_more": "Load More",
     "no_more": "No more photos.",
@@ -224,7 +224,7 @@
         {
             "index": 24,
             "title": "Warning",
-            "message": "The current status of the project is not editable."
+            "message": "This project hasn't started or already ended."
         },
         {
             "index": 25,
@@ -240,6 +240,11 @@
             "index": 27,
             "title": "Warning",
             "message": "You haven't joined this project."
+        },
+        {
+            "index": 28,
+            "title": "Warning",
+            "message": "Too many requests. Please try again later."
         }
     ],
     "modal_content_success": [
@@ -262,6 +267,11 @@
             "index": 3,
             "title": "Info",
             "message": "Upload successful."
+        },
+        {
+          "index": 4,
+          "title": "Info",
+          "message": "Refresh successful."
         }
     ],
     "modal_content_confirm": [
@@ -341,5 +351,13 @@
     "reached_top": "This is the first photo",
     "reached_bottom": "This is the last photo",
     "no_this_photoid": "This Photoid does not exist",
-    "no_this_tempid": "This Tempid does not exist"
+    "no_this_tempid": "This Tempid does not exist",
+    "view_progress": "View Progress",
+    "user_progress": "User Progress",
+    "project_progress": "Project Progress",
+    "refresh": "Refresh",
+    "query": "Query",
+    "completed": "Completed",
+    "load_failed_retry": "Load failed, please retry",
+    "input_project_name_for_query": "Input project name for query"
 }

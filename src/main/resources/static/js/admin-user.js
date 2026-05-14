@@ -106,7 +106,7 @@ async function registerUser() {
     if (!targetUid) {
         return;
     }
-    const allname = getManageUserAllname();
+    const allname =  getManageUserAllname();
     if (!allname) {
         return;
     }
@@ -137,6 +137,8 @@ async function registerUser() {
             i18n.lookUp("modal_content_success")[0].message
         );
         await loadManageUserList();
+        document.querySelector('#manageUser input[name="input_manage_user_allname"]').value = "";
+        document.querySelector('#manageUser input[name="input_manage_user_uid"]').value = "";
     }
 }
 async function resetUserPassword(targetUid = getManageUserUid()) {

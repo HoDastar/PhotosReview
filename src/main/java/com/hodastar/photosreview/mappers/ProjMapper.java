@@ -113,7 +113,7 @@ public class ProjMapper {
      */
     public Optional<EntityReviewProj> getProjById(String projId) {
         try {
-            EntityReviewProj proj = jdbcTemplate.queryForObject(
+            List<EntityReviewProj> list = jdbcTemplate.query(
                     "SELECT * FROM review_proj WHERE projid = ?",
                     (rs, rowNum) -> {
                         return new EntityReviewProj(
@@ -130,7 +130,7 @@ public class ProjMapper {
                     },
                     projId
             );
-            return Optional.ofNullable(proj);
+            return list.stream().findFirst();
         } catch (Exception e) {
             e.printStackTrace();
             return Optional.empty();
@@ -144,7 +144,7 @@ public class ProjMapper {
      */
     public Optional<EntityReviewProj> getProjByName(String name) {
         try {
-            EntityReviewProj proj = jdbcTemplate.queryForObject(
+            List<EntityReviewProj> list = jdbcTemplate.query(
                     "SELECT * FROM review_proj WHERE name = ?",
                     (rs, rowNum) -> {
                         return new EntityReviewProj(
@@ -159,12 +159,26 @@ public class ProjMapper {
                                 rs.getInt("display")
                         );
                     },
-                    name
-            );
-            return Optional.ofNullable(proj);
+                    name);
+            return list.stream().findFirst();
         } catch (Exception e) {
             e.printStackTrace();
             return Optional.empty();
+        }
+    }
+
+    // 通过工程名获取工程id
+    public String getProjIdByName(String name) {
+        try {
+            String projId = jdbcTemplate.queryForObject(
+                    "SELECT projid FROM review_proj WHERE name = ?",
+                    String.class,
+                    name
+            );
+            return projId;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

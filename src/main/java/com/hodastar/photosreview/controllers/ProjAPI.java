@@ -2,7 +2,9 @@ package com.hodastar.photosreview.controllers;
 
 import com.hodastar.photosreview.entities.EntityReviewPhotos;
 import com.hodastar.photosreview.entities.EntityReviewProj;
+import com.hodastar.photosreview.entities.EntityReviewUsers;
 import com.hodastar.photosreview.mappers.ProjMapper;
+import com.hodastar.photosreview.mappers.ReviewMapper;
 import com.hodastar.photosreview.mappers.UserMapper;
 import com.hodastar.photosreview.utils.FileUtil;
 import com.hodastar.photosreview.utils.ImageUtils;
@@ -17,21 +19,210 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/proj")
 public class ProjAPI {
     private final UserMapper userMapper;
     private final ProjMapper projMapper;
+    private final ReviewMapper reviewMapper;
     private static final Logger log =
             LoggerFactory.getLogger(ProjAPI.class);
+    private final Map<Integer, Long> progressAllCooldown = new ConcurrentHashMap<>();
 
-    public ProjAPI(ProjMapper projMapper, UserMapper userMapper) {
+    public ProjAPI(ProjMapper projMapper, UserMapper userMapper, ReviewMapper reviewMapper) {
         this.projMapper = projMapper;
         this.userMapper = userMapper;
+        this.reviewMapper = reviewMapper;
+    }
+
+    // 获取工程审核进度
+    @GetMapping("/get_proj_progress")
+    public Respond<List<HashMap<String, Object>>> get_proj_progress(
+            @RequestParam("proj") String projName,
+            @RequestParam("adminUid") int adminUid,
+            @RequestParam("adminToken") String adminToken
+    ) {
+        // 检查token
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+
+        // 获取工程
+        Optional<EntityReviewProj> projOpt = projMapper.getProjByName(projName);
+        if (projOpt.isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+
+        if (projOpt.get().status != 1) {
+            return new Respond<>(false, "24", null);
+        }
+
+        ObjectMapper jsonMapper = new ObjectMapper();
+        List<EntityReviewUsers> users = userMapper.getUserList();
+        Map<String, String> uidNameMap = new HashMap<>();
+        for (EntityReviewUsers user : users) {
+            uidNameMap.put(String.valueOf(user.uid), user.allname);
+        }
+        HashMap<String, List<List<Integer>>> taskAll = jsonMapper.readValue(
+                projOpt.get().task,
+                new tools.jackson.core.type.TypeReference<HashMap<String, List<List<Integer>>>>() {}
+        );
+
+        // 工程ID
+        String projId = projOpt.get().projId;
+        // 结果列表
+        List<HashMap<String, Object>> data = new java.util.ArrayList<>();
+
+        for (Map.Entry<String, List<List<Integer>>> entry : taskAll.entrySet()) {
+            String uid = entry.getKey();
+            List<List<Integer>> taskList = entry.getValue();
+
+            Set<EntityReviewPhotos> photosSet = new LinkedHashSet<>();
+            for (List<Integer> range : taskList) {
+                if (range == null || range.size() < 2) {
+                    continue;
+                }
+                List<EntityReviewPhotos> photos = reviewMapper.getPhotos(projId, range.get(0), range.get(1));
+                photosSet.addAll(photos);
+            }
+
+            int all = photosSet.size();
+            int read = 0;
+            if (projOpt.get().type == 0) {
+                for (EntityReviewPhotos photo : photosSet) {
+                    if (photo.value == null || photo.value.isBlank()) {
+                        continue;
+                    }
+                    HashMap<String, List<Object>> value = jsonMapper.readValue(
+                            photo.value,
+                            new tools.jackson.core.type.TypeReference<HashMap<String, List<Object>>>() {}
+                    );
+                    if (value.containsKey(uid) && value.get(uid) != null) {
+                        read++;
+                    }
+                }
+            } else if (projOpt.get().type == 1) {
+                for (EntityReviewPhotos photo : photosSet) {
+                    if (photo.value == null || photo.value.isBlank()) {
+                        continue;
+                    }
+                    List<Object> value = jsonMapper.readValue(
+                            photo.value,
+                            new tools.jackson.core.type.TypeReference<List<Object>>() {}
+                    );
+                    if (!value.isEmpty()) {
+                        read++;
+                    }
+                }
+            } else {
+                return new Respond<>(false, "1", null);
+            }
+
+            HashMap<String, Object> userProgress = new HashMap<>();
+            userProgress.put("uid", uid);
+            userProgress.put("allname", uidNameMap.getOrDefault(uid, uid));
+            userProgress.put("all", all);
+            userProgress.put("read", read);
+            userProgress.put("remaining", all - read);
+            data.add(userProgress);
+        }
+
+        return new Respond<>(true, "success", data);
+    }
+
+    // 获取所有工程用户审核进度（管理员，5秒冷却）
+    @GetMapping("/get_proj_progress_all")
+    public Respond<List<HashMap<String, Object>>> get_proj_progress_all(
+            @RequestParam("adminUid") int adminUid,
+            @RequestParam("adminToken") String adminToken
+    ) {
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+
+        long now = System.currentTimeMillis();
+        Long lastTime = progressAllCooldown.get(adminUid);
+        if (lastTime != null && now - lastTime < 5000) {
+            return new Respond<>(false, "28", null);
+        }
+        progressAllCooldown.put(adminUid, now);
+
+        ObjectMapper jsonMapper = new ObjectMapper();
+        // 工程列表
+        List<EntityReviewProj> projList = projMapper.getProjList().stream()
+                .filter(proj -> proj.status == 1)
+                .toList();
+        // 用户列表
+        Map<String, String> uidNameMap = userMapper.getUserList().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        user -> String.valueOf(user.uid),
+                        user -> user.allname
+                ));
+        // 结果Map
+        Map<String, HashMap<String, Object>> resultMap = new HashMap<>();
+
+        for (EntityReviewProj proj : projList) {
+            // 任务列表
+            HashMap<String, List<List<Integer>>> taskAll = jsonMapper.readValue(
+                    proj.task,
+                    new tools.jackson.core.type.TypeReference<HashMap<String, List<List<Integer>>>>() {}
+            );
+            for (Map.Entry<String, List<List<Integer>>> entry : taskAll.entrySet()) {
+                String uid = entry.getKey();
+                List<List<Integer>> taskList = entry.getValue();
+                Set<EntityReviewPhotos> photosSet = new LinkedHashSet<>();
+                for (List<Integer> range : taskList) {
+                    if (range == null || range.size() < 2) {
+                        continue;
+                    }
+                    photosSet.addAll(reviewMapper.getPhotos(proj.projId, range.get(0), range.get(1)));
+                }
+                int all = photosSet.size();
+                int read = 0;
+                if (proj.type == 0) {
+                    for (EntityReviewPhotos photo : photosSet) {
+                        if (photo.value == null || photo.value.isBlank()) continue;
+                        HashMap<String, List<Object>> value = jsonMapper.readValue(
+                                photo.value,
+                                new tools.jackson.core.type.TypeReference<HashMap<String, List<Object>>>() {}
+                        );
+                        if (value.containsKey(uid) && value.get(uid) != null) read++;
+                    }
+                } else if (proj.type == 1) {
+                    for (EntityReviewPhotos photo : photosSet) {
+                        if (photo.value == null || photo.value.isBlank()) continue;
+                        List<Object> value = jsonMapper.readValue(
+                                photo.value,
+                                new tools.jackson.core.type.TypeReference<List<Object>>() {}
+                        );
+                        if (!value.isEmpty()) read++;
+                    }
+                }
+
+                HashMap<String, Object> userData = resultMap.getOrDefault(uid, new HashMap<>());
+                userData.put("uid", uid);
+                userData.put("allname", uidNameMap.getOrDefault(uid, uid));
+                userData.put("all", ((int) userData.getOrDefault("all", 0)) + all);
+                userData.put("read", ((int) userData.getOrDefault("read", 0)) + read);
+                resultMap.put(uid, userData);
+            }
+        }
+
+        List<HashMap<String, Object>> data = new java.util.ArrayList<>();
+        for (HashMap<String, Object> item : resultMap.values()) {
+            int all = (int) item.getOrDefault("all", 0);
+            int read = (int) item.getOrDefault("read", 0);
+            item.put("remaining", all - read);
+            data.add(item);
+        }
+        return new Respond<>(true, "success", data);
     }
 
     // 获取工程列表
@@ -96,6 +287,23 @@ public class ProjAPI {
             return new Respond<>(false, "4", null);
         }
         Optional<EntityReviewProj> projOpt = projMapper.getProjById(projId);
+        if (projOpt.isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+        return new Respond<>(true, "success", projOpt.get());
+    }
+
+    // 获取工程（管理员通过名称）
+    @GetMapping("/get_proj_by_name")
+    public Respond<EntityReviewProj> get_proj_by_name(
+            @RequestParam("name") String name,
+            @RequestParam("adminUid") int adminUid,
+            @RequestParam("adminToken") String adminToken
+    ) {
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+        Optional<EntityReviewProj> projOpt = projMapper.getProjByName(name);
         if (projOpt.isEmpty()) {
             return new Respond<>(false, "14", null);
         }
