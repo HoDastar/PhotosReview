@@ -192,14 +192,14 @@ async function loadManageDist(index, id) {
         return;
     }
     const distributionContainerEl = document.getElementById("distributionContainer");
-    const manageDistProjNameEl = document.getElementById("manageDistProjName");
-    const manageDistTotalEl = document.getElementById("manageDistTotal");
+    const manageProjNameEl = document.getElementById("manageProjName");
+    const manageTotalEl = document.getElementById("manageTotal");
 
     currentManageProjId = id;
 
     const total = resultTotal.data;
-    manageDistProjNameEl.innerHTML = projList[index].name;
-    manageDistTotalEl.innerHTML = total;
+    manageProjNameEl.innerHTML = projList[index].name;
+    manageTotalEl.innerHTML = total;
 
     // 获取当前项目的task分发列表
     currentTaskList = JSON.parse(projList[index].task);
@@ -436,6 +436,15 @@ async function loadManageDist(index, id) {
     render();
 }
 
+
+async function refreshManageProjectInfo() {
+    await getProj();
+    const index = projList.findIndex((proj) => proj.projId === currentManageProjId);
+    if (index >= 0) {
+        await loadManageDist(index, currentManageProjId);
+    }
+}
+
 async function loadManageGallery(index, id) {
     if (!projList[index]) {
         openModal(
@@ -495,7 +504,7 @@ async function saveManageProj() {
         );
     } else {
         showBubble(i18n.lookUp("modal_content_success")[0].message, 'blue', '#fff');
-        getProj();
+        await refreshManageProjectInfo();
     }
 }
 
@@ -517,7 +526,7 @@ async function saveManageDist() {
         );
     } else {
         showBubble(i18n.lookUp("modal_content_success")[0].message, 'blue', '#fff');
-        getProj();
+        await refreshManageProjectInfo();
     }
 }
 
