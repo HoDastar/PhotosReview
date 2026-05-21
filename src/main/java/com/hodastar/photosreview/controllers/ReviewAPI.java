@@ -226,6 +226,7 @@ public class ReviewAPI {
         data.put("read", readList.size());
         // 任务类型
         data.put("type", projOpt.get().type);
+        data.put("max", projOpt.get().max);
 
         // 图片列表
         HashMap<String, List<Object>> result = new HashMap<>();
@@ -299,7 +300,7 @@ public class ReviewAPI {
         String note = (String) body.get("note");
 
         // 检查评分范围
-        if (score <= 0 || score >= 5) {
+        if (score < 1 || score > projOpt.get().max) {
             return new Respond<>(false, "1", null);
         }
         // 检查批注长度

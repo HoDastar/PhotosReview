@@ -42,6 +42,8 @@ public class SqliteInitiate {
                         name TEXT NOT NULL UNIQUE,
                         -- 0 = 审片, 1 = 筛片
                         type INTEGER NOT NULL,
+                        -- 最大评分（3-10）
+                        max INTEGER NOT NULL DEFAULT 4,
                         task TEXT NOT NULL,
                         thumbnail TEXT NOT NULL,
                         -- 0未开始 1进行中 2收尾中 3已结束
@@ -52,6 +54,12 @@ public class SqliteInitiate {
                         display INTEGER NOT NULL
                     );
                 """);
+            try {
+                jdbcTemplate.execute("""
+                        ALTER TABLE review_proj ADD COLUMN max INTEGER NOT NULL DEFAULT 4;
+                    """);
+            } catch (Exception ignored) {
+            }
             jdbcTemplate.execute("""
                     CREATE TABLE IF NOT EXISTS review_data (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,

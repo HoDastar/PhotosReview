@@ -30,6 +30,7 @@ public class ProjMapper {
                         rs.getString("projid"),
                         rs.getString("name"),
                         rs.getInt("type"),
+                        rs.getInt("max"),
                         rs.getString("task"),
                         rs.getString("thumbnail"),
                         rs.getInt("status"),
@@ -52,13 +53,14 @@ public class ProjMapper {
      * @param thumbnail 工程缩略图
      * @return 新建结果
      */
-    public Boolean createProj(String projId, String name, int type, String thumbnail) {
+    public Boolean createProj(String projId, String name, int type, int max, String thumbnail) {
         try {
             jdbcTemplate.update(
-                    "INSERT INTO review_proj(projid, name, type, task, thumbnail, status, time, display) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO review_proj(projid, name, type, max, task, thumbnail, status, time, display) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     projId,
                     name,
                     type,
+                    max,
                     "{}",
                     thumbnail,
                     0,
@@ -121,6 +123,7 @@ public class ProjMapper {
                                 rs.getString("projid"),
                                 rs.getString("name"),
                                 rs.getInt("type"),
+                                rs.getInt("max"),
                                 rs.getString("task"),
                                 rs.getString("thumbnail"),
                                 rs.getInt("status"),
@@ -152,6 +155,7 @@ public class ProjMapper {
                                 rs.getString("projid"),
                                 rs.getString("name"),
                                 rs.getInt("type"),
+                                rs.getInt("max"),
                                 rs.getString("task"),
                                 rs.getString("thumbnail"),
                                 rs.getInt("status"),

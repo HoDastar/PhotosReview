@@ -330,6 +330,7 @@ public class ProjAPI {
         if (
                 !map.containsKey("name") ||
                         !map.containsKey("type") ||
+                        !map.containsKey("max") ||
                         !map.containsKey("adminUid") ||
                         !map.containsKey("adminToken")
         ) {
@@ -338,6 +339,7 @@ public class ProjAPI {
         if (
                 !(map.get("name") instanceof String) ||
                         !(map.get("type") instanceof Integer) ||
+                        !(map.get("max") instanceof Integer) ||
                         !(map.get("adminUid") instanceof Integer) ||
                         !(map.get("adminToken") instanceof String)
         ) {
@@ -349,6 +351,7 @@ public class ProjAPI {
 
         String name = (String) map.get("name");
         int type = (Integer) map.get("type");
+        int max = (Integer) map.get("max");
         int adminUid = (Integer) map.get("adminUid");
         String adminToken = (String) map.get("adminToken");
 
@@ -367,6 +370,10 @@ public class ProjAPI {
         }
         // check type
         if (type < 0 || type > 1) {
+            return new Respond<>(false, "1", null);
+        }
+        // check max score
+        if (max < 3 || max > 10) {
             return new Respond<>(false, "1", null);
         }
         // check name duplicate
@@ -392,7 +399,7 @@ public class ProjAPI {
         // Save
         String fileName = uuid + "." + extension;
         // 数据库
-        Boolean result = projMapper.createProj(projId, name, type, fileName);
+        Boolean result = projMapper.createProj(projId, name, type, max, fileName);
         if (!result) {
             return new Respond<>(false, "0", null);
         }

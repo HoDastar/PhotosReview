@@ -136,6 +136,15 @@ class classPhotoList {
             radio.checked = (parseInt(radio.value) === num);
         });
     }
+    renderScoreRadios(maxScore) {
+        const container = document.getElementById("scoreRadios");
+        container.innerHTML = "";
+        for (let i = 1; i <= maxScore; i++) {
+            const label = document.createElement("label");
+            label.innerHTML = `<input type="radio" name="opt" value="${i}"><span class="label-box"></span><span>${i}</span>`;
+            container.appendChild(label);
+        }
+    }
 
     //以photoid为索引获取tempid
     getTempidByPhotoid(photoid) {
@@ -444,6 +453,8 @@ class classPhotoList {
                 return;
 
         }
+
+        this.renderScoreRadios(obj.data.max || 4);
 
         switch (obj.data.type) {
             case 0:

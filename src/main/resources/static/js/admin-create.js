@@ -3,8 +3,9 @@ async function createProj() {
     const fileInput = document.getElementById("imgInputCreateThumbnail");
     const projName = document.querySelector('#createProj input[name="input_project_name"]').value;
     const reviewTypeInput = document.querySelector('#createProj input[name="review_type"]:checked');
+    const maxScoreInput = document.querySelector('#createProj input[name="input_project_max_score"]');
     // 非空
-    if (!projName || projName.trim() === "" || !reviewTypeInput || fileInput.value === '') {
+    if (!projName || projName.trim() === "" || !reviewTypeInput || !maxScoreInput || fileInput.value === '') {
         openModal(
             i18n.lookUp("modal_content_fail")[11].title,
             i18n.lookUp("modal_content_fail")[11].message
@@ -21,9 +22,21 @@ async function createProj() {
     }
 
     const reviewType = parseInt(reviewTypeInput.value, 10);
+    const maxScore = parseInt(maxScoreInput.value, 10);
+
+    if (isNaN(maxScore) || maxScore < 3 || maxScore > 10) {
+        await openModal(i18n.lookUp("modal_content_fail")[1].title, i18n.lookUp("modal_content_fail")[1].message);
+        return;
+    }
+
+    const confirmed = window.confirm(i18n.lookUp("confirm_create_project"));
+    if (!confirmed) {
+        return;
+    }
     const param = {
         name: projName,
         type: reviewType,
+        max: maxScore,
         adminUid: uid,
         adminToken: token
     }
@@ -48,6 +61,7 @@ async function createProj() {
 function cleanCreateProj() {
     document.querySelector("#createProj .text-input").value = "";
     document.querySelector('input[name="review_type"][value="0"]').checked = true;
+    document.querySelector('#createProj input[name="input_project_max_score"]').value = "3";
     const fileInput = document.getElementById("imgInputCreateThumbnail");
     fileInput.value = "";
     const display = document.getElementById("imgInputCreateThumbnailDisplay");
