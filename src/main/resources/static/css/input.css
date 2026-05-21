@@ -163,6 +163,18 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
+/* 隐藏 number 输入框默认上下箭头 */
+input[type="number"].text-input::-webkit-outer-spin-button,
+input[type="number"].text-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"].text-input {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 
 /**
 * ---------
