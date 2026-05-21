@@ -14,6 +14,7 @@
     "manage_user": "管理用户",
     "manage_photos": "管理图集",
     "manage_distribution": "任务分配",
+    "modification_project": "修改工程",
     "no_project": "暂无工程。",
     "project_info": "工程信息",
     "input_project_name": "请输入工程名称...",

@@ -97,12 +97,12 @@ async function getProj() {
         });
         cardTextEl.appendChild(buttonManageEl);
 
-        const buttonDistEl = document.createElement("button");
-        buttonDistEl.innerHTML = `<i class="fa-solid fa-diagram-project"></i> ${i18n.lookUp("manage_distribution")}`;
-        buttonDistEl.addEventListener("click", () => {
-            loadManageDist(index, el.projId);
+        const buttonGalleryEl = document.createElement("button");
+        buttonGalleryEl.innerHTML = `<i class="fa-solid fa-images"></i> ${i18n.lookUp("manage_photos")}`;
+        buttonGalleryEl.addEventListener("click", () => {
+            loadManageGallery(index, el.projId);
         });
-        cardTextEl.appendChild(buttonDistEl);
+        cardTextEl.appendChild(buttonGalleryEl);
 
         const buttonDeleteEl = document.createElement("button");
         buttonDeleteEl.style.background = "rgb(220, 38, 38)";
@@ -169,7 +169,7 @@ async function loadManageProj(index, id) {
             break;
     }
     currentManageProjId = id;
-    loadManagePhotosList();
+    await loadManageDist(index, id);
 }
 
 // Load Manage Distribution List
@@ -191,17 +191,15 @@ async function loadManageDist(index, id) {
         );
         return;
     }
-    goPage("manageDist", false);
-
     const distributionContainerEl = document.getElementById("distributionContainer");
-    const manageDistProjNameEl = document.getElementById("manageDistProjName");
-    const manageDistTotalEl = document.getElementById("manageDistTotal");
+    const manageProjNameEl = document.getElementById("manageProjName");
+    const manageTotalEl = document.getElementById("manageTotal");
 
     currentManageProjId = id;
 
     const total = resultTotal.data;
-    manageDistProjNameEl.innerHTML = projList[index].name;
-    manageDistTotalEl.innerHTML = total;
+    manageProjNameEl.innerHTML = projList[index].name;
+    manageTotalEl.innerHTML = total;
 
     // 获取当前项目的task分发列表
     currentTaskList = JSON.parse(projList[index].task);
@@ -438,6 +436,28 @@ async function loadManageDist(index, id) {
     render();
 }
 
+
+async function refreshManageProjectInfo() {
+    await getProj();
+    const index = projList.findIndex((proj) => proj.projId === currentManageProjId);
+    if (index >= 0) {
+        await loadManageDist(index, currentManageProjId);
+    }
+}
+
+async function loadManageGallery(index, id) {
+    if (!projList[index]) {
+        openModal(
+            i18n.lookUp("modal_content_fail")[0].title,
+            i18n.lookUp("modal_content_fail")[0].message
+        );
+        return;
+    }
+    currentManageProjId = id;
+    goPage("manageGallery", false);
+    loadManagePhotosList();
+}
+
 // Save Manage Project
 async function saveManageProj() {
     const projName = document.querySelector('#manageProj input[name="input_project_name"]').value;
@@ -484,7 +504,7 @@ async function saveManageProj() {
         );
     } else {
         showBubble(i18n.lookUp("modal_content_success")[0].message, 'blue', '#fff');
-        getProj();
+        await refreshManageProjectInfo();
     }
 }
 
@@ -506,7 +526,7 @@ async function saveManageDist() {
         );
     } else {
         showBubble(i18n.lookUp("modal_content_success")[0].message, 'blue', '#fff');
-        getProj();
+        await refreshManageProjectInfo();
     }
 }
 
@@ -598,7 +618,7 @@ function photosPoolChange(files) {
 
 async function uploadImages() {
     const filePoolEl = document.getElementById("filePool");
-    const author = document.querySelector('#manageProj input[name="input_author"]').value;
+    const author = document.querySelector('#manageGallery input[name="input_author"]').value;
     if (!currentManageProjId || !author|| Object.keys(photosPool).length === 0) {
         openModal(
             i18n.lookUp("modal_content_fail")[11].title,
@@ -856,7 +876,7 @@ async function deleteSelectedPhotos() {
 }
 
 function filterManagePhotos() {
-    const authorInputEl = document.querySelector('#manageProj input[name="input_author_manage_photos"]');
+    const authorInputEl = document.querySelector('#manageGallery input[name="input_author_manage_photos"]');
     let author = authorInputEl.value.trim();
     if (!author || author === "") {
         author = null;

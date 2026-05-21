@@ -83,7 +83,7 @@
 
                     <div>
                         <button>Manage Project</button>
-                        <button>Manage Distributing</button>
+                        <button>Manage Photos</button>
                         <button style="color: red">Delete</button>
                     </div>
                 </fieldset>
@@ -187,6 +187,22 @@
             <h3 class="subtitle"><span data-i18n="project_info"></span></h3>
             <div class="form-row">
                 <div class="form-label">
+                    <div class="desc"><span data-i18n="project_name">Project Name</span></div>
+                    <div class="title"><span id="manageProjName">Example_1</span></div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-label">
+                    <div class="desc"><span data-i18n="total">Total</span></div>
+                    <div class="title"><span id="manageTotal">999</span></div>
+                </div>
+            </div>
+
+            <hr>
+
+            <h3 class="subtitle"><span data-i18n="modification_project">Modification Project</span></h3>
+            <div class="form-row">
+                <div class="form-label">
                     <div class="title" data-i18n="project_name">Project Name</div>
                     <div class="desc" data-i18n="description_input_project_name"></div>
                 </div>
@@ -195,7 +211,6 @@
                            data-i18n-placeholder="input_project_name" maxlength="100"/>
                 </div>
             </div>
-
             <div class="form-row">
                 <div class="form-label">
                     <div class="title"><span data-i18n="project_thumbnail">Project thumbnail</span></div>
@@ -263,6 +278,45 @@
             </div>
 
             <hr>
+
+            <h3 class="subtitle"><span data-i18n="task_list"></span></h3>
+            <table class="common-table">
+                <thead>
+                <tr>
+                    <th>UID</th>
+                    <th><span data-i18n="first"></span></th>
+                    <th><span data-i18n="last"></span></th>
+                    <th><span data-i18n="operation"></span></th>
+                </tr>
+                </thead>
+                <tbody id="distributionContainer">
+                    <tr>
+                        <td class="text-edit"><input class="text-input on-distribution" placeholder="UID" /></td>
+                        <td class="text-edit"><input class="text-input on-distribution" data-i18n-placeholder="first" /></td>
+                        <td class="text-edit"><input class="text-input on-distribution" data-i18n-placeholder="last" /></td>
+                        <td>
+                            <span class="btn edit"><i class="fa-solid fa-circle-plus"></i></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-edit">10010</td>
+                        <td class="text-edit">0</td>
+                        <td class="text-edit">999</td>
+                        <td>
+                            <span class="btn del"><i class="fa-solid fa-trash"></i></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="form-submit">
+                <button class="button-common" id="cancelManageDist" data-i18n="cancel">Cancel</button>
+                <button class="button-common" id="saveManageDist" data-i18n="save">Save</button>
+            </div>
+
+        </section>
+
+        <section class="viewer" id="manageGallery" style="display: none;">
+            <h2><i class="fa-solid fa-images"></i> <span data-i18n="manage_photos">Manage Photos</span></h2>
 
             <h3 class="subtitle"><span data-i18n="upload"></span></h3>
             <div class="form-row">
@@ -350,58 +404,6 @@
                 <button class="button-common del" id="deleteSelectedPhotos"><span data-i18n="delete">Delete</span></button>
             </div>
 
-        </section>
-
-        <section class="viewer" id="manageDist" style="display: none;">
-            <h2><i class="fa-solid fa-list-check"></i> <span data-i18n="manage_distribution">Manage Distribution</span></h2>
-
-            <h3 class="subtitle"><span data-i18n="project_info"></span></h3>
-            <div class="form-row">
-                <div class="form-label">
-                    <div class="desc"><span data-i18n="project_name">Project Name</span></div>
-                    <div class="title"><span id="manageDistProjName">Example_1</span></div>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-label">
-                    <div class="desc"><span data-i18n="total">Total</span></div>
-                    <div class="title"><span id="manageDistTotal">999</span></div>
-                </div>
-            </div>
-            <hr>
-            <h3 class="subtitle"><span data-i18n="task_list"></span></h3>
-            <table class="common-table">
-                <thead>
-                <tr>
-                    <th>UID</th>
-                    <th><span data-i18n="first"></span></th>
-                    <th><span data-i18n="last"></span></th>
-                    <th><span data-i18n="operation"></span></th>
-                </tr>
-                </thead>
-                <tbody id="distributionContainer">
-                    <tr>
-                        <td class="text-edit"><input class="text-input on-distribution" placeholder="UID" /></td>
-                        <td class="text-edit"><input class="text-input on-distribution" data-i18n-placeholder="first" /></td>
-                        <td class="text-edit"><input class="text-input on-distribution" data-i18n-placeholder="last" /></td>
-                        <td>
-                            <span class="btn edit"><i class="fa-solid fa-circle-plus"></i></span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-edit">10010</td>
-                        <td class="text-edit">0</td>
-                        <td class="text-edit">999</td>
-                        <td>
-                            <span class="btn del"><i class="fa-solid fa-trash"></i></span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <div class="form-submit">
-                <button class="button-common" id="cancelManageDist" data-i18n="cancel">Cancel</button>
-                <button class="button-common" id="saveManageDist" data-i18n="save">Save</button>
-            </div>
         </section>
 
         <section class="viewer" id="manageUser" style="display: none;">
