@@ -29,7 +29,10 @@ async function createProj() {
         return;
     }
 
-    const confirmed = window.confirm(i18n.lookUp("confirm_create_project"));
+    const confirmed = await openModal(
+        i18n.lookUp("modal_content_confirm")[3].title,
+        i18n.lookUp("confirm_create_project")
+    );
     if (!confirmed) {
         return;
     }
