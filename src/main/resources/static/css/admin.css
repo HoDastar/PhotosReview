@@ -462,6 +462,7 @@ hr {
     background-color: var(--color-primary);
     border-radius: 28px;
     transition: width 0.3s ease;
+    margin-bottom: 0;
 }
 .files-pool img {
     width: 100%;

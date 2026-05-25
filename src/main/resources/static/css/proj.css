@@ -123,6 +123,18 @@ h3 {
     float: right;
 }
 
+/* 编辑面板评分选项：允许换行，避免分值较多时溢出 */
+#scoreRadios {
+    flex-wrap: wrap;
+    gap: 10px 14px;
+}
+
+#scoreRadios label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
 textarea {
     margin-top: 10px;
     width: 100%;
