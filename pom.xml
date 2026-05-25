@@ -69,6 +69,12 @@
             <version>0.1.6</version>
         </dependency>
         <dependency>
+            <groupId>com.drewnoakes</groupId>
+            <artifactId>metadata-extractor</artifactId>
+            <version>2.19.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-webp</artifactId>
             <version>3.13.1</version>

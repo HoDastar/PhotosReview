@@ -1,13 +1,16 @@
 package com.hodastar.photosreview.utils;
 
-import org.springframework.web.multipart.MultipartFile;
-
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -19,59 +22,37 @@ public class ImageUtils {
 
     public static void createThumbnail(String sourceStr, String targetStr, String filename, int width, int height) throws Exception {
         if (convertToThumbnailTaskCount >= 8) {
-            // 限制同时进行的转换任务数量，避免过多占用资源
             throw new RuntimeException("当前转换任务过多，请稍后再试");
         }
         convertToThumbnailTaskCount += 1;
 
-        // 读取
-        File sourceD = new File(sourceStr);
-        File targetD = new File(targetStr);
-        if (!sourceD.exists()) {
-            throw new IOException("源文件不存在: " + sourceD.getAbsolutePath());
+        try {
+            File sourceD = new File(sourceStr);
+            File targetD = new File(targetStr);
+            if (!sourceD.exists()) {
+                throw new IOException("源文件不存在: " + sourceD.getAbsolutePath());
+            }
+            if (!targetD.exists()) {
+                targetD.mkdirs();
+            }
+            File source = new File(sourceD, filename);
+            File target = new File(targetD, filename);
+            BufferedImage srcImg = applyExifOrientation(ImageIO.read(source), source);
+
+            scaleAndWriteJpg(srcImg, target, width, height);
+        } finally {
+            convertToThumbnailTaskCount -= 1;
         }
-        if (!targetD.exists()) {
-            targetD.mkdirs();
-        }
-        File source = new File(sourceD, filename);
-        File target = new File(targetD, filename);
-        BufferedImage srcImg = ImageIO.read(source);
-
-        // 按比例缩放
-        int srcWidth = srcImg.getWidth();
-        int srcHeight = srcImg.getHeight();
-
-        double scale = Math.min(
-                (double) width / srcWidth,
-                (double) height / srcHeight
-        );
-
-        int newW = (int) (srcWidth * scale);
-        int newH = (int) (srcHeight * scale);
-
-        Image scaledImg = srcImg.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
-
-        BufferedImage output = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = output.createGraphics();
-
-        // 抗锯齿
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.drawImage(scaledImg, 0, 0, null);
-        g.dispose();
-
-        ImageIO.write(output, "jpg", target);
     }
 
     public static void convertToWebp(String sourceStr,
                                      String targetStr,
                                      String filename) throws IOException {
         if (convertToWebpTaskCount >= 8) {
-            // 限制同时进行的转换任务数量，避免过多占用资源
             throw new RuntimeException("当前转换任务过多，请稍后再试");
         }
         convertToWebpTaskCount += 1;
 
-        // 原文件
         File sourceFile = new File(sourceStr, filename);
 
         if (!sourceFile.exists()) {
@@ -79,17 +60,14 @@ public class ImageUtils {
             throw new IOException("源文件不存在: " + sourceFile.getAbsolutePath());
         }
 
-        // 创建目标目录
         File targetDir = new File(targetStr);
 
         if (!targetDir.exists()) {
             targetDir.mkdirs();
         }
 
-        // 输出 webp 文件
         File targetFile = new File(targetDir, filename + ".webp");
 
-        // 读取原图
         BufferedImage image = ImageIO.read(sourceFile);
 
         if (image == null) {
@@ -97,7 +75,8 @@ public class ImageUtils {
             throw new IOException("无法读取图片文件");
         }
 
-        // 获取 WebP Writer
+        image = applyExifOrientation(image, sourceFile);
+
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("webp");
 
         if (!writers.hasNext()) {
@@ -107,7 +86,6 @@ public class ImageUtils {
 
         ImageWriter writer = writers.next();
 
-        // 压缩参数
         ImageWriteParam param = writer.getDefaultWriteParam();
 
         if (param.canWriteCompressed()) {
@@ -121,7 +99,6 @@ public class ImageUtils {
             param.setCompressionQuality(0.5f);
         }
 
-        // 写入文件
         try (ImageOutputStream ios = ImageIO.createImageOutputStream(targetFile)) {
 
             writer.setOutput(ios);
@@ -137,15 +114,7 @@ public class ImageUtils {
             convertToWebpTaskCount -= 1;
         }
     }
-    public static void createThumbnail2(MultipartFile img, String dirStr, String filename, int width, int height) throws Exception {
-        File dir = new File(dirStr);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        File target = new File(dir, filename);
-        BufferedImage srcImg = ImageIO.read(img.getInputStream());
-
-        // 按比例缩放
+    private static void scaleAndWriteJpg(BufferedImage srcImg, File target, int width, int height) throws IOException {
         int srcWidth = srcImg.getWidth();
         int srcHeight = srcImg.getHeight();
 
@@ -162,11 +131,75 @@ public class ImageUtils {
         BufferedImage output = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = output.createGraphics();
 
-        // 抗锯齿
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g.drawImage(scaledImg, 0, 0, null);
         g.dispose();
 
         ImageIO.write(output, "jpg", target);
+    }
+
+    private static BufferedImage applyExifOrientation(BufferedImage image, File imageFile) {
+        try {
+            Metadata metadata = ImageMetadataReader.readMetadata(imageFile);
+            ExifIFD0Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+            int orientation = directory == null ? 1 : directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
+            return transformByOrientation(image, orientation);
+        } catch (Exception e) {
+            return image;
+        }
+    }
+    private static BufferedImage transformByOrientation(BufferedImage src, int orientation) {
+        int width = src.getWidth();
+        int height = src.getHeight();
+
+        AffineTransform tx = new AffineTransform();
+        int destWidth = width;
+        int destHeight = height;
+
+        switch (orientation) {
+            case 2 -> tx.scale(-1.0, 1.0);
+            case 3 -> tx.quadrantRotate(2, width / 2.0, height / 2.0);
+            case 4 -> tx.scale(1.0, -1.0);
+            case 5 -> {
+                tx.quadrantRotate(1);
+                tx.scale(1.0, -1.0);
+                destWidth = height;
+                destHeight = width;
+            }
+            case 6 -> {
+                tx.translate(height, 0);
+                tx.quadrantRotate(1);
+                destWidth = height;
+                destHeight = width;
+            }
+            case 7 -> {
+                tx.scale(-1.0, 1.0);
+                tx.translate(-height, 0);
+                tx.translate(0, width);
+                tx.quadrantRotate(3);
+                destWidth = height;
+                destHeight = width;
+            }
+            case 8 -> {
+                tx.translate(0, width);
+                tx.quadrantRotate(3);
+                destWidth = height;
+                destHeight = width;
+            }
+            default -> {
+                return src;
+            }
+        }
+
+        if (orientation == 2) {
+            tx.translate(-width, 0);
+        } else if (orientation == 4) {
+            tx.translate(0, -height);
+        }
+
+        BufferedImage dst = new BufferedImage(destWidth, destHeight, BufferedImage.TYPE_INT_RGB);
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+        op.filter(src, dst);
+        return dst;
     }
 }
