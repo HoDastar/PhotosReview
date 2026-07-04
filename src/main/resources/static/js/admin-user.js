@@ -145,6 +145,13 @@ async function resetUserPassword(targetUid = getManageUserUid()) {
     if (!targetUid) {
         return;
     }
+    const a = await openModal(
+        i18n.lookUp("modal_content_confirm")[5].title,
+        i18n.lookUp("modal_content_confirm")[5].message,
+    )
+    if (!a) {
+        return;
+    }
     const result = await postApi(url + "/api/user/reset_password", {
         uid: targetUid,
         adminUid: uid,
@@ -168,6 +175,13 @@ async function banUser(targetUid = getManageUserUid()) {
     if (!targetUid) {
         return;
     }
+    const a = await openModal(
+        i18n.lookUp("modal_content_confirm")[5].title,
+        i18n.lookUp("modal_content_confirm")[5].message,
+    )
+    if (!a) {
+        return;
+    }
     const result = await postApi(url + "/api/user/ban_user", {
         uid: targetUid,
         adminUid: uid,
@@ -189,6 +203,13 @@ async function banUser(targetUid = getManageUserUid()) {
 }
 async function unbanUser(targetUid = getManageUserUid()) {
     if (!targetUid) {
+        return;
+    }
+    const a = await openModal(
+        i18n.lookUp("modal_content_confirm")[5].title,
+        i18n.lookUp("modal_content_confirm")[5].message,
+    )
+    if (!a) {
         return;
     }
     const result = await postApi(url + "/api/user/unban_user", {

@@ -18,7 +18,7 @@ public class ImageUtils {
     private static int convertToThumbnailTaskCount = 0;
 
     public static void createThumbnail(String sourceStr, String targetStr, String filename, int width, int height) throws Exception {
-        if (convertToThumbnailTaskCount >= 8) {
+        if (convertToThumbnailTaskCount >= 3) {
             // 限制同时进行的转换任务数量，避免过多占用资源
             throw new RuntimeException("当前转换任务过多，请稍后再试");
         }
@@ -59,13 +59,18 @@ public class ImageUtils {
         g.drawImage(scaledImg, 0, 0, null);
         g.dispose();
 
-        ImageIO.write(output, "jpg", target);
+        // 写入文件
+        try {
+            ImageIO.write(output, "jpg", target);
+        } finally {
+            convertToThumbnailTaskCount -= 1;
+        }
     }
 
     public static void convertToWebp(String sourceStr,
                                      String targetStr,
-                                     String filename) throws IOException {
-        if (convertToWebpTaskCount >= 8) {
+                                     String filename) throws Exception {
+        if (convertToWebpTaskCount >= 3) {
             // 限制同时进行的转换任务数量，避免过多占用资源
             throw new RuntimeException("当前转换任务过多，请稍后再试");
         }
@@ -76,7 +81,7 @@ public class ImageUtils {
 
         if (!sourceFile.exists()) {
             convertToWebpTaskCount -= 1;
-            throw new IOException("源文件不存在: " + sourceFile.getAbsolutePath());
+            throw new RuntimeException("源文件不存在: " + sourceFile.getAbsolutePath());
         }
 
         // 创建目标目录
@@ -94,7 +99,7 @@ public class ImageUtils {
 
         if (image == null) {
             convertToWebpTaskCount -= 1;
-            throw new IOException("无法读取图片文件");
+            throw new RuntimeException("无法读取图片文件");
         }
 
         // 获取 WebP Writer
@@ -136,37 +141,5 @@ public class ImageUtils {
             writer.dispose();
             convertToWebpTaskCount -= 1;
         }
-    }
-    public static void createThumbnail2(MultipartFile img, String dirStr, String filename, int width, int height) throws Exception {
-        File dir = new File(dirStr);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        File target = new File(dir, filename);
-        BufferedImage srcImg = ImageIO.read(img.getInputStream());
-
-        // 按比例缩放
-        int srcWidth = srcImg.getWidth();
-        int srcHeight = srcImg.getHeight();
-
-        double scale = Math.min(
-                (double) width / srcWidth,
-                (double) height / srcHeight
-        );
-
-        int newW = (int) (srcWidth * scale);
-        int newH = (int) (srcHeight * scale);
-
-        Image scaledImg = srcImg.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
-
-        BufferedImage output = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = output.createGraphics();
-
-        // 抗锯齿
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.drawImage(scaledImg, 0, 0, null);
-        g.dispose();
-
-        ImageIO.write(output, "jpg", target);
     }
 }

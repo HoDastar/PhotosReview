@@ -559,60 +559,113 @@ async function deleteProj(id) {
     }
 }
 
-function photosPoolChange(files) {
+// 通过file创建缩略图
+async function createThumbnailFromFile(file, maxSize = 100) {
+    const img = new Image();
+    // 生成本地临时 URL，不会把图片转成 Base64
+    const objectUrl = URL.createObjectURL(file);
+
+    try {
+        img.src = objectUrl;
+        // 等待图片加载完成
+        await img.decode();
+
+        let width = img.naturalWidth;
+        let height = img.naturalHeight;
+
+        if (width > height) {
+            if (width > maxSize) {
+                height = height * (maxSize / width);
+                width = maxSize;
+            }
+        } else {
+            if (height > maxSize) {
+                width = width * (maxSize / height);
+                height = maxSize;
+            }
+        }
+
+        if (!width || !height) {
+            throw new Error("图片宽高异常");
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(width);
+        canvas.height = Math.round(height);
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // 输出低分辨率图片
+        return canvas.toDataURL("image/jpeg", 0.75);
+    } finally {
+        // 释放临时 URL
+        URL.revokeObjectURL(objectUrl);
+    }
+}
+
+// 添加图片后
+async function photosPoolChange(files) {
+    // 图片池
     const filePoolEl = document.getElementById("filePool");
+    // 图片扩展名
     const imgExt = ["jpg", "png", "jpeg", "webp"];
+    // 队列
+    const queue = new Queue();
 
     [...files].forEach(file => {
-        // 分配uuid
-        const uuid = crypto.randomUUID();
-        const fileName = file.name;
-        const fileExt = fileName.split(".").pop().toLowerCase();
-        if (!imgExt.includes(fileExt)) {
-            return;
-        }
+        queue.add(async () => {
+            // 分配uuid
+            const uuid = crypto.randomUUID();
+            const fileName = file.name;
+            const fileExt = fileName.split(".").pop().toLowerCase();
+            if (!imgExt.includes(fileExt)) {
+                return;
+            }
 
-        const itemEl = document.createElement("div");
-        itemEl.classList.add("item");
-        // 创建图片预览
-        const reader = new FileReader();
-        reader.onload = (e) => {
+            const itemEl = document.createElement("div");
+            itemEl.classList.add("item");
+            // 创建图片预览
             const imgEl = document.createElement("img");
-            imgEl.src = e.target.result;
-            itemEl.appendChild(imgEl);
-            //itemEl.style.cssText = `background: url("${e.target.result}")`;
-        }
-        reader.readAsDataURL(file);
 
-        const progressContainerEl = document.createElement("div");
-        progressContainerEl.classList.add("progress-container");
-        const progressBar = document.createElement("div");
-        progressBar.classList.add("progress-bar");
-        progressBar.style.width = '0%';
-        progressBar.style.display = "none";
-        progressContainerEl.appendChild(progressBar);
-        const closeEl = document.createElement("div");
-        closeEl.classList.add("close");
-        closeEl.innerHTML = '×';
-        closeEl.addEventListener("click", () => {
-            delete photosPool[uuid];
-            itemEl.remove();
+            try {
+                // 创建缩略图
+                imgEl.src = await createThumbnailFromFile(file);
+                itemEl.appendChild(imgEl);
+
+                const progressContainerEl = document.createElement("div");
+                progressContainerEl.classList.add("progress-container");
+                const progressBar = document.createElement("div");
+                progressBar.classList.add("progress-bar");
+                progressBar.style.width = '0%';
+                progressBar.style.display = "none";
+                progressContainerEl.appendChild(progressBar);
+                const closeEl = document.createElement("div");
+                closeEl.classList.add("close");
+                closeEl.innerHTML = '×';
+                closeEl.addEventListener("click", () => {
+                    delete photosPool[uuid];
+                    itemEl.remove();
+                });
+                const labelEl = document.createElement("div");
+                labelEl.classList.add("label", "color_blue");
+                labelEl.innerHTML = "READY";
+
+                itemEl.appendChild(progressContainerEl);
+                itemEl.appendChild(closeEl);
+                itemEl.appendChild(labelEl);
+                filePoolEl.appendChild(itemEl);
+
+                let fileX = {};
+                fileX.file = file;
+                fileX.progressBar = progressBar;
+                fileX.labelEl = labelEl;
+                // 添加数组
+                photosPool[uuid] = fileX;
+            } catch (e) {
+                console.error("Failed to create thumbnail:", e);
+            }
         });
-        const labelEl = document.createElement("div");
-        labelEl.classList.add("label", "color_blue");
-        labelEl.innerHTML = "READY";
-
-        itemEl.appendChild(progressContainerEl);
-        itemEl.appendChild(closeEl);
-        itemEl.appendChild(labelEl);
-        filePoolEl.appendChild(itemEl);
-
-        let fileX = {};
-        fileX.file = file;
-        fileX.progressBar = progressBar;
-        fileX.labelEl = labelEl;
-        // 添加数组
-        photosPool[uuid] = fileX;
     });
 }
 
@@ -634,62 +687,56 @@ async function uploadImages() {
         return;
     }
 
-    const limit = 3; // 限制同时上传的数量
     const uuids = Object.keys(photosPool);
-    const queue = Object.values(photosPool);
-    let index = 0;
+    const files = Object.values(photosPool);
+    const queue = new Queue();
     let successCount = 0;
 
-    const f = async (fileX, uuid) => {
-        const progressBar = fileX.progressBar;
-        const labelEl = fileX.labelEl
-        let param = {
-            projId: currentManageProjId,
-            author: author,
-            adminUid: uid,
-            adminToken: token
-        };
+    // 添加完成事件
+    queue.addFinalTask(() => {
+        loadManagePhotosList();
+        showBubble(i18n.lookUp("successful_rows") + successCount, "blue", "#fff");
+    });
+    // 添加任务
+    for (let i = 0; i < files.length; i++) {
+        const fileX = files[i];
+        const uuid = uuids[i];
 
-        progressBar.style.display = "block";
-        labelEl.classList.remove(...labelEl.classList);
-        labelEl.classList.add("label", "color_blue");
-        labelEl.innerHTML = 'UPLOADING';
+        queue.add(async () => {
+            const progressBar = fileX.progressBar;
+            const labelEl = fileX.labelEl
+            let param = {
+                projId: currentManageProjId,
+                author: author,
+                adminUid: uid,
+                adminToken: token
+            };
 
-        const result = await postApiWithFileOnProgress(
-            url + "/api/proj/upload_image",
-            param,
-            fileX.file,
-            progressBar
-        );
-        if (!result.result) {
-            const msg = result.message;
-            showBubble(i18n.lookUp("modal_content_fail")[19].message, "red", "#fff");
+            progressBar.style.display = "block";
             labelEl.classList.remove(...labelEl.classList);
-            labelEl.classList.add("label", "color_red");
-            labelEl.innerHTML = "FAIL";
-        } else {
-            labelEl.classList.remove(...labelEl.classList);
-            labelEl.classList.add("label", "color_green");
-            labelEl.innerHTML = "SUCCESS";
-            delete photosPool[uuid];
-            successCount += 1;
-        }
+            labelEl.classList.add("label", "color_blue");
+            labelEl.innerHTML = 'UPLOADING';
 
-    }
-
-    const runNext = () => {
-        if (index < queue.length) {
-            const fileX = queue[index];
-            const uuid = uuids[index];
-            index++;
-            f(fileX, uuid)
-                .then(runNext);
-        } else {
-            loadManagePhotosList();
-        }
-    }
-    for (let i = 0; i < limit && i < queue.length; i++) {
-        runNext();
+            const result = await postApiWithFileOnProgress(
+                url + "/api/proj/upload_image",
+                param,
+                fileX.file,
+                progressBar
+            );
+            if (!result.result) {
+                const msg = result.message;
+                showBubble(i18n.lookUp("modal_content_fail")[19].message, "red", "#fff");
+                labelEl.classList.remove(...labelEl.classList);
+                labelEl.classList.add("label", "color_red");
+                labelEl.innerHTML = "FAIL";
+            } else {
+                labelEl.classList.remove(...labelEl.classList);
+                labelEl.classList.add("label", "color_green");
+                labelEl.innerHTML = "SUCCESS";
+                delete photosPool[uuid];
+                successCount += 1;
+            }
+        });
     }
 }
 
@@ -862,17 +909,28 @@ async function deleteSelectedPhotos() {
         return;
     }
 
-    let affected = 0;
-    for (let i = 0; i < length; i++) {
-        const id = arr[i];
-        const el = document.querySelector(`tr[data-photo-id="${id}"]`);
-        const index = Number(el.getAttribute("data-photo-index"));
-        const result = await delPhoto(id, el, index, true);
-        if (result) {
-            affected += 1;
-        }
+    const param = {
+        ids: arr,
+        adminUid: uid,
+        adminToken: token
     }
+    const result = await postApi(url + "/api/proj/delete_photos", param);
+    if (!result.result) {
+        const msg = parseInt(result.message, 10);
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        )
+        return;
+    }
+    const affected = result.data;
     showBubble(i18n.lookUp("successful_rows") + affected, "blue", "#fff");
+    const authorInputEl = document.querySelector('#manageGallery input[name="input_author_manage_photos"]');
+    let author = authorInputEl.value.trim();
+    if (!author || author === "") {
+        author = null;
+    }
+    await loadManagePhotosList(author);
 }
 
 function filterManagePhotos() {

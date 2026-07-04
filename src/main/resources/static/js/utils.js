@@ -53,3 +53,48 @@ function getUrlGet(name) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(name) || '';
 }
+
+
+// 队列
+class Queue {
+    constructor() {
+        this.queue = [];
+        this.running = false;
+    }
+
+    add(task) {
+        this.queue.push(task);
+        this.run();
+    }
+
+    async run() {
+        if (this.running) return;
+        this.running = true;
+
+        while (this.queue.length > 0) {
+            const task = this.queue.shift();
+            try {
+                await task();
+            } catch (e) {
+                console.error("Task failed:", e);
+            }
+        }
+        // 结束
+        await this.runFinalTask();
+        this.running = false;
+    }
+
+    addFinalTask(task) {
+        this.finalTask = task;
+    }
+
+    async runFinalTask() {
+        if (this.finalTask) {
+            try {
+                await this.finalTask();
+            } catch (e) {
+                console.error("Final task failed:", e);
+            }
+        }
+    }
+}

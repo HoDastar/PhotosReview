@@ -79,28 +79,7 @@
         <div class="widget">
             <h3><i class="fa-solid fa-edit"></i> <span data-i18n="edit"></span></h3>
             <p><span data-i18n="score"></span>: </p>
-            <div class="radio-group" id="scoreRadios" style="">
-                <label>
-                    <input type="radio" name="opt" value="1">
-                    <span class="label-box"></span>
-                    <span>1</span>
-                </label>
-                <label>
-                    <input type="radio" name="opt" value="2">
-                    <span class="label-box"></span>
-                    <span>2</span>
-                </label>
-                <label>
-                    <input type="radio" name="opt" value="3">
-                    <span class="label-box"></span>
-                    <span>3</span>
-                </label>
-                <label>
-                    <input type="radio" name="opt" value="4">
-                    <span class="label-box"></span>
-                    <span>4</span>
-                </label>
-            </div>
+            <div class="radio-group" id="scoreRadios" style=""></div>
             <p><span data-i18n="note"></span>: </p>
             <textarea data-i18n-placeholder="say_something" placeholder="说点什么吧..." id="html_note"></textarea>
             <button class="button-long" onclick="photoList.submit()">
@@ -159,6 +138,15 @@
                 <span class="label-text" data-i18n="auto_commit"></span>
                 <label>
                     <input type="checkbox" id="autoCommit">
+                    <div class="switch">
+                        <div class="slider"></div>
+                    </div>
+                </label>
+            </div>
+            <div class="switch-row">
+                <span class="label-text" data-i18n="per_image_setting">Per-image setting</span>
+                <label>
+                    <input type="checkbox" id="adjustImgParamIndividually">
                     <div class="switch">
                         <div class="slider"></div>
                     </div>

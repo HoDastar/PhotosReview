@@ -7,6 +7,7 @@
     "project_status": "工程状态",
     "author": "作者",
     "upload": "上传",
+    "thumbnail": "缩略图",
     "photos_pool": "图集",
     "create_project": "新建工程",
     "create_user": "新建用户",
@@ -24,6 +25,9 @@
     "description_input_author": "请输入图集的作者。",
     "description_choose_photos": "选择该作者的一系列照片进行上传。",
     "project_thumbnail": "工程缩略图",
+    "set_project_max_score": "设置工程最大评分",
+    "description_set_project_max_score": "设置本工程评分上限（3-10），创建后不可修改。",
+    "confirm_create_project": "确认创建该工程吗？评分上限创建后不可修改。",
     "description_project_thumbnail": "支持jpg、jpeg、png、webp格式，且文件大小不超过10MB。",
     "description_project_thumbnail_2": "如果不想更改缩略图，请留空。",
     "description_icon": "如果不想更改图标，请留空。",
@@ -300,6 +304,11 @@
             "index": 4,
             "title": "警告",
             "message": "是否要删除？"
+        },
+        {
+          "index": 5,
+          "title": "警告",
+          "message": "是否要继续？"
         }
     ],
     "loading-1": "页面加载中，请稍候...",
@@ -330,6 +339,7 @@
     "lock_content": "锁定评分面板",
     "auto_next": "自动下一张",
     "auto_commit": "评分自动提交",
+    "per_image_setting": "单独设置每张图片参数",
     "switch_mode": "切换模式",
     "cache_project": "缓存工程",
     "switch_theme": "切换外观",
@@ -354,7 +364,7 @@
     "no_this_photoid": "没有此Photoid",
     "no_this_tempid": "没有此Tempid",
     "view_progress": "进度查看",
-    "user_progress": "用户进度",
+    "all_progress": "全部进度",
     "project_progress": "工程进度",
     "refresh": "刷新",
     "query": "查询",

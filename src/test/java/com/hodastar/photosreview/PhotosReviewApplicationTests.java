@@ -8,6 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.io.File;
+
 import static com.hodastar.photosreview.config.Config.LOGIN_SESSION_FILE_DIR;
 
 @SpringBootTest
@@ -20,7 +23,7 @@ class PhotosReviewApplicationTests {
     private ReviewMapper reviewMapper;
 
     @Test
-    void contextLoads() {
+    void contextLoads() throws Exception {
         c();
     }
 
@@ -31,6 +34,15 @@ class PhotosReviewApplicationTests {
         System.out.println(CryptUtil.BCEcrypt("Aa123456"));
     }
 
-    void c() {
+    void c() throws Exception {
+        String baseDir = System.getProperty("user.dir");
+        // 目标目录
+        String dirStr = baseDir + File.separator +
+                "data" + File.separator +
+                "proj" + File.separator +
+                "d2a18223-d148-4242-b7e3-23f7fa7c283d" + File.separator +
+                "img" + File.separator;
+        String fileName = "d6c7fe75-97a6-4192-aa79-fc811ac3071b.JPG";
+        FileUtil.deleteFile(dirStr, fileName);
     }
 }
