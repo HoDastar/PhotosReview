@@ -171,7 +171,7 @@ body {
 }
 
 .form-submit {
-    margin-top: 30px;
+    margin: 30px 0;
     text-align: left;
 }
 
@@ -270,7 +270,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 20px 0;
-    border-bottom: 1px solid var(--color-border);
+    /* border-bottom: 1px solid var(--color-border); */
 }
 
 .progress-user-name { font-size: 16px; font-weight: 600; }

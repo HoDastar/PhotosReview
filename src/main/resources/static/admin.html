@@ -222,15 +222,6 @@
             </div>
             <div class="form-row">
                 <div class="form-label">
-                    <div class="title"><span data-i18n="set_project_max_score"></span></div>
-                    <div class="desc" data-i18n="description_set_project_max_score"></div>
-                </div>
-                <div class="form-control">
-                    <input type="number" class="text-input" name="input_project_max_score" min="3" max="10" value="3" />
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-label">
                     <div class="title"><span data-i18n="project_thumbnail">Project thumbnail</span></div>
                     <div class="desc" data-i18n="description_project_thumbnail_2"></div>
                 </div>
@@ -362,16 +353,7 @@
                 </div>
             </div>
             <div class="files-pool" id="filePool">
-                <!--
-                <div class="item">
-                    <img src="https://th.bing.com/th/id/OIP.9a4umpl2vucdEY3UAtgGWAHaGw?o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3">
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: 10%"></div>
-                    </div>
-                    <div class="close">×</div>
-                    <div class="label color_blue">READY</div>
-                </div>
-                -->
+
             </div>
             <div class="form-submit">
                 <button class="button-common" id="cleanPhotosPool"><span data-i18n="clean">Clean</span></button>
@@ -400,18 +382,6 @@
             <div class="form-submit">
                 <button class="button-common" id="filterManagePhotos"><span data-i18n="filter">Filter</span></button>
             </div>
-            <table class="common-table form-manage-photos">
-                <thead>
-                    <tr>
-                        <th>Photoid</th>
-                        <th>Thumbnail</th>
-                        <th><span data-i18n="author"></span></th>
-                        <th><span data-i18n="operation"></span></th>
-                    </tr>
-                </thead>
-                <tbody id="managePhotosTableBody">
-                </tbody>
-            </table>
             <div class="form-row">
                 <div class="form-label">
                     <div class="title"><span data-i18n="batch_delete">Batch Delete</span></div>
@@ -421,6 +391,18 @@
             <div class="form-submit">
                 <button class="button-common del" id="deleteSelectedPhotos"><span data-i18n="delete">Delete</span></button>
             </div>
+            <table class="common-table form-manage-photos">
+                <thead>
+                    <tr>
+                        <th>Photoid</th>
+                        <th><span data-i18n="thumbnail"></span></th>
+                        <th><span data-i18n="author"></span></th>
+                        <th><span data-i18n="operation"></span></th>
+                    </tr>
+                </thead>
+                <tbody id="managePhotosTableBody">
+                </tbody>
+            </table>
 
         </section>
 
@@ -487,7 +469,7 @@
         <section class="viewer" id="viewProgress" style="display: none;">
             <h2><i class="fa-solid fa-chart-line"></i> <span data-i18n="view_progress"></span></h2>
 
-            <h3 class="subtitle"><span data-i18n="user_progress"></span></h3>
+            <h3 class="subtitle"><span data-i18n="all_progress"></span></h3>
             <div id="allUserProgressList" class="progress-list"></div>
             <div class="form-submit">
                 <button class="button-common" id="refreshAllProgress" data-i18n="refresh"></button>

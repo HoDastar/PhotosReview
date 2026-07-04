@@ -290,4 +290,21 @@ public class ProjMapper {
             return false;
         }
     }
+
+    /**
+     * 通过id列表删除照片
+     * @param ids 照片id
+     * @return 删除结果
+     */
+    public int deletePhotoByIds(List<Integer> ids) {
+        try {
+            String sql = "DELETE FROM review_data WHERE id IN (" +
+                    String.join(",", ids.stream().map(String::valueOf).toArray(String[]::new)) +
+                    ")";
+            return jdbcTemplate.update(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }

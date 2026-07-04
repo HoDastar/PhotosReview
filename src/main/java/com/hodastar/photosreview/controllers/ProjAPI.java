@@ -12,6 +12,7 @@ import com.hodastar.photosreview.utils.Respond;
 import com.hodastar.photosreview.utils.Utilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
@@ -40,6 +41,56 @@ public class ProjAPI {
         this.projMapper = projMapper;
         this.userMapper = userMapper;
         this.reviewMapper = reviewMapper;
+    }
+
+    /**
+     * 通过photoid删除图片
+     * @param id photoid
+     * @return
+     */
+    private Boolean deletePhotoMethod(int id) {
+        // 获取照片
+        Optional<EntityReviewPhotos> photoOpt = projMapper.getPhotoById(id);
+        if (photoOpt.isEmpty()) {
+            return false;
+        }
+        // 获取文件信息
+        String name = photoOpt.get().name;
+        // webp版文件名
+        String webpName = name + ".webp";
+        // 获取工程ID
+        String projId = photoOpt.get().proj;
+        // 删除数据
+        Boolean result = projMapper.deletePhotoById(id);
+        if (!result) {
+            return false;
+        }
+        // 文件目录
+        String baseDir = System.getProperty("user.dir");
+        String dirStr = baseDir + File.separator +
+                "data" + File.separator +
+                "proj" + File.separator +
+                projId + File.separator +
+                "img" + File.separator;
+        String thumbnailDirStr = baseDir + File.separator +
+                "data" + File.separator +
+                "proj" + File.separator +
+                projId + File.separator +
+                "thumbnail" + File.separator;
+        String proxyDirStr = baseDir + File.separator +
+                "data" + File.separator +
+                "proj" + File.separator +
+                projId + File.separator +
+                "proxy" + File.separator;
+        // 尝试删除文件
+        try {
+            FileUtil.deleteFile(dirStr, name);
+            FileUtil.deleteFile(thumbnailDirStr, name);
+            FileUtil.deleteFile(proxyDirStr, webpName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
     }
 
     // 获取工程审核进度
@@ -700,7 +751,6 @@ public class ProjAPI {
 
         String uuid = Utilities.generateUUID();
         String fileName = uuid + "." + extension;
-
         String baseDir = System.getProperty("user.dir");
         // 目标目录
         String dirStr = baseDir + File.separator +
@@ -708,36 +758,42 @@ public class ProjAPI {
                 "proj" + File.separator +
                 projId + File.separator +
                 "img" + File.separator;
-
-        // 保存
-        FileUtil.saveMultipartFile(img, dirStr, fileName);
-
         // 缩略图目录
         String thumbnailDirStr = baseDir + File.separator +
                 "data" + File.separator +
                 "proj" + File.separator +
                 projId + File.separator +
                 "thumbnail" + File.separator;
-        // 生成缩略图
-        ImageUtils.createThumbnail(dirStr, thumbnailDirStr, fileName, 300, 300);
-
         // 代理图目录
         String proxyDirStr = baseDir + File.separator +
                 "data" + File.separator +
                 "proj" + File.separator +
                 projId + File.separator +
                 "proxy" + File.separator;
-        // 生成代理图
-        ImageUtils.convertToWebp(dirStr, proxyDirStr, fileName);
 
-        // 添加数据库
-        Boolean r = projMapper.addPhoto(projId, author, fileName, value);
-        if (!r) {
+        // 保存文件
+        try {
+            // 保存
+            FileUtil.saveMultipartFile(img, dirStr, fileName);
+            // 生成缩略图
+            ImageUtils.createThumbnail(dirStr, thumbnailDirStr, fileName, 300, 300);
+            // 生成代理图
+            ImageUtils.convertToWebp(dirStr, proxyDirStr, fileName);
+            // 添加数据库
+            Boolean r = projMapper.addPhoto(projId, author, fileName, value);
+            if (!r) {
+                throw new RuntimeException("sql error", null);
+            }
+            return new Respond<>(true, "success", null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // 删除已保存的文件
             FileUtil.deleteFile(dirStr, fileName);
+            FileUtil.deleteFile(thumbnailDirStr, fileName);
+            String webpName = fileName + ".webp";
+            FileUtil.deleteFile(proxyDirStr, webpName);
             return new Respond<>(false, "0", null);
         }
-
-        return new Respond<>(true, "success", null);
     }
 
     // 删除照片
@@ -763,41 +819,47 @@ public class ProjAPI {
         // 获取照片
         Optional<EntityReviewPhotos> photoOpt = projMapper.getPhotoById(id);
         if (photoOpt.isEmpty()) {
-            return new Respond<>(true, "Done", null);
+            return new Respond<>(false, "25", null);
         }
-        // 获取文件信息
-        String name = photoOpt.get().name;
-        // webp版文件名
-        String webpName = name.substring(0, name.lastIndexOf(".")) + ".webp";
-        // 获取工程ID
-        String projId = photoOpt.get().proj;
-        // 删除数据
-        Boolean result = projMapper.deletePhotoById(id);
+
+        Boolean result = deletePhotoMethod(id);
         if (!result) {
             return new Respond<>(false, "0", null);
         }
-        // 文件目录
-        String baseDir = System.getProperty("user.dir");
-        String dirStr = baseDir + File.separator +
-                "data" + File.separator +
-                "proj" + File.separator +
-                projId + File.separator +
-                "img" + File.separator;
-        String thumbnailDirStr = baseDir + File.separator +
-                "data" + File.separator +
-                "proj" + File.separator +
-                projId + File.separator +
-                "thumbnail" + File.separator;
-        String proxyDirStr = baseDir + File.separator +
-                "data" + File.separator +
-                "proj" + File.separator +
-                projId + File.separator +
-                "proxy" + File.separator;
-        // 尝试删除文件
-        FileUtil.deleteFile(dirStr, name);
-        FileUtil.deleteFile(thumbnailDirStr, name);
-        FileUtil.deleteFile(proxyDirStr, webpName);
 
         return new Respond<>(true, "Done", null);
+    }
+
+    // 删除选中照片
+    @PostMapping("delete_photos")
+    public Respond<Integer> deletePhotos(
+            @RequestBody HashMap<String, Object> body
+    ) throws IOException {
+        if (!body.containsKey("ids") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("ids") instanceof List) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
+            return new Respond<>(false, "1", null);
+        }
+
+        List<Integer> ids = (List<Integer>) body.get("ids");
+        int uid = (Integer) body.get("adminUid");
+        String token = (String) body.get("adminToken");
+
+        // 验证用户
+        if (!userMapper.checkAdmin(uid, token)) {
+            return new Respond<>(false, "5", null);
+        }
+
+        // int successCount = projMapper.deletePhotoByIds(ids);
+        int successCount = 0;
+        for (int id : ids) {
+            Boolean result = deletePhotoMethod(id);
+            if (result) {
+                successCount++;
+            }
+        }
+
+        return new Respond<>(true, "Done", successCount);
     }
 }

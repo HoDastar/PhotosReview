@@ -7,6 +7,7 @@
     "project_status": "Project Status",
     "author": "Author",
     "upload": "Upload",
+    "thumbnail": "Thumbnail",
     "photos_pool": "Photos Pool",
     "create_project": "Create Project",
     "create_user": "Create User",
@@ -14,7 +15,7 @@
     "manage_user": "Manage User",
     "manage_distribution": "Manage Distribution",
     "manage_photos": "Manage Photos",
-    "modification_project": "Modification Project",
+    "modification_project": "Modify Project",
     "no_project": "No project yet.",
     "project_info": "Project Information",
     "input_project_name": "Project name...",
@@ -303,6 +304,11 @@
             "index": 4,
             "title": "Warming",
             "message": "Are you sure you want to delete?"
+        },
+        {
+            "index": 5,
+            "title": "Warming",
+            "message": "Are you sure you want to continue?"
         }
     ],
     "loading-1": "Please wait while the page loads...",
@@ -332,7 +338,8 @@
     "batch_operation_range": "Batch operation (range)",
     "lock_content": "Lock scoring panel",
     "auto_next": "Auto next photo",
-    "auto_commit": "Auto submit score",
+    "auto_commit": "Auto submit",
+    "per_image_setting": "Per-image setting",
     "switch_mode": "Switch mode",
     "cache_project": "Cache project",
     "switch_theme": "Switch theme",
@@ -357,7 +364,7 @@
     "no_this_photoid": "This Photoid does not exist",
     "no_this_tempid": "This Tempid does not exist",
     "view_progress": "View Progress",
-    "user_progress": "User Progress",
+    "all_progress": "All Progress",
     "project_progress": "Project Progress",
     "refresh": "Refresh",
     "query": "Query",

@@ -15,6 +15,7 @@ class classSetting {
             this.lockContent = false; // 锁定内容
             this.autoNext = false; // 自动切换下一张
             this.autoCommit = false; //评分自动提交
+            this.adjustImgParamIndividually = false; // 图片参数单独调整
         } else {
             let settings_obj = JSON.parse(settings_cookie);
             this.batchOperationList = settings_obj.batchOperationList;
@@ -22,6 +23,7 @@ class classSetting {
             this.lockContent = settings_obj.lockContent;
             this.autoNext = settings_obj.autoNext;
             this.autoCommit = settings_obj.autoCommit;
+            this.adjustImgParamIndividually = settings_obj.adjustImgParamIndividually;
         }
 
         document.getElementById('batchOperationList').addEventListener('change', () => this.toggleBatchOperationList());
@@ -29,6 +31,7 @@ class classSetting {
         document.getElementById('lockContent').addEventListener('change', () => this.toggleLockContent());
         document.getElementById('autoNext').addEventListener('change', () => this.toggleAutoNext());
         document.getElementById('autoCommit').addEventListener('change', () => this.toggleAutoCommit());
+        document.getElementById('adjustImgParamIndividually').addEventListener('change', () => this.toggleAdjustImgParamIndividually());
 
         this.saveSettings();
         this.updateUI();
@@ -79,6 +82,11 @@ class classSetting {
         console.log('评分自动提交:', this.autoCommit);
         this.saveSettings();
     }
+    toggleAdjustImgParamIndividually() {
+        this.adjustImgParamIndividually = !this.adjustImgParamIndividually;
+        console.log('单独调整图片参数:', this.adjustImgParamIndividually);
+        this.saveSettings();
+    }
 
     outputSettings() {
         let arr = {
@@ -86,7 +94,8 @@ class classSetting {
             batchOperationRange: this.batchOperationRange,
             lockContent: this.lockContent,
             autoNext: this.autoNext,
-            autoCommit: this.autoCommit
+            autoCommit: this.autoCommit,
+            adjustImgParamIndividually: this.adjustImgParamIndividually
         }
         return arr;
     }
@@ -101,6 +110,7 @@ class classSetting {
         document.getElementById('lockContent').checked = this.lockContent;
         document.getElementById('autoNext').checked = this.autoNext;
         document.getElementById('autoCommit').checked = this.autoCommit;
+        document.getElementById('adjustImgParamIndividually').checked = this.adjustImgParamIndividually;
 
         // 互斥
         if (this.batchOperationList) {
@@ -184,7 +194,11 @@ class classPhotoList {
             this.selectRadio(this.photoList[tempid].score);
             pageView.html_note.value = this.photoList[tempid].note || '';
         }
-        // 存储位置
+        // 修改画布
+        if (settings.adjustImgParamIndividually) {
+            pageView.changeCanvasSize(this.photoList[tempid].width_percent, this.photoList[tempid].rotation);
+        }
+        // 保存位置
         setCookie("review_last_photoid", this.photoList[tempid].photoid, 365);
     }
 
@@ -365,14 +379,6 @@ class classPhotoList {
 
             // 自动切换下一张
             if (settings.autoNext) {
-                /*
-                if (this.page < this.photoList.length - 1) {
-                    this.page++;
-                    this.updatePhoto(this.page);
-                } else {
-                    showBubble("This is the last photo.", 'red', '#fff');
-                }
-                    */
                 pageView.nextPage();
             }
 
@@ -454,7 +460,10 @@ class classPhotoList {
 
         }
 
-        this.renderScoreRadios(obj.data.max || 4);
+        // 渲染评分单选框
+        this.renderScoreRadios(obj.data.max || 10);
+        // 设置评分快捷键
+        shortcutsKey.setScoreShortcut(obj.data.max || 10);
 
         switch (obj.data.type) {
             case 0:
@@ -467,7 +476,11 @@ class classPhotoList {
         }
 
         this.photoList.forEach(element => {
+            // 存入缓存名单
             saveCache.list.push(url + '/data/proj/' + proj + '/proxy/' + element.name + '.webp')
+            // 为每个元素添加画布属性
+            element.width_percent = 70;
+            element.rotation = 0;
         });
 
         // 总量
@@ -491,21 +504,21 @@ class classPhotoList {
 //页面类
 class classPageView {
     constructor() {
-        this.rightPane = document.getElementById('rightPane'),
-            this.html_proj_name = document.getElementById('html_proj_name'),
-            this.html_mode = document.getElementById('html_mode'),
-            this.html_img = document.getElementById('html_img'),
-            this.html_goPage_1 = document.getElementById('html_goPage_1'),
-            this.html_goPage_2 = document.getElementById('html_goPage_2'),
-            this.html_photoid = document.getElementById('html_photoid'),
-            this.html_tempid = document.getElementById('html_tempid'),
-            this.html_status = document.getElementById('html_status'),
-            this.html_all = document.getElementById('html_all'),
-            this.html_remaining = document.getElementById('html_remaining'),
-            this.html_score = document.querySelector('#scoreRadios'),
-            this.html_note = document.getElementById('html_note'),
-            this.html_list = document.getElementById('html_list'),
-            this.html_range = document.getElementById('html_range');
+        this.rightPane = document.getElementById('rightPane');
+        this.html_proj_name = document.getElementById('html_proj_name');
+        this.html_mode = document.getElementById('html_mode');
+        this.html_img = document.getElementById('html_img');
+        this.html_goPage_1 = document.getElementById('html_goPage_1');
+        this.html_goPage_2 = document.getElementById('html_goPage_2');
+        this.html_photoid = document.getElementById('html_photoid');
+        this.html_tempid = document.getElementById('html_tempid');
+        this.html_status = document.getElementById('html_status');
+        this.html_all = document.getElementById('html_all');
+        this.html_remaining = document.getElementById('html_remaining');
+        this.html_score = document.querySelector('#scoreRadios');
+        this.html_note = document.getElementById('html_note');
+        this.html_list = document.getElementById('html_list');
+        this.html_range = document.getElementById('html_range');
         this.img_width_percent = 70;
 
         this.html_score.addEventListener('change', () => {
@@ -536,6 +549,10 @@ class classPageView {
         }
         this.img_width_percent += 5;
         this.html_img.style.width = this.img_width_percent + '%';
+        // 储存画布数据
+        if (settings.adjustImgParamIndividually) {
+            photoList.photoList[photoList.page].width_percent = this.img_width_percent;
+        }
     }
     // 图片缩小
     zoomOut() {
@@ -545,6 +562,22 @@ class classPageView {
         }
         this.img_width_percent -= 5;
         this.html_img.style.width = this.img_width_percent + '%';
+        // 储存画布数据
+        if (settings.adjustImgParamIndividually) {
+            photoList.photoList[photoList.page].width_percent = this.img_width_percent;
+        }
+    }
+
+    // 旋转照片90度
+    rotate() {
+        let currentRotation = this.html_img.style.transform.replace(/[^0-9]/g, '');
+        if (!currentRotation) currentRotation = 0;
+        let newRotation = (parseInt(currentRotation) + 90) % 360;
+        this.html_img.style.transform = `rotate(${newRotation}deg)`;
+        // 储存画布数据
+        if (settings.adjustImgParamIndividually) {
+            photoList.photoList[photoList.page].rotation = newRotation;
+        }
     }
 
     // 下一页
@@ -564,14 +597,6 @@ class classPageView {
         } else {
             showBubble(i18n.lookUp("reached_top"), 'red', '#fff');
         }
-    }
-
-    // 旋转照片90度
-    rotate() {
-        let currentRotation = this.html_img.style.transform.replace(/[^0-9]/g, '');
-        if (!currentRotation) currentRotation = 0;
-        let newRotation = (parseInt(currentRotation) + 90) % 360;
-        this.html_img.style.transform = `rotate(${newRotation}deg)`;
     }
 
     // 通过tempid切换图片
@@ -596,63 +621,70 @@ class classPageView {
         this.goPageByTemp(id)
     }
 
+    // 直接改变画布
+    changeCanvasSize(width_percent, rotation) {
+        this.img_width_percent = width_percent;
+        this.html_img.style.width = this.img_width_percent + '%';
+        this.html_img.style.transform = `rotate(${rotation}deg)`;
+    }
+
 }
 
 // 快捷键类
-class classKeyShortcuts {
+class classShortcutsKey {
     constructor() {
         this["arrowleft"] = [
             () => pageView.prevPage()
-        ],
-            this["arrowright"] = [
-                () => pageView.nextPage()
-            ],
-            this["arrowup"] = [
-                () => pageView.zoomIn()
-            ],
-            this["arrowdown"] = [
-                () => pageView.zoomOut()
-            ],
-            this["z"] = [
-                () => pageView.rotate()
-            ],
-            this["q"] = [
-                () => {
-                    photoList.selectRadio(1);
-                    if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
-                        photoList.submit();
-                    }
-                }
-            ],
-            this["w"] = [
-                () => {
-                    photoList.selectRadio(2);
-                    if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
-                        photoList.submit();
-                    }
-                }
-            ],
-            this["e"] = [
-                () => {
-                    photoList.selectRadio(3);
-                    if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
-                        photoList.submit();
-                    }
-                }
-            ],
-            this["r"] = [
-                () => {
-                    photoList.selectRadio(4);
-                    if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
-                        photoList.submit();
-                    }
-                }
-            ],
-            this["f"] = [
-                () => {
+        ];
+        this["arrowright"] = [
+            () => pageView.nextPage()
+        ];
+        this["arrowup"] = [
+            () => pageView.zoomIn()
+        ];
+        this["arrowdown"] = [
+            () => pageView.zoomOut()
+        ];
+        this["r"] = [
+            () => pageView.rotate()
+        ];
+        this["1"] = [
+            () => {
+                photoList.selectRadio(1);
+                if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
                     photoList.submit();
                 }
-            ]
+            }
+        ];
+        this["2"] = [
+            () => {
+                photoList.selectRadio(2);
+                if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
+                    photoList.submit();
+                }
+            }
+        ];
+        this["3"] = [
+            () => {
+                photoList.selectRadio(3);
+                if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
+                    photoList.submit();
+                }
+            }
+        ];
+        this["4"] = [
+            () => {
+                photoList.selectRadio(4);
+                if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
+                    photoList.submit();
+                }
+            }
+        ];
+        this["enter"] = [
+            () => {
+                photoList.submit();
+            }
+        ]
 
         document.addEventListener("keydown", (e) => {
             const tag = e.target.tagName.toLowerCase();
@@ -663,9 +695,9 @@ class classKeyShortcuts {
             }
 
             const key = e.key.toLowerCase();
-            if (keyShortcuts[key]) {
+            if (shortcutsKey[key]) {
                 e.preventDefault();
-                keyShortcuts[key].forEach(fn => fn());
+                shortcutsKey[key].forEach(fn => fn());
             }
         });
         /*
@@ -705,6 +737,23 @@ class classKeyShortcuts {
             clearTimeout(timeout);
             timeout = setTimeout(() => func.apply(context, args), wait);
         };
+    }
+
+    // 评分快捷键
+    setScoreShortcut(score) {
+        if (score>10) {
+            score = 10;
+        }
+        for (let i = 1; i <= score; i++) {
+            this[i.toString()] = [
+                () => {
+                    photoList.selectRadio(i);
+                    if (settings.autoCommit && !settings.batchOperationList && !settings.batchOperationRange) {
+                        photoList.submit();
+                    }
+                }
+            ];
+        }
     }
 }
 
@@ -746,13 +795,14 @@ class classSaveCache {
     }
 }
 
+// 实例化设置类
 const settings = new classSetting();
 // 实例化图片列表类
 const photoList = new classPhotoList();
 // 实例化页面类
 const pageView = new classPageView();
 // 实例化快捷键类
-const keyShortcuts = new classKeyShortcuts();
+const shortcutsKey = new classShortcutsKey();
 // 实例化缓存类
 const saveCache = new classSaveCache();
 
