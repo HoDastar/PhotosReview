@@ -616,7 +616,7 @@ async function photosPoolChange(files) {
     [...files].forEach(file => {
         queue.add(async () => {
             // 分配uuid
-            const uuid = crypto.randomUUID();
+            const uuid = generateUuid();
             const fileName = file.name;
             const fileExt = fileName.split(".").pop().toLowerCase();
             if (!imgExt.includes(fileExt)) {
