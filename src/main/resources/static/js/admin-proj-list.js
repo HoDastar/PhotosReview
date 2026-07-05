@@ -796,6 +796,37 @@ function createManagePhotoRow(photo, index) {
     return trEl;
 }
 
+function getManagePhotosPaginationItems(totalPages, currentPage) {
+    const maxButtons = 17;
+    if (totalPages <= maxButtons) {
+        return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    const edgePageCount = maxButtons - 1;
+    const middlePageCount = maxButtons - 2;
+    const middleHalf = Math.floor(middlePageCount / 2);
+
+    if (currentPage <= middleHalf + 2) {
+        return [
+            ...Array.from({ length: edgePageCount }, (_, index) => index + 1),
+            "ellipsis-right"
+        ];
+    }
+
+    if (currentPage >= totalPages - middleHalf - 1) {
+        return [
+            "ellipsis-left",
+            ...Array.from({ length: edgePageCount }, (_, index) => totalPages - edgePageCount + index + 1)
+        ];
+    }
+
+    return [
+        "ellipsis-left",
+        ...Array.from({ length: middlePageCount }, (_, index) => currentPage - middleHalf + index),
+        "ellipsis-right"
+    ];
+}
+
 function renderManagePhotosPage() {
     const managePhotosTableBodyEl = document.getElementById("managePhotosTableBody");
     const photosTotalEl = document.getElementById("photosTotal");
@@ -848,10 +879,20 @@ function renderManagePhotosPage() {
     nextBtnEl.disabled = managePhotosCurrentPage === totalPages;
     pageNumbersEl.innerHTML = "";
 
-    for (let page = 1; page <= totalPages; page++) {
+    getManagePhotosPaginationItems(totalPages, managePhotosCurrentPage).forEach((page) => {
         const pageBtnEl = document.createElement("button");
         pageBtnEl.type = "button";
         pageBtnEl.classList.add("page-number");
+
+        if (typeof page !== "number") {
+            pageBtnEl.classList.add("page-ellipsis");
+            pageBtnEl.disabled = true;
+            pageBtnEl.setAttribute("aria-hidden", "true");
+            pageBtnEl.innerHTML = "...";
+            pageNumbersEl.appendChild(pageBtnEl);
+            return;
+        }
+
         if (page === managePhotosCurrentPage) {
             pageBtnEl.classList.add("active");
             pageBtnEl.setAttribute("aria-current", "page");
@@ -862,7 +903,7 @@ function renderManagePhotosPage() {
             renderManagePhotosPage();
         });
         pageNumbersEl.appendChild(pageBtnEl);
-    }
+    });
 }
 
 function initManagePhotosPagination() {

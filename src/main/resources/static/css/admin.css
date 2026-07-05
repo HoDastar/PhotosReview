@@ -615,11 +615,16 @@ hr {
 }
 
 .manage-photos-pagination .page-control:hover:not(:disabled),
-.manage-photos-pagination .page-number:hover,
+.manage-photos-pagination .page-number:not(.page-ellipsis):hover,
 .manage-photos-pagination .page-number.active {
     border-color: var(--color-primary);
     background: var(--color-primary);
     color: var(--color-btn-fg);
+}
+
+.manage-photos-pagination .page-number.page-ellipsis {
+    cursor: default;
+    pointer-events: none;
 }
 
 .manage-photos-pagination .page-control:disabled {
