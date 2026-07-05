@@ -746,7 +746,158 @@ function cleanPhotosPool() {
     Object.keys(photosPool).forEach(key => delete photosPool[key]);
 }
 
-async function loadManagePhotosList(author = null, loading = 1) {
+let managePhotosCurrentPage = 1;
+let managePhotosPageSize = 10;
+let managePhotosCurrentAuthor = null;
+
+function createManagePhotoRow(photo, index) {
+    const trEl = document.createElement("tr");
+    trEl.setAttribute("data-photo-id", photo.id);
+    trEl.setAttribute("data-photo-index", index);
+
+    const photoIdTdEl = document.createElement("td");
+    photoIdTdEl.innerHTML = `<label class="checkbox">
+                    <input type="checkbox" name="input_manage_photo" value="${photo.id}"><span class="box"></span>${photo.id}
+                </label>
+                `;
+    trEl.appendChild(photoIdTdEl);
+
+    const thumbnailTdEl = document.createElement("td");
+    const thumbnailImgEl = document.createElement("img");
+    thumbnailImgEl.src = `/data/proj/${currentManageProjId}/thumbnail/${photo.name}`;
+    thumbnailImgEl.style.cursor = "pointer";
+    thumbnailImgEl.addEventListener("click", () => {
+        go_url(`/data/proj/${currentManageProjId}/img/${photo.name}`, 1);
+    });
+    thumbnailTdEl.appendChild(thumbnailImgEl);
+    trEl.appendChild(thumbnailTdEl);
+
+    const authorTdEl = document.createElement("td");
+    authorTdEl.innerHTML = photo.author;
+    trEl.appendChild(authorTdEl);
+
+    const actionTdEl = document.createElement("td");
+    const delBtnEl = document.createElement("span");
+    delBtnEl.classList.add("btn", "del");
+    delBtnEl.title = i18n.lookUp("delete");
+    delBtnEl.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+    delBtnEl.addEventListener("click", async () => {
+        const confirm = await openModal(
+            i18n.lookUp("modal_content_confirm")[4].title,
+            i18n.lookUp("modal_content_confirm")[4].message
+        );
+        if (confirm) {
+            delPhoto(photo.id, trEl, index);
+        }
+    });
+    actionTdEl.appendChild(delBtnEl);
+    trEl.appendChild(actionTdEl);
+
+    return trEl;
+}
+
+function renderManagePhotosPage() {
+    const managePhotosTableBodyEl = document.getElementById("managePhotosTableBody");
+    const photosTotalEl = document.getElementById("photosTotal");
+    const paginationEl = document.getElementById("managePhotosPagination");
+    const pageNumbersEl = document.getElementById("managePhotosPageNumbers");
+    const prevBtnEl = document.getElementById("managePhotosPrevPage");
+    const nextBtnEl = document.getElementById("managePhotosNextPage");
+    const pageSizeSelectEl = document.getElementById("managePhotosPageSize");
+
+    if (!managePhotosTableBodyEl || !photosTotalEl) {
+        return;
+    }
+
+    managePhotosTableBodyEl.innerHTML = "";
+    const length = currentManagePhotosList.length;
+    photosTotalEl.innerHTML = String(length);
+
+    if (pageSizeSelectEl) {
+        pageSizeSelectEl.value = String(managePhotosPageSize);
+    }
+
+    if (length === 0) {
+        const trEl = document.createElement("tr");
+        const tdEl = document.createElement("td");
+        tdEl.colSpan = 4;
+        tdEl.innerHTML = i18n.lookUp("no_photo");
+        trEl.appendChild(tdEl);
+        managePhotosTableBodyEl.appendChild(trEl);
+        if (paginationEl) {
+            paginationEl.style.display = "none";
+        }
+        return;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(length / managePhotosPageSize));
+    managePhotosCurrentPage = Math.min(Math.max(1, managePhotosCurrentPage), totalPages);
+    const start = (managePhotosCurrentPage - 1) * managePhotosPageSize;
+    const end = Math.min(start + managePhotosPageSize, length);
+
+    currentManagePhotosList.slice(start, end).forEach((photo, offset) => {
+        managePhotosTableBodyEl.appendChild(createManagePhotoRow(photo, start + offset));
+    });
+
+    if (!paginationEl || !pageNumbersEl || !prevBtnEl || !nextBtnEl) {
+        return;
+    }
+
+    paginationEl.style.display = "flex";
+    prevBtnEl.disabled = managePhotosCurrentPage === 1;
+    nextBtnEl.disabled = managePhotosCurrentPage === totalPages;
+    pageNumbersEl.innerHTML = "";
+
+    for (let page = 1; page <= totalPages; page++) {
+        const pageBtnEl = document.createElement("button");
+        pageBtnEl.type = "button";
+        pageBtnEl.classList.add("page-number");
+        if (page === managePhotosCurrentPage) {
+            pageBtnEl.classList.add("active");
+            pageBtnEl.setAttribute("aria-current", "page");
+        }
+        pageBtnEl.innerHTML = String(page);
+        pageBtnEl.addEventListener("click", () => {
+            managePhotosCurrentPage = page;
+            renderManagePhotosPage();
+        });
+        pageNumbersEl.appendChild(pageBtnEl);
+    }
+}
+
+function initManagePhotosPagination() {
+    const paginationEl = document.getElementById("managePhotosPagination");
+    if (!paginationEl || paginationEl.dataset.initialized === "true") {
+        return;
+    }
+    paginationEl.dataset.initialized = "true";
+
+    document.getElementById("managePhotosPrevPage")?.addEventListener("click", () => {
+        if (managePhotosCurrentPage > 1) {
+            managePhotosCurrentPage -= 1;
+            renderManagePhotosPage();
+        }
+    });
+    document.getElementById("managePhotosNextPage")?.addEventListener("click", () => {
+        const totalPages = Math.max(1, Math.ceil(currentManagePhotosList.length / managePhotosPageSize));
+        if (managePhotosCurrentPage < totalPages) {
+            managePhotosCurrentPage += 1;
+            renderManagePhotosPage();
+        }
+    });
+    document.getElementById("managePhotosPageSize")?.addEventListener("change", (event) => {
+        managePhotosPageSize = Number(event.target.value) || 10;
+        managePhotosCurrentPage = 1;
+        renderManagePhotosPage();
+    });
+    document.getElementById("refreshManagePhotos")?.addEventListener("click", () => {
+        loadManagePhotosList(managePhotosCurrentAuthor, managePhotosCurrentPage);
+    });
+}
+
+async function loadManagePhotosList(author = null, page = 1) {
+    initManagePhotosPagination();
+    managePhotosCurrentAuthor = author;
     if (author === null) {
         author = "";
     }
@@ -760,112 +911,9 @@ async function loadManagePhotosList(author = null, loading = 1) {
         return;
     }
 
-    const managePhotosTableBodyEl = document.getElementById("managePhotosTableBody");
-    const photosTotalEl = document.getElementById("photosTotal");
-    managePhotosTableBodyEl.innerHTML = "";
-    if (!result.data || result.data.length === 0) {
-        const trEl = document.createElement("tr");
-        const tdEl = document.createElement("td");
-        tdEl.colSpan = 4;
-        tdEl.innerHTML = i18n.lookUp("no_photo");
-        trEl.appendChild(tdEl);
-        managePhotosTableBodyEl.appendChild(trEl);
-        photosTotalEl.innerHTML = "0";
-        return;
-    }
-
-    currentManagePhotosList = [];
-    currentManagePhotosList = result.data;
-    let page = 0;
-    const pageSize = 10;
-
-    // 加载按钮
-    const addLoadBtn = () => {
-        const loadMoreTrEl = document.createElement("tr");
-        const loadMoreTdEl = document.createElement("td");
-        loadMoreTdEl.colSpan = 4;
-        const loadMoreBtnEl = document.createElement("button");
-        loadMoreBtnEl.id = "loadMorePhotos";
-        loadMoreBtnEl.classList.add("button-common");
-        loadMoreBtnEl.innerHTML = i18n.lookUp("load_more");
-        loadMoreBtnEl.addEventListener("click", () => {
-            load(loadMoreTrEl);
-        });
-        loadMoreTdEl.appendChild(loadMoreBtnEl);
-        loadMoreTrEl.appendChild(loadMoreTdEl);
-        managePhotosTableBodyEl.appendChild(loadMoreTrEl);
-    }
-
-    // 加载更多
-    const load = (btn) => {
-        const newPage = page + 1;
-        const length = currentManagePhotosList.length;
-        photosTotalEl.innerHTML = String(length);
-        const start = (newPage - 1) * pageSize;
-        const end = Math.min(start + pageSize, length);
-        // 新一页超过总长度
-        if (start >= length) {
-            showBubble(i18n.lookUp("no_more"), "red", "#fff");
-            return;
-        }
-        page = newPage;
-        if (btn != null) {
-            btn.remove();
-        }
-        currentManagePhotosList.forEach((photo, index) => {
-            if (start <= index && index < end) {
-                const trEl = document.createElement("tr");
-                trEl.setAttribute("data-photo-id", photo.id);
-                trEl.setAttribute("data-photo-index", index);
-
-                const photoIdTdEl = document.createElement("td");
-                photoIdTdEl.innerHTML = `<label class="checkbox">
-                    <input type="checkbox" name="input_manage_photo" value="${photo.id}"><span class="box"></span>${photo.id}
-                </label>
-                `;
-                trEl.appendChild(photoIdTdEl);
-
-                const thumbnailTdEl = document.createElement("td");
-                const thumbnailImgEl = document.createElement("img");
-                thumbnailImgEl.src = `/data/proj/${currentManageProjId}/thumbnail/${photo.name}`;
-                thumbnailImgEl.style.cursor = "pointer";
-                thumbnailImgEl.addEventListener("click", () => {
-                    go_url(`/data/proj/${currentManageProjId}/img/${photo.name}`, 1);
-                });
-                thumbnailTdEl.appendChild(thumbnailImgEl);
-                trEl.appendChild(thumbnailTdEl);
-
-                const authorTdEl = document.createElement("td");
-                authorTdEl.innerHTML = photo.author;
-                trEl.appendChild(authorTdEl);
-
-                const actionTdEl = document.createElement("td");
-                const delBtnEl = document.createElement("span");
-                delBtnEl.classList.add("btn", "del");
-                delBtnEl.title = i18n.lookUp("delete");
-                delBtnEl.innerHTML = `<i class="fa-solid fa-trash"></i>`;
-                delBtnEl.addEventListener("click", async () => {
-                    const confirm = await openModal(
-                        i18n.lookUp("modal_content_confirm")[4].title,
-                        i18n.lookUp("modal_content_confirm")[4].message
-                    );
-                    if (confirm) {
-                        delPhoto(photo.id, trEl, index);
-                    }
-                });
-                actionTdEl.appendChild(delBtnEl);
-                trEl.appendChild(actionTdEl);
-
-                managePhotosTableBodyEl.appendChild(trEl);
-            }
-        });
-
-        addLoadBtn();
-    }
-
-    for (let i = 0; i < loading; i++) {
-        load(null);
-    }
+    currentManagePhotosList = result.data || [];
+    managePhotosCurrentPage = page || 1;
+    renderManagePhotosPage();
 }
 
 // 删除单个照片
@@ -883,12 +931,10 @@ async function delPhoto(photoId, tr, index, isBatch = false) {
         if (!isBatch) {
             showBubble(i18n.lookUp("modal_content_success")[0].message, "blue", "#fff");
         }
-        tr.remove();
         // 从数组中删除
         currentManagePhotosList.splice(index, 1);
-        // 更新页面
-        const photosTotalEl = document.getElementById("photosTotal");
-        photosTotalEl.innerHTML = String(currentManagePhotosList.length);
+        // 更新分页表格
+        renderManagePhotosPage();
         return true;
     }
 }
