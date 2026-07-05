@@ -584,3 +584,63 @@ hr {
 .common-table.form-manage-photos tbody td:last-child {
     width: 100px;
 }
+
+.manage-photos-pagination {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 0 0;
+    flex-wrap: wrap;
+}
+
+.manage-photos-pagination .page-number-list {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.manage-photos-pagination .page-control,
+.manage-photos-pagination .page-number {
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    cursor: pointer;
+    font-weight: 700;
+    transition: background 0.2s, color 0.2s, border 0.2s, opacity 0.2s;
+}
+
+.manage-photos-pagination .page-control:hover:not(:disabled),
+.manage-photos-pagination .page-number:hover,
+.manage-photos-pagination .page-number.active {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-btn-fg);
+}
+
+.manage-photos-pagination .page-control:disabled {
+    color: var(--color-fg-disabled);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.manage-photos-pagination .page-size-select {
+    height: 32px;
+    min-width: 110px;
+    padding: 0 28px 0 10px;
+    border: 1px solid var(--color-border2);
+    background: var(--color-input-bg);
+    color: var(--color-input-fg);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.manage-photos-pagination .button-common.refresh {
+    min-width: 86px;
+    margin: 0;
+    padding: 8px 18px;
+}
