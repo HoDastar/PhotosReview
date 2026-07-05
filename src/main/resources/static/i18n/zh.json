@@ -370,5 +370,8 @@
     "query": "查询",
     "completed": "已完成",
     "load_failed_retry": "加载失败请重试",
-    "input_project_name_for_query": "输入查询工程名"
+    "input_project_name_for_query": "输入查询工程名",
+    "10_items_per_page": "10 条/页",
+    "20_items_per_page": "20 条/页",
+    "50_items_per_page": "50 条/页"
 }
