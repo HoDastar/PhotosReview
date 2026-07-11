@@ -5,6 +5,10 @@ const mode = getUrlGet('type');
 const proj = getUrlGet('proj');
 let projName;
 
+function getReviewPhotoUrl(photoName) {
+    return url + '/photo/review/' + encodeURIComponent(proj) + '/' + encodeURIComponent(photoName + '.webp');
+}
+
 // 设置类
 class classSetting {
     constructor() {
@@ -182,7 +186,7 @@ class classPhotoList {
     updatePhoto() {
         const tempid = this.page
         pageView.html_img.src = '';
-        pageView.html_img.src = '/data/proj/' + proj + '/proxy/' + this.photoList[tempid].name + '.webp';
+        pageView.html_img.src = getReviewPhotoUrl(this.photoList[tempid].name);
         //修改数据
         pageView.html_photoid.innerHTML = this.photoList[tempid].photoid;
         pageView.html_tempid.innerHTML = tempid;
@@ -475,9 +479,10 @@ class classPhotoList {
                 break;
         }
 
+        saveCache.list = [];
         this.photoList.forEach(element => {
             // 存入缓存名单
-            saveCache.list.push(url + '/data/proj/' + proj + '/proxy/' + element.name + '.webp')
+            saveCache.list.push(getReviewPhotoUrl(element.name))
             // 为每个元素添加画布属性
             element.width_percent = 70;
             element.rotation = 0;
@@ -700,20 +705,6 @@ class classShortcutsKey {
                 shortcutsKey[key].forEach(fn => fn());
             }
         });
-        /*
-        pageView.html_goPage_1.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault(); // 阻止默认提交表单
-                pageView.goPageByPhoto(pageView.html_goPage_1.value)
-            }
-        });
-        pageView.html_goPage_2.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault(); // 阻止默认提交表单
-                pageView.goPageByTemp(pageView.html_goPage_2.value)
-            }
-        });
-        */
         pageView.html_goPage_1.oninput = () => {
             let a = pageView.html_goPage_1.value;
             a = Number(a);
@@ -760,27 +751,26 @@ class classShortcutsKey {
 // 缓存类
 class classSaveCache {
     constructor() {
-        this.CACHE_NAME = 'review_img_cache',
-            this.list = []
+        this.list = []
     }
 
     async cacheImages(urls = this.list) {
         showBubble(i18n.lookUp("loading"), 'blue', '#fff')
-        const cache = await caches.open(this.CACHE_NAME);
         let done = 0, saved = 0, failed = 0;
         const fill = document.getElementById("bar-fill");
         const resultEl = document.getElementById("bar-text");
         const loading_bar = document.getElementById("loading_bar")
         loading_bar.style.display = 'block'
-        for (const url of urls) {
+        if (!urls.length) {
+            loading_bar.style.display = 'none'
+            showBubble(i18n.lookUp("successful_rows") + 0 + " , " + i18n.lookUp("failed_rows") + 0, 'blue', '#fff')
+            return;
+        }
+        for (const photoUrl of urls) {
             try {
-                const hit = await cache.match(url);
-                if (!hit) {
-                    const res = await fetch(url, { cache: 'reload' });
-                    if (!res.ok && res.type !== 'opaque') throw new Error();
-                    await cache.put(url, res);
-                    saved++;
-                }
+                const res = await fetch(photoUrl, { cache: 'force-cache' });
+                if (!res.ok && res.type !== 'opaque') throw new Error();
+                saved++;
             } catch {
                 failed++;
             } finally {

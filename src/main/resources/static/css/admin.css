@@ -582,7 +582,24 @@ hr {
 
 .common-table.form-manage-photos thead th:last-child,
 .common-table.form-manage-photos tbody td:last-child {
-    width: 100px;
+    width: 120px;
+}
+
+.common-table.form-manage-photos .photo-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.common-table.form-manage-photos .photo-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    padding: 0;
 }
 
 .manage-photos-pagination {

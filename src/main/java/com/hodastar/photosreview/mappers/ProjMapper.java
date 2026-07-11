@@ -186,6 +186,21 @@ public class ProjMapper {
         }
     }
 
+    // 通过工程id获取工程名
+    public String getProjNameById(String projId) {
+        try {
+            String name = jdbcTemplate.queryForObject(
+                    "SELECT name FROM review_proj WHERE projid = ?",
+                    String.class,
+                    projId
+            );
+            return name;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     /**
      * 修改工程
      * @param projId 工程ID

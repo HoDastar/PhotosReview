@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.File;
 
@@ -24,7 +26,7 @@ class PhotosReviewApplicationTests {
 
     @Test
     void contextLoads() throws Exception {
-        c();
+        d();
     }
 
     void a() {
@@ -44,5 +46,21 @@ class PhotosReviewApplicationTests {
                 "img" + File.separator;
         String fileName = "d6c7fe75-97a6-4192-aa79-fc811ac3071b.JPG";
         FileUtil.deleteFile(dirStr, fileName);
+    }
+
+    void d() {
+
+        JsonMapper jsonMapper = new JsonMapper();
+
+        String jsonString = "{\"a\":[1,2,3],\"b\":[\"x\",\"y\"]}";
+        // String jsonString = "[1,2,3]";
+
+        JsonNode root = jsonMapper.readTree(jsonString);
+
+        if (root.isObject()) {
+            System.out.println("Map 类型");
+        } else if (root.isArray()) {
+            System.out.println("List 类型");
+        }
     }
 }
