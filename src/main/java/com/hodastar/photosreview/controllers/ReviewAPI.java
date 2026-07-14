@@ -10,7 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.*;
 
@@ -254,6 +256,65 @@ public class ReviewAPI {
         }
         List<EntityReviewPhotos> data = reviewMapper.getAllPhotos(projId, author);
         return new Respond<>(true, "true", data);
+    }
+
+    // 获取单张照片的数据
+    @GetMapping("/fetch_photo_data")
+    public Respond<HashMap<String, Object>> fetchPhotoData(
+            @RequestParam("adminUid") int uid,
+            @RequestParam("adminToken") String token,
+            @RequestParam("photoid") int photoid
+    ) {
+        // 验证用户
+        if (!userMapper.checkAdmin(uid, token)) {
+            return new Respond<>(false, "5", null);
+        }
+
+        // 获取photo信息
+        Optional<EntityReviewPhotos> photoOpt = reviewMapper.getPhotoById(photoid);
+        if (photoOpt.isEmpty()) {
+            return new Respond<>(false, "25", null);
+        }
+
+        // 获取photo的value字段
+        String valueStr = photoOpt.get().value;
+        JsonMapper jsonMapper = new JsonMapper();
+        JsonNode root = jsonMapper.readTree(valueStr);
+
+        // 判断value的json类型
+        if (root.isObject()) {
+            // 审片模式
+            HashMap<String, List<Object>> value =
+                    jsonMapper.readValue(
+                            valueStr,
+                            new TypeReference<HashMap<String, List<Object>>>() {}
+                    );
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("photoid", photoOpt.get().id);
+            data.put("name", photoOpt.get().name);
+            data.put("proj", projMapper.getProjNameById(photoOpt.get().proj));
+            data.put("project_type", 0);
+            data.put("author", photoOpt.get().author);
+            data.put("value", value);
+            return new Respond<>(true, "true", data);
+        } else if (root.isArray()) {
+            // 筛片模式
+            List<Object> value =
+                    jsonMapper.readValue(
+                            valueStr,
+                            new TypeReference<List<Object>>() {}
+                    );
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("photoid", photoOpt.get().id);
+            data.put("name", photoOpt.get().name);
+            data.put("proj", projMapper.getProjNameById(photoOpt.get().proj));
+            data.put("project_type", 1);
+            data.put("author", photoOpt.get().author);
+            data.put("value", value);
+            return new Respond<>(true, "true", data);
+        } else {
+            return new Respond<>(false, "0", null);
+        }
     }
 
     // 提交评分
