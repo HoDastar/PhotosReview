@@ -108,7 +108,7 @@
     "file_name": "文件名",
     "basic_info": "基本信息",
     "scoring_details": "评分详情",
-    "no_note": "暂无批注",
+    "no_note": "暂无批注。",
     "affected_rows": "已编辑个数：",
     "successful_rows": "成功个数：",
     "failed_rows": "失败个数：",

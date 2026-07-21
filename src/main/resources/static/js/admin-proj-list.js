@@ -912,7 +912,7 @@ function renderReviewDataModal(data) {
     summaryMainEl.appendChild(nameEl);
 
     const authorEl = document.createElement("p");
-    authorEl.textContent = i18n.lookUp("author") + ": " + reviewDataText(data.author);
+    authorEl.textContent = reviewDataText(data.author);
     summaryMainEl.appendChild(authorEl);
 
     summaryEl.appendChild(summaryMainEl);
