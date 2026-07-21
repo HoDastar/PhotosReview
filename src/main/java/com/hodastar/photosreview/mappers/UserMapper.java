@@ -127,6 +127,9 @@ public class UserMapper {
         if (user.isEmpty()) {
             return false;
         }
+        if (user.get().status == 2) {
+            return false;
+        }
         String originalToken = String.valueOf(uid) + String.valueOf(user.get().login_time);
         String dbToken = CryptUtil.nBCrypt(originalToken);
         if (!dbToken.equals(token)) {
@@ -174,7 +177,7 @@ public class UserMapper {
         // 获取当前秒级时间戳
         long currentTime = System.currentTimeMillis() / 1000;
         // 加密密码
-        String ppassword = CryptUtil.BCEcrypt("123456");
+        String ppassword = CryptUtil.BCEcrypt("Aa123456");
 
         // 插入新用户
         int rowsAffected = jdbcTemplate.update(
@@ -209,5 +212,30 @@ public class UserMapper {
                 uid
         );
         return rowsAffected != 0;
+    }
+
+    // 重设10000的密码
+    public Boolean resetAdminPassword() {
+        // 生成密码
+        String password = CryptUtil.BCEcrypt("Aa123456");
+        // 修改
+        int rowAffected = jdbcTemplate.update(
+                "UPDATE review_users SET password = ? WHERE uid = 10000",
+                password
+        );
+        return rowAffected != 0;
+    }
+
+    /**
+     * 修改用户名
+     * @param uid 用户ID
+     * @param name 新用户名
+     * @return 结果
+     */
+    public Boolean renameUser(int uid, String name) {
+        // 修改
+        return jdbcTemplate.update(
+                "UPDATE review_users SET allname = ? WHERE uid = ?", name, uid
+        ) != 0;
     }
 }

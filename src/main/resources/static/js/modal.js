@@ -1,3 +1,5 @@
+let modalNum = 0;
+
 function openModal(title, text) {
     const modal = document.getElementById('modal');
     const overlay = document.getElementById('modalOverlay');
@@ -12,10 +14,14 @@ function openModal(title, text) {
 
         modal.classList.add('active');
         overlay.classList.add('active');
+        modalNum++;
 
         const closeModal = () => {
             modal.classList.remove('active');
-            overlay.classList.remove('active');
+            modalNum--;
+            if (modalNum === 0) {
+                overlay.classList.remove("active");
+            }
 
             // 清除事件监听，防止多次触发
             confirmBtn.removeEventListener('click', onConfirm);

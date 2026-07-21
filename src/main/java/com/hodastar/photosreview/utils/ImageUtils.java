@@ -72,7 +72,7 @@ public class ImageUtils {
                                      String filename) throws Exception {
         if (convertToWebpTaskCount >= 3) {
             // 限制同时进行的转换任务数量，避免过多占用资源
-            throw new RuntimeException("当前转换任务过多，请稍后再试");
+            throw new Exception("当前转换任务过多，请稍后再试");
         }
         convertToWebpTaskCount += 1;
 
@@ -81,7 +81,7 @@ public class ImageUtils {
 
         if (!sourceFile.exists()) {
             convertToWebpTaskCount -= 1;
-            throw new RuntimeException("源文件不存在: " + sourceFile.getAbsolutePath());
+            throw new Exception("源文件不存在: " + sourceFile.getAbsolutePath());
         }
 
         // 创建目标目录
@@ -99,45 +99,47 @@ public class ImageUtils {
 
         if (image == null) {
             convertToWebpTaskCount -= 1;
-            throw new RuntimeException("无法读取图片文件");
+            throw new Exception("无法读取图片文件");
         }
 
-        // 获取 WebP Writer
-        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("webp");
+        ImageWriter writer = null;
 
-        if (!writers.hasNext()) {
-            convertToWebpTaskCount -= 1;
-            throw new RuntimeException("未找到 WebP Writer，请检查 imageio-webp 依赖");
-        }
+        try {
+            // 获取 WebP Writer
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("webp");
 
-        ImageWriter writer = writers.next();
-
-        // 压缩参数
-        ImageWriteParam param = writer.getDefaultWriteParam();
-
-        if (param.canWriteCompressed()) {
-            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-
-            String[] types = param.getCompressionTypes();
-            if (types != null && types.length > 0) {
-                param.setCompressionType(types[0]);
+            if (!writers.hasNext()) {
+                convertToWebpTaskCount -= 1;
+                throw new Exception("未找到 WebP Writer，请检查 imageio-webp 依赖");
             }
 
-            param.setCompressionQuality(0.5f);
-        }
+            writer = writers.next();
 
-        // 写入文件
-        try (ImageOutputStream ios = ImageIO.createImageOutputStream(targetFile)) {
+            // 压缩参数
+            ImageWriteParam param = writer.getDefaultWriteParam();
 
+            if (param.canWriteCompressed()) {
+                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+
+                String[] types = param.getCompressionTypes();
+                if (types != null && types.length > 0) {
+                    param.setCompressionType(types[0]);
+                }
+
+                param.setCompressionQuality(0.5f);
+            }
+
+            ImageOutputStream ios = ImageIO.createImageOutputStream(targetFile);
             writer.setOutput(ios);
-
             writer.write(
                     null,
                     new IIOImage(image, null, null),
                     param
             );
-
+        } catch (Exception e) {
+            throw new Exception("WebP 转换失败: " + e.getMessage(), e);
         } finally {
+            assert writer != null;
             writer.dispose();
             convertToWebpTaskCount -= 1;
         }

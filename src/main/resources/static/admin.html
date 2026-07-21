@@ -34,9 +34,9 @@
         <button class="confirm-btn" id="confirmBtn">OK</button>
     </div>
 </div>
-<div class="modal review-data-modal" id="reviewDataModal" aria-hidden="true">
+<div class="modal review-data-modal" id="reviewDataModal">
     <div class="modal-header">
-        <h3 id="reviewDataModalTitle">预览</h3>
+        <h3 id="reviewDataModalTitle"></h3>
         <span class="close-btn" id="reviewDataCloseBtn">&times;</span>
     </div>
     <div class="modal-body">
@@ -44,6 +44,38 @@
     </div>
     <div class="modal-footer">
         <button class="confirm-btn" id="reviewDataConfirmBtn">OK</button>
+    </div>
+</div>
+<div class="modal user-op-modal" id="userOpModal">
+    <div class="modal-header">
+        <h3 id="userOpModalTitle">Manage User</h3>
+        <span class="close-btn" id="userOpCloseBtn">&times;</span>
+    </div>
+    <div class="modal-body">
+        <div id="userOpModalBody">
+            <div class="user-op-section">
+                <div class="user-op-summary">
+                    <div class="user-op-uid">UID 10010</div>
+                    <h4>SomeBody</h4>
+                </div>
+            </div>
+            <div class="user-op-section">
+                <h5>Rename</h5>
+                <input class="text-input" name="newName" type="text" placeholder="New name..." />
+                <button class="button-common">Submit</button>
+            </div>
+            <div class="user-op-section">
+                <h5>Account Setting</h5>
+                <div class="user-op-button-list">
+                    <button class="button-common user-op-btn" data-op="reset" data-uid="10010">Reset Password</button>
+                    <button class="button-common user-op-btn" data-op="ban" data-uid="10010">Ban</button>
+                    <button class="button-common user-op-btn del" data-op="delete" data-uid="10010">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="confirm-btn" id="userOpConfirmBtn">OK</button>
     </div>
 </div>
 <!-- 气泡弹窗 -->

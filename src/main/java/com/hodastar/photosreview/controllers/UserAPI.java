@@ -99,7 +99,6 @@ public class UserAPI {
         }
 
         List<HashMap<String, Object>> userList = userMapper.getUserList().stream()
-                .filter(user -> user.uid != adminUid)
                 .map(user -> {
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("uid", user.uid);
@@ -215,6 +214,9 @@ public class UserAPI {
         if (uid == adminUid) {
             return new Respond<>(false, "5", null);
         }
+        if (uid == 10000) {
+            return new Respond<>(false, "5", null);
+        }
         if (userMapper.getUserByUid(uid).isEmpty()) {
             return new Respond<>(false, "20", null);
         }
@@ -317,6 +319,37 @@ public class UserAPI {
         }
     }
 
+    // 修改用户名接口
+    @PostMapping("/rename")
+    public Respond<String> rename(@RequestBody HashMap<String, Object> body) {
+        // 检查类型
+        if (!body.containsKey("adminUid") || !body.containsKey("adminToken") || !body.containsKey("uid") || !body.containsKey("name")) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String) || !(body.get("uid") instanceof Integer) || !(body.get("name") instanceof String)) {
+            return new Respond<>(false, "1", null);
+        }
+
+        int uid = (Integer) body.get("uid");
+        String name = (String) body.get("name");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
+
+        // 检查权限
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+        // 检查用户
+        Optional<EntityReviewUsers> user = userMapper.getUserByUid(uid);
+        if (user.isEmpty()) {
+            return new Respond<>(false, "2", null);
+        }
+
+        // 修改
+        Boolean result = userMapper.renameUser(uid, name);
+        return new Respond<>(result, "Done", null);
+    }
+
     // 查询token接口
     @GetMapping("/check_token")
     public Respond<Boolean> checkToken(@RequestParam int uid, @RequestParam String token) {
@@ -324,7 +357,7 @@ public class UserAPI {
         return new Respond<>(result, "Done", null);
     }
 
-    // 获取少量用户信息
+    // 获取用户信息
     @GetMapping("/get_user_info")
     public Respond<HashMap<String, Object>> getUserInfo(@RequestParam int uid, @RequestParam String token) {
         // 验证token

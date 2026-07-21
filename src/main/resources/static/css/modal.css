@@ -9,7 +9,7 @@
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.3s ease;
-      z-index: 999;
+      z-index: 99;
 }
 
 .modal-overlay.active {
@@ -29,7 +29,7 @@
       width: 500px;
       padding: 30px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      z-index: 1000;
+      z-index: 200;
       opacity: 0;
       visibility: hidden;
       transition: transform 0.3s ease, opacity 0.3s ease;
@@ -81,6 +81,7 @@
       max-height: min(84vh, 760px);
       overflow: hidden;
       padding: 0;
+      z-index: 100;
 }
 
 .review-data-modal .modal-header {
@@ -299,6 +300,81 @@
       font-style: italic;
       opacity: 0.7;
 }
+
+.user-op-modal {
+      display: flex;
+      flex-direction: column;
+      width: min(760px, calc(100vw - 40px));
+      max-height: min(84vh, 760px);
+      overflow: hidden;
+      padding: 0;
+      z-index: 100;
+}
+
+.user-op-modal .modal-header {
+      flex: 0 0 auto;
+      padding: 22px 26px 16px;
+      border-bottom: 1px solid rgba(127, 127, 127, 0.16);
+}
+
+.user-op-modal .modal-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      margin: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+}
+
+.user-op-modal .modal-footer {
+      flex: 0 0 auto;
+      padding: 14px 26px 22px;
+      border-top: 1px solid rgba(127, 127, 127, 0.16);
+}
+
+.user-op-button-list {
+      display: flex;
+      gap: 3px;
+      flex-wrap: wrap;
+}
+
+.user-op-section {
+      padding: 15px 30px;
+}
+
+.user-op-section h5 {
+      margin: 0 0 10px;
+      color: var(--color-fg);
+      font-size: 14px;
+      font-weight: 700;
+}
+
+.user-op-summary {
+      padding: 18px;
+      border: 1px solid rgba(127, 127, 127, 0.18);
+      border-radius: 8px;
+      background: rgba(127, 127, 127, 0.06);
+}
+.user-op-uid {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      font-size: 12px;
+      font-weight: 700;
+}
+
+.user-op-summary h4 {
+      margin: 10px 0 6px;
+      color: var(--color-fg);
+      font-size: 18px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+}
+
 .confirm-btn {
       padding: 8px 20px;
       background-color: var(--color-primary);
