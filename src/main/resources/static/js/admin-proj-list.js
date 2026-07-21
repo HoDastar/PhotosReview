@@ -750,17 +750,6 @@ let managePhotosCurrentPage = 1;
 let managePhotosPageSize = 10;
 let managePhotosCurrentAuthor = null;
 
-function closeReviewDataModal() {
-    const modal = document.getElementById("reviewDataModal");
-    const overlay = document.getElementById("modalOverlay");
-    if (!modal || !overlay) {
-        return;
-    }
-    modal.classList.remove("active");
-    modal.setAttribute("aria-hidden", "true");
-    overlay.classList.remove("active");
-}
-
 function reviewDataText(value, fallback = "-") {
     return value === undefined || value === null || value === "" ? fallback : String(value);
 }
@@ -886,6 +875,14 @@ function renderReviewDataModal(data) {
         return;
     }
 
+    const closeModal = () => {
+        modal.classList.remove("active");
+        modalNum--;
+        if (modalNum === 0) {
+            overlay.classList.remove("active");
+        }
+    }
+
     const entries = getReviewEntries(data);
     titleEl.textContent = "Total Data of Item Preview";
     bodyEl.innerHTML = "";
@@ -905,11 +902,11 @@ function renderReviewDataModal(data) {
     summaryMainEl.appendChild(photoIdEl);
 
     const nameEl = document.createElement("h4");
-    nameEl.textContent = reviewDataText(data.name, "未命名照片");
+    nameEl.textContent = reviewDataText(data.name, "Unname");
     summaryMainEl.appendChild(nameEl);
 
     const authorEl = document.createElement("p");
-    authorEl.textContent = (i18n.lookUp("author") || "作者") + ": " + reviewDataText(data.author);
+    authorEl.textContent = (i18n.lookUp("author")) + ": " + reviewDataText(data.author);
     summaryMainEl.appendChild(authorEl);
 
     summaryEl.appendChild(summaryMainEl);
@@ -963,23 +960,11 @@ function renderReviewDataModal(data) {
 
     bodyEl.appendChild(shellEl);
 
-    closeBtnEl.onclick = closeReviewDataModal;
-    confirmBtnEl.onclick = closeReviewDataModal;
+    closeBtnEl.onclick = closeModal;
+    confirmBtnEl.onclick = closeModal;
     modal.classList.add("active");
-    modal.setAttribute("aria-hidden", "false");
     overlay.classList.add("active");
-}
-async function previewPhotoReviewData(photoId) {
-    const result = await getApi(url + `/api/review/fetch_photo_data?adminUid=${uid}&adminToken=${token}&photoid=${photoId}`);
-    if (!result.result) {
-        const msg = parseInt(result.message, 10);
-        await openModal(
-            i18n.lookUp("modal_content_fail")[msg]?.title || "Error",
-            i18n.lookUp("modal_content_fail")[msg]?.message || result.message
-        );
-        return;
-    }
-    renderReviewDataModal(result.data || {});
+    modalNum++;
 }
 function createManagePhotoRow(photo, index) {
     const trEl = document.createElement("tr");
@@ -1015,8 +1000,17 @@ function createManagePhotoRow(photo, index) {
     previewBtnEl.classList.add("btn", "edit");
     previewBtnEl.title = "preview";
     previewBtnEl.innerHTML = `<i class="fa-solid fa-eye"></i>`;
-    previewBtnEl.addEventListener("click", () => {
-        previewPhotoReviewData(photo.id);
+    previewBtnEl.addEventListener("click", async () => {
+        const result = await getApi(url + `/api/review/fetch_photo_data?adminUid=${uid}&adminToken=${token}&photoid=${photo.id}`);
+        if (!result.result) {
+            const msg = parseInt(result.message, 10);
+            await openModal(
+                i18n.lookUp("modal_content_fail")[msg]?.title || "Error",
+                i18n.lookUp("modal_content_fail")[msg]?.message || result.message
+            );
+            return;
+        }
+        renderReviewDataModal(result.data || {});
     });
     actionGroupEl.appendChild(previewBtnEl);
 
@@ -1071,7 +1065,11 @@ function getManagePhotosPaginationItems(totalPages, currentPage) {
     ];
 }
 
+/**
+ * 根据当前照片列表、页码和每页数量，渲染照片管理表格及分页控件。
+ */
 function renderManagePhotosPage() {
+    // 获取照片表格、统计信息和分页区域所需的页面元素。
     const managePhotosTableBodyEl = document.getElementById("managePhotosTableBody");
     const photosTotalEl = document.getElementById("photosTotal");
     const paginationEl = document.getElementById("managePhotosPagination");
@@ -1084,6 +1082,7 @@ function renderManagePhotosPage() {
         return;
     }
 
+    // 清空旧表格内容，并同步照片总数和每页显示数量。
     managePhotosTableBodyEl.innerHTML = "";
     const length = currentManagePhotosList.length;
     photosTotalEl.innerHTML = String(length);
@@ -1092,6 +1091,7 @@ function renderManagePhotosPage() {
         pageSizeSelectEl.value = String(managePhotosPageSize);
     }
 
+    // 列表为空时展示空状态，同时隐藏分页控件。
     if (length === 0) {
         const trEl = document.createElement("tr");
         const tdEl = document.createElement("td");
@@ -1105,24 +1105,29 @@ function renderManagePhotosPage() {
         return;
     }
 
+    // 计算分页范围并校正当前页，防止删除或切换数据后页码越界。
     const totalPages = Math.max(1, Math.ceil(length / managePhotosPageSize));
     managePhotosCurrentPage = Math.min(Math.max(1, managePhotosCurrentPage), totalPages);
     const start = (managePhotosCurrentPage - 1) * managePhotosPageSize;
     const end = Math.min(start + managePhotosPageSize, length);
 
+    // 截取当前页数据并逐行渲染照片信息。
     currentManagePhotosList.slice(start, end).forEach((photo, offset) => {
         managePhotosTableBodyEl.appendChild(createManagePhotoRow(photo, start + offset));
     });
 
+    // 分页元素不完整时保留已渲染的表格，不继续更新分页区域。
     if (!paginationEl || !pageNumbersEl || !prevBtnEl || !nextBtnEl) {
         return;
     }
 
+    // 显示分页控件，并根据当前页更新上一页、下一页按钮状态。
     paginationEl.style.display = "flex";
     prevBtnEl.disabled = managePhotosCurrentPage === 1;
     nextBtnEl.disabled = managePhotosCurrentPage === totalPages;
     pageNumbersEl.innerHTML = "";
 
+    // 创建页码或省略号按钮；点击具体页码后重新渲染对应页面。
     getManagePhotosPaginationItems(totalPages, managePhotosCurrentPage).forEach((page) => {
         const pageBtnEl = document.createElement("button");
         pageBtnEl.type = "button";
@@ -1150,19 +1155,25 @@ function renderManagePhotosPage() {
     });
 }
 
+/**
+ * 初始化照片管理分页相关事件，确保同一组控件只绑定一次监听器。
+ */
 function initManagePhotosPagination() {
     const paginationEl = document.getElementById("managePhotosPagination");
+    // 分页容器不存在或已经初始化时不重复绑定事件。
     if (!paginationEl || paginationEl.dataset.initialized === "true") {
         return;
     }
     paginationEl.dataset.initialized = "true";
 
+    // 上一页：页码减一后重新渲染列表。
     document.getElementById("managePhotosPrevPage")?.addEventListener("click", () => {
         if (managePhotosCurrentPage > 1) {
             managePhotosCurrentPage -= 1;
             renderManagePhotosPage();
         }
     });
+    // 下一页：未到末页时页码加一并重新渲染列表。
     document.getElementById("managePhotosNextPage")?.addEventListener("click", () => {
         const totalPages = Math.max(1, Math.ceil(currentManagePhotosList.length / managePhotosPageSize));
         if (managePhotosCurrentPage < totalPages) {
@@ -1170,23 +1181,34 @@ function initManagePhotosPagination() {
             renderManagePhotosPage();
         }
     });
+    // 每页数量变更：更新分页大小，并从第一页重新渲染。
     document.getElementById("managePhotosPageSize")?.addEventListener("change", (event) => {
         managePhotosPageSize = Number(event.target.value) || 10;
         managePhotosCurrentPage = 1;
         renderManagePhotosPage();
     });
+    // 刷新：保留当前作者筛选条件和页码，重新请求照片列表。
     document.getElementById("refreshManagePhotos")?.addEventListener("click", () => {
         loadManagePhotosList(managePhotosCurrentAuthor, managePhotosCurrentPage);
     });
 }
 
+/**
+ * 按作者筛选条件加载当前项目的照片列表，并渲染指定页。
+ * @param {string|null} author 作者筛选条件；null 表示不限制作者。
+ * @param {number} page 数据加载成功后需要展示的页码。
+ */
 async function loadManagePhotosList(author = null, page = 1) {
+    // 确保分页交互已初始化，并记录筛选条件供刷新操作复用。
     initManagePhotosPagination();
     managePhotosCurrentAuthor = author;
+    // 接口使用空字符串表示不按作者筛选。
     if (author === null) {
         author = "";
     }
+    // 请求当前项目中符合作者条件的全部照片。
     const result = await getApi(url + `/api/review/fetch_photo_list_all?projId=${currentManageProjId}&author=${author}&adminUid=${uid}&adminToken=${token}`);
+    // 请求失败时展示接口对应的错误信息，并停止更新页面。
     if (!result.result) {
         const msg = parseInt(result.message, 10);
         await openModal(
@@ -1196,6 +1218,7 @@ async function loadManagePhotosList(author = null, page = 1) {
         return;
     }
 
+    // 保存最新数据和目标页码，再统一渲染照片表格及分页控件。
     currentManagePhotosList = result.data || [];
     managePhotosCurrentPage = page || 1;
     renderManagePhotosPage();

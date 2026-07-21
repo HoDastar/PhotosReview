@@ -785,7 +785,7 @@ public class ProjAPI {
                 throw new RuntimeException("sql error", null);
             }
             return new Respond<>(true, "success", null);
-        } catch (Exception e) {
+        } catch (Exception | Error e) {
             e.printStackTrace();
             // 删除已保存的文件
             FileUtil.deleteFile(dirStr, fileName);
