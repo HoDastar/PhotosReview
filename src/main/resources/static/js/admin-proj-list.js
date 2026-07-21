@@ -171,7 +171,6 @@ async function loadManageProj(index, id) {
     currentManageProjId = id;
     await loadManageDist(index, id);
 }
-
 // Load Manage Distribution List
 async function loadManageDist(index, id) {
     if (!projList[index]) {
@@ -435,8 +434,6 @@ async function loadManageDist(index, id) {
     // 首次渲染
     render();
 }
-
-
 async function refreshManageProjectInfo() {
     await getProj();
     const index = projList.findIndex((proj) => proj.projId === currentManageProjId);
@@ -444,7 +441,6 @@ async function refreshManageProjectInfo() {
         await loadManageDist(index, currentManageProjId);
     }
 }
-
 async function loadManageGallery(index, id) {
     if (!projList[index]) {
         openModal(
@@ -507,7 +503,6 @@ async function saveManageProj() {
         await refreshManageProjectInfo();
     }
 }
-
 // Save Manage Distribution
 async function saveManageDist() {
     const task = JSON.stringify(currentTaskList);
@@ -603,7 +598,6 @@ async function createThumbnailFromFile(file, maxSize = 100) {
         URL.revokeObjectURL(objectUrl);
     }
 }
-
 // 添加图片后
 async function photosPoolChange(files) {
     // 图片池
@@ -668,7 +662,7 @@ async function photosPoolChange(files) {
         });
     });
 }
-
+// 上传
 async function uploadImages() {
     const filePoolEl = document.getElementById("filePool");
     const author = document.querySelector('#manageGallery input[name="input_author"]').value;
@@ -739,7 +733,7 @@ async function uploadImages() {
         });
     }
 }
-
+// 清除
 function cleanPhotosPool() {
     const filePoolEl = document.getElementById("filePool");
     filePoolEl.innerHTML = '';
@@ -790,6 +784,18 @@ function getReviewAverageScore(entries) {
     const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
     return Number.isInteger(average) ? String(average) : average.toFixed(1);
 }
+function getReviewVarianceScore(entries) {
+    const scores = entries
+        .map((entry) => Number(entry.score))
+        .filter((score) => Number.isFinite(score));
+    if (scores.length === 0) {
+        return "-";
+    }
+    const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+    const squaredDifferences = scores.map((score) => Math.pow(score - average, 2));
+    const variance = squaredDifferences.reduce((sum, diff) => sum + diff, 0) / squaredDifferences.length;
+    return Number.isInteger(variance) ? String(variance) : variance.toFixed(1);
+}
 
 function appendReviewDataMeta(parent, label, value) {
     const itemEl = document.createElement("div");
@@ -829,7 +835,7 @@ function createReviewCommentEl(comment) {
     const normalizedComment = comment === undefined || comment === null ? "" : String(comment);
     if (normalizedComment === "") {
         commentEl.classList.add("review-data-empty-comment");
-        commentEl.textContent = "暂无评论";
+        commentEl.textContent = i18n.lookUp("no_note");
     } else {
         commentEl.textContent = normalizedComment;
     }
@@ -855,7 +861,7 @@ function appendReviewScoreRow(parent, entry) {
 
     const scoreEl = document.createElement("div");
     scoreEl.classList.add("review-data-score-pill");
-    scoreEl.textContent = (i18n.lookUp("score") || "评分") + ": " + reviewDataText(entry.score);
+    scoreEl.textContent = i18n.lookUp("score") + ": " + reviewDataText(entry.score);
     topEl.appendChild(scoreEl);
 
     rowEl.appendChild(topEl);
@@ -884,7 +890,7 @@ function renderReviewDataModal(data) {
     }
 
     const entries = getReviewEntries(data);
-    titleEl.textContent = "Total Data of Item Preview";
+    titleEl.textContent = "Preview";
     bodyEl.innerHTML = "";
 
     const shellEl = document.createElement("div");
@@ -906,7 +912,7 @@ function renderReviewDataModal(data) {
     summaryMainEl.appendChild(nameEl);
 
     const authorEl = document.createElement("p");
-    authorEl.textContent = (i18n.lookUp("author")) + ": " + reviewDataText(data.author);
+    authorEl.textContent = i18n.lookUp("author") + ": " + reviewDataText(data.author);
     summaryMainEl.appendChild(authorEl);
 
     summaryEl.appendChild(summaryMainEl);
@@ -919,21 +925,21 @@ function renderReviewDataModal(data) {
 
     const statEl = document.createElement("section");
     statEl.classList.add("review-data-stats");
-    appendReviewStat(statEl, "Number", entries.length);
-    appendReviewStat(statEl, "Average", getReviewAverageScore(entries));
+    appendReviewStat(statEl, i18n.lookUp("average"), getReviewAverageScore(entries));
+    appendReviewStat(statEl, i18n.lookUp("variance"), getReviewVarianceScore(entries));
     shellEl.appendChild(statEl);
 
     const metaSectionEl = document.createElement("section");
     metaSectionEl.classList.add("review-data-section");
     const metaTitleEl = document.createElement("h5");
-    metaTitleEl.textContent = "Basic Info";
+    metaTitleEl.textContent = i18n.lookUp("basic_info");
     metaSectionEl.appendChild(metaTitleEl);
 
     const metaEl = document.createElement("div");
     metaEl.classList.add("review-data-meta");
     appendReviewDataMeta(metaEl, "Photoid", data.photoid);
     appendReviewDataMeta(metaEl, i18n.lookUp("author"), data.author);
-    appendReviewDataMeta(metaEl, "File Name", data.name);
+    appendReviewDataMeta(metaEl, i18n.lookUp("file_name"), data.name);
     appendReviewDataMeta(metaEl, i18n.lookUp("proj"), data.proj);
     appendReviewDataMeta(metaEl, i18n.lookUp("project_type"), getReviewTypeLabel(data.project_type));
     metaSectionEl.appendChild(metaEl);
@@ -942,7 +948,7 @@ function renderReviewDataModal(data) {
     const reviewSectionEl = document.createElement("section");
     reviewSectionEl.classList.add("review-data-section");
     const reviewTitleEl = document.createElement("h5");
-    reviewTitleEl.textContent = "Scoring Details";
+    reviewTitleEl.textContent = i18n.lookUp("scoring_details");
     reviewSectionEl.appendChild(reviewTitleEl);
 
     const listEl = document.createElement("div");
@@ -1136,7 +1142,6 @@ function renderManagePhotosPage() {
         if (typeof page !== "number") {
             pageBtnEl.classList.add("page-ellipsis");
             pageBtnEl.disabled = true;
-            pageBtnEl.setAttribute("aria-hidden", "true");
             pageBtnEl.innerHTML = "...";
             pageNumbersEl.appendChild(pageBtnEl);
             return;
@@ -1144,7 +1149,6 @@ function renderManagePhotosPage() {
 
         if (page === managePhotosCurrentPage) {
             pageBtnEl.classList.add("active");
-            pageBtnEl.setAttribute("aria-current", "page");
         }
         pageBtnEl.innerHTML = String(page);
         pageBtnEl.addEventListener("click", () => {
@@ -1287,6 +1291,7 @@ async function deleteSelectedPhotos() {
     await loadManagePhotosList(author);
 }
 
+// 筛选
 function filterManagePhotos() {
     const authorInputEl = document.querySelector('#manageGallery input[name="input_author_manage_photos"]');
     let author = authorInputEl.value.trim();

@@ -90,23 +90,17 @@ async function registerUser() {
         return;
     }
     if (allname.length > 10) {
-        openModal(
-            i18n.lookUp("modal_content_fail")[6].title,
-            i18n.lookUp("modal_content_fail")[6].message
-        );
+        showBubble(i18n.lookUp("modal_content_fail")[6].message, 'red', '#fff');
         return;
     }
     const statusEl = document.querySelector('#manageUser input[name="register_user_status"]:checked');
     if (!statusEl) {
-        openModal(
-            i18n.lookUp("modal_content_fail")[11].title,
-            i18n.lookUp("modal_content_fail")[11].message
-        );
+        showBubble(i18n.lookUp("modal_content_fail")[11].message, 'red', '#fff');
         return;
     }
     const result = await postApi(url + "/api/user/register", {
         uid: targetUid,
-        allname,
+        allname: allname,
         status: parseInt(statusEl.value, 10),
         adminUid: uid,
         adminToken: token
@@ -169,10 +163,7 @@ async function renameUsername(targetUid, name) {
         return;
     }
     if (name.length > 10) {
-        openModal(
-            i18n.lookUp("modal_content_fail")[6].title,
-            i18n.lookUp("modal_content_fail")[6].message
-        );
+        showBubble(i18n.lookUp("modal_content_fail")[6].message, 'red', '#fff');
         return;
     }
     const result = await postApi(url + "/api/user/rename", {
@@ -183,10 +174,7 @@ async function renameUsername(targetUid, name) {
     });
     const msg = parseInt(result.message, 10);
     if (!result.result) {
-        await openModal(
-            i18n.lookUp("modal_content_fail")[msg].title,
-            i18n.lookUp("modal_content_fail")[msg].message
-        );
+        showBubble(i18n.lookUp("modal_content_fail")[msg].message, 'red', '#fff');
     } else {
         await openModal(
             i18n.lookUp("modal_content_success")[0].title,
