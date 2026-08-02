@@ -39,7 +39,7 @@ public class SystemAPI {
     @PostMapping("/update_website_info")
     public Respond<String> updateWebsiteInfo(
             @RequestParam(value = "file", required = false) MultipartFile iconFile,
-            @RequestParam("json") String json
+            @RequestParam("body") String json
     ) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> body = mapper.readValue(json, Map.class);

@@ -13,12 +13,24 @@ public class SystemMapper {
     }
 
     /**
+     * 数据库版本
+     * @return 数据库版本
+     */
+    public int getDatabaseVersion() {
+        Integer version = jdbcTemplate.queryForObject(
+                "SELECT value FROM review_config WHERE id = 0",
+                Integer.class
+        );
+        return version != null ? version : 0;
+    }
+
+    /**
      * 获取网站名称
      * @return 网站名称
      */
     public String getWebsiteName() {
         String name = jdbcTemplate.queryForObject(
-            "SELECT value FROM review_config WHERE id = 0",
+            "SELECT value FROM review_config WHERE id = 1",
             String.class
         );
         return name;
@@ -30,27 +42,15 @@ public class SystemMapper {
      */
     public String getWebsiteIcon() {
         String icon = jdbcTemplate.queryForObject(
-                "SELECT value FROM review_config WHERE id = 1",
+                "SELECT value FROM review_config WHERE id = 2",
                 String.class
         );
         return icon;
     }
 
-    /**
-     * 获取网站url
-     * @return 网站url
-     */
-    public String getWebsiteUrl() {
-        String url = jdbcTemplate.queryForObject(
-                "SELECT value FROM review_config WHERE id = 2",
-                String.class
-        );
-        return url;
-    }
-
     public Boolean updateWebsiteName(String websiteName) {
         int updated = jdbcTemplate.update(
-                "UPDATE review_config SET value = ? WHERE id = 0",
+                "UPDATE review_config SET value = ? WHERE id = 1",
                 websiteName
         );
         return updated > 0;
@@ -58,7 +58,7 @@ public class SystemMapper {
 
     public Boolean updateWebsiteIcon(String websiteIcon) {
         int updated = jdbcTemplate.update(
-                "UPDATE review_config SET value = ? WHERE id = 1",
+                "UPDATE review_config SET value = ? WHERE id = 2",
                 websiteIcon
         );
         return updated > 0;

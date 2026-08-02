@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -101,6 +102,25 @@ public class ReviewMapper {
                 },
                 photoId);
         return list.stream().findFirst();
+    }
+
+    // 通过多个同工程的photoid查询图片名
+    public List<String> getPhotoNamesByIds(List<Integer> ids, String proj) {
+        if (ids.isEmpty() || proj.isEmpty()) {
+            return new ArrayList<>();
+        }
+        String placeholders = String.join(",", Collections.nCopies(ids.size(), "?"));
+        String sql = """
+                SELECT * FROM review_data WHERE id IN (%s) AND proj = ?
+                """.formatted(placeholders);
+        List<Object> params = new ArrayList<>(ids);
+        params.add(proj);
+
+        return jdbcTemplate.query(
+                sql,
+                params.toArray(),
+                (rs, rowNum) -> rs.getString("name")
+        );
     }
 
     // 写入评分

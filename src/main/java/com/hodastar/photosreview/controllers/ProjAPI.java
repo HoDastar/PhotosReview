@@ -371,28 +371,28 @@ public class ProjAPI {
     @PostMapping("create_proj")
     public Respond<String> create_proj(
             @RequestParam("file") MultipartFile iconFile,
-            @RequestParam("json") String json
+            @RequestParam("body") String json
     ) throws Exception {
         // json转换
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> map = mapper.readValue(json, Map.class);
+        Map<String, Object> body = mapper.readValue(json, Map.class);
 
         // 检查参数
         if (
-                !map.containsKey("name") ||
-                        !map.containsKey("type") ||
-                        !map.containsKey("max") ||
-                        !map.containsKey("adminUid") ||
-                        !map.containsKey("adminToken")
+                !body.containsKey("name") ||
+                !body.containsKey("type") ||
+                !body.containsKey("max") ||
+                !body.containsKey("adminUid") ||
+                !body.containsKey("adminToken")
         ) {
             return new Respond<>(false, "1", null);
         }
         if (
-                !(map.get("name") instanceof String) ||
-                        !(map.get("type") instanceof Integer) ||
-                        !(map.get("max") instanceof Integer) ||
-                        !(map.get("adminUid") instanceof Integer) ||
-                        !(map.get("adminToken") instanceof String)
+                !(body.get("name") instanceof String) ||
+                !(body.get("type") instanceof Integer) ||
+                !(body.get("max") instanceof Integer) ||
+                !(body.get("adminUid") instanceof Integer) ||
+                !(body.get("adminToken") instanceof String)
         ) {
             return new Respond<>(false, "1", null);
         }
@@ -400,11 +400,11 @@ public class ProjAPI {
             return new Respond<>(false, "1", null);
         }
 
-        String name = (String) map.get("name");
-        int type = (Integer) map.get("type");
-        int max = (Integer) map.get("max");
-        int adminUid = (Integer) map.get("adminUid");
-        String adminToken = (String) map.get("adminToken");
+        String name = (String) body.get("name");
+        int type = (Integer) body.get("type");
+        int max = (Integer) body.get("max");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
 
         if (name.isBlank()) {
             return new Respond<>(false, "1", null);
@@ -508,31 +508,31 @@ public class ProjAPI {
     @PostMapping("/update_proj")
     public Respond<String> update_proj(
             @RequestParam(value = "file", required = false) MultipartFile iconFile,
-            @RequestParam("json") String json
+            @RequestParam("body") String json
     ) {
         // json转换
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> map = mapper.readValue(json, Map.class);
+        Map<String, Object> body = mapper.readValue(json, Map.class);
 
         // 检查参数
         if (
-                !map.containsKey("projId") ||
-                        !map.containsKey("adminUid") ||
-                        !map.containsKey("adminToken")
+                !body.containsKey("projId") ||
+                !body.containsKey("adminUid") ||
+                !body.containsKey("adminToken")
         ) {
             return new Respond<>(false, "1", null);
         }
         if (
-                !(map.get("projId") instanceof String) ||
-                        !(map.get("adminUid") instanceof Integer) ||
-                        !(map.get("adminToken") instanceof String)
+                !(body.get("projId") instanceof String) ||
+                !(body.get("adminUid") instanceof Integer) ||
+                !(body.get("adminToken") instanceof String)
         ) {
             return new Respond<>(false, "1", null);
         }
 
-        String projId = (String) map.get("projId");
-        int adminUid = (Integer) map.get("adminUid");
-        String adminToken = (String) map.get("adminToken");
+        String projId = (String) body.get("projId");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
 
         // 检查token
         if (!userMapper.checkAdmin(adminUid, adminToken)) {
@@ -559,8 +559,8 @@ public class ProjAPI {
         display = projOpt.get().display;
         status = projOpt.get().status;
 
-        if (map.containsKey("name")) {
-            String mName = (String) map.get("name");
+        if (body.containsKey("name")) {
+            String mName = (String) body.get("name");
             if (mName.isBlank()) {
                 return new Respond<>(false, "1", null);
             }
@@ -593,22 +593,22 @@ public class ProjAPI {
             String uuid = Utilities.generateUUID();
             thumbnail = uuid + "." + extension;
         }
-        if (map.containsKey("display")) {
-            if (!(map.get("display") instanceof Integer)) {
+        if (body.containsKey("display")) {
+            if (!(body.get("display") instanceof Integer)) {
                 return new Respond<>(false, "1", null);
             }
-            int mDisplay = (Integer) map.get("display");
+            int mDisplay = (Integer) body.get("display");
             if (mDisplay != 0 && mDisplay != 1) {
                 return new Respond<>(false, "1", null);
             }
             display = mDisplay;
         }
-        if (map.containsKey("status")) {
-            if (!(map.get("status") instanceof Integer)) {
+        if (body.containsKey("status")) {
+            if (!(body.get("status") instanceof Integer)) {
                 return new Respond<>(false, "1", null);
             }
-            int mStatus = (Integer) map.get("status");
-            if (mStatus < 0 || mStatus > 3) {
+            int mStatus = (Integer) body.get("status");
+            if (mStatus < 0 || mStatus > 4) {
                 return new Respond<>(false, "1", null);
             }
             status = mStatus;
@@ -685,26 +685,26 @@ public class ProjAPI {
     @PostMapping("upload_image")
     public Respond<String> uploadImage(
             @RequestParam("file") MultipartFile img,
-            @RequestParam("json") String json
+            @RequestParam("body") String json
     ) throws Exception {
         // json转换
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> map = mapper.readValue(json, Map.class);
+        Map<String, Object> body = mapper.readValue(json, Map.class);
 
         // 检查参数
         if (
-                !map.containsKey("projId") ||
-                !map.containsKey("author") ||
-                !map.containsKey("adminUid") ||
-                !map.containsKey("adminToken")
+                !body.containsKey("projId") ||
+                !body.containsKey("author") ||
+                !body.containsKey("adminUid") ||
+                !body.containsKey("adminToken")
         ) {
             return new Respond<>(false, "1", null);
         }
         if (
-                !(map.get("projId") instanceof String) ||
-                !(map.get("author") instanceof String) ||
-                !(map.get("adminUid") instanceof Integer) ||
-                !(map.get("adminToken") instanceof String)
+                !(body.get("projId") instanceof String) ||
+                !(body.get("author") instanceof String) ||
+                !(body.get("adminUid") instanceof Integer) ||
+                !(body.get("adminToken") instanceof String)
         ) {
             return new Respond<>(false, "1", null);
         }
@@ -713,10 +713,10 @@ public class ProjAPI {
             return new Respond<>(false, "1", null);
         }
 
-        String projId = (String) map.get("projId");
-        String author = (String) map.get("author");
-        int adminUid = (Integer) map.get("adminUid");
-        String adminToken = (String) map.get("adminToken");
+        String projId = (String) body.get("projId");
+        String author = (String) body.get("author");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
 
         // 检查token
         if (!userMapper.checkAdmin(adminUid, adminToken)) {
@@ -794,6 +794,75 @@ public class ProjAPI {
             FileUtil.deleteFile(proxyDirStr, webpName);
             return new Respond<>(false, "0", null);
         }
+    }
+
+    @GetMapping("/get_recheck_list")
+    public Respond<List<HashMap<String, Object>>> getRecheckList(
+            @RequestParam("projId") String projId,
+            @RequestParam("adminUid") int adminUid,
+            @RequestParam("adminToken") String adminToken
+    ) {
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+        if (projMapper.getProjById(projId).isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+
+        List<HashMap<String, Object>> recheckList = projMapper.getRecheckPhotoList(projId);
+        recheckList.forEach(item -> item.put("recheck", true));
+        return new Respond<>(true, "success", recheckList);
+    }
+
+    @PostMapping("/set_recheck")
+    public Respond<Boolean> setRecheck(
+            @RequestBody HashMap<String, Object> body
+    ) {
+        if (!body.containsKey("photoid")
+                || !body.containsKey("projId")
+                || !body.containsKey("recheck")
+                || !body.containsKey("adminUid")
+                || !body.containsKey("adminToken")) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("photoid") instanceof Integer)
+                || !(body.get("projId") instanceof String)
+                || !(body.get("recheck") instanceof Boolean)
+                || !(body.get("adminUid") instanceof Integer)
+                || !(body.get("adminToken") instanceof String)) {
+            return new Respond<>(false, "1", null);
+        }
+
+        int photoId = (Integer) body.get("photoid");
+        String projId = (String) body.get("projId");
+        boolean recheck = (Boolean) body.get("recheck");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
+
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+        if (projMapper.getProjById(projId).isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+
+        Optional<EntityReviewPhotos> photoOpt = projMapper.getPhotoById(photoId);
+        if (photoOpt.isEmpty() || !projId.equals(photoOpt.get().proj)) {
+            return new Respond<>(false, "25", null);
+        }
+
+        Boolean updated;
+        if (recheck) {
+            String originalValue = photoOpt.get().value == null ? "{}" : photoOpt.get().value;
+            updated = projMapper.addRecheck(photoId, projId, originalValue);
+        } else {
+            updated = projMapper.deleteRecheck(photoId, projId);
+        }
+
+        if (!updated) {
+            return new Respond<>(false, "0", null);
+        }
+        return new Respond<>(true, "success", recheck);
     }
 
     // 删除照片

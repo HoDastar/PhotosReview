@@ -6,6 +6,7 @@ import com.hodastar.photosreview.utils.Utilities;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -320,6 +321,59 @@ public class ProjMapper {
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
+        }
+    }
+
+    public List<HashMap<String, Object>> getRecheckPhotoList(String projId) {
+        return jdbcTemplate.query(
+                """
+                SELECT r.photoid, d.name, d.author, r.value
+                FROM review_recheck r
+                LEFT JOIN review_data d ON d.id = r.photoid AND d.proj = r.proj
+                WHERE r.proj = ?
+                ORDER BY r.photoid ASC
+                """,
+                (rs, rowNum) -> {
+                    HashMap<String, Object> item = new HashMap<>();
+                    item.put("photoid", rs.getInt("photoid"));
+                    item.put("name", rs.getString("name"));
+                    item.put("author", rs.getString("author"));
+                    item.put("value", rs.getString("value"));
+                    return item;
+                },
+                projId
+        );
+    }
+
+    public Boolean addRecheck(int photoId, String projId, String value) {
+        try {
+            int rowsAffected = jdbcTemplate.update(
+                    """
+                    INSERT INTO review_recheck(photoid, proj, value)
+                    VALUES (?, ?, ?)
+                    ON CONFLICT(photoid) DO UPDATE SET
+                        proj = excluded.proj,
+                        value = excluded.value
+                    """,
+                    photoId, projId, value
+            );
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Boolean deleteRecheck(int photoId, String projId) {
+        try {
+            int rowsAffected = jdbcTemplate.update(
+                    "DELETE FROM review_recheck WHERE photoid = ? AND proj = ?",
+                    photoId, projId
+            );
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }

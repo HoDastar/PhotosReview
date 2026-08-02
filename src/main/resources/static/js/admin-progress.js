@@ -78,11 +78,5 @@ async function queryProjProgress() {
 function cleanProjProgress() {
     document.getElementById('progressProjName').value = '';
     document.getElementById('singleProjProgressList').innerHTML = '';
-}
-
-function initProgressPage() {
-    document.getElementById('refreshAllProgress').addEventListener('click', () => loadAllProgress());
-    document.getElementById('queryProjProgress').addEventListener('click', queryProjProgress);
-    document.getElementById('clearProjProgress').addEventListener('click', cleanProjProgress);
-    loadAllProgress(false);
+    showBubble(i18n.lookUp("modal_content_success")[0].message, "blue", "#fff");
 }

@@ -220,15 +220,23 @@
                     break;
 
                 case 2:
-                    a_status = i18n.lookUp("closing");
-                    a_status_color = 'color_purple';
+                    a_status = i18n.lookUp("finished");
+                    a_status_color = 'color_orange';
                     btlist = `
                         <button onclick=""><i class="fa-solid fa-rocket"></i> ${i18n.lookUp("coming_soon")}</button>
                         `
                     break;
 
                 case 3:
-                    a_status = i18n.lookUp("finished");
+                    a_status = i18n.lookUp("rechecking");
+                    a_status_color = 'color_purple';
+                    btlist = `
+                        <button onclick=""><i class="fa-solid fa-rocket"></i> ${i18n.lookUp("coming_soon")}</button>
+                        `
+                    break;
+
+                case 4:
+                    a_status = i18n.lookUp("end");
                     a_status_color = 'color_red';
                     btlist = `
                         <button onclick="go_url('overall_view.html?proj_id=${proj.proj_id}',1)"><i class="fa-solid fa-eye"></i> ${i18n.lookUp("view_results")}</button>

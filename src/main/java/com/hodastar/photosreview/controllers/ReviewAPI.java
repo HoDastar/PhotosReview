@@ -8,6 +8,7 @@ import com.hodastar.photosreview.mappers.UserMapper;
 import com.hodastar.photosreview.utils.Respond;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
@@ -19,17 +20,14 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/review")
 public class ReviewAPI {
-    private final UserMapper userMapper;
-    private final ProjMapper projMapper;
+    @Autowired
+    private UserMapper userMapper;
+    @Autowired
+    private ProjMapper projMapper;
+    @Autowired
+    private ReviewMapper reviewMapper;
     private static final Logger log =
             LoggerFactory.getLogger(ReviewAPI.class);
-    private final ReviewMapper reviewMapper;
-
-    public ReviewAPI(ProjMapper projMapper, UserMapper userMapper, ReviewMapper reviewMapper) {
-        this.projMapper = projMapper;
-        this.userMapper = userMapper;
-        this.reviewMapper = reviewMapper;
-    }
 
     // 检查int是否存在多个集合中的其中一个
     private boolean checkIntInCollections(int value, List<List<Integer>> collections) {
@@ -55,7 +53,7 @@ public class ReviewAPI {
         return photoData;
     }
 
-    // 单次提交
+    // 单次提交评分
     private Boolean submitSingle(
             int uid,
             Optional<EntityReviewProj> projOpt,
@@ -105,6 +103,87 @@ public class ReviewAPI {
             return false;
         }
         return true;
+    }
+
+    // 单次删除某uid评分
+    private HashMap<String, Object> deleteScoreSingle(
+            String targetUid,
+            int photoid,
+            String originalValue,
+            int projType
+    ) {
+        HashMap<String, Object> result = new HashMap<>();
+        ObjectMapper jsonMapper = new ObjectMapper();
+
+        if (originalValue.isEmpty()) {
+            result.put("status", false);
+            result.put("message", "0");
+            return result;
+        }
+
+        if (projType == 0) {
+            // 审片
+            HashMap<String, List<Object>> value =
+                    jsonMapper.readValue(
+                            originalValue,
+                            new TypeReference<HashMap<String, List<Object>>>() {}
+                    );
+            // 是否含有此用户评分
+            if (!value.containsKey(targetUid)) {
+                result.put("status", false);
+                result.put("message", "20");
+                return result;
+            }
+            // 新的value
+            HashMap<String, List<Object>> newValue = new HashMap<>(value);
+            // 删除指定uid的评分数据
+            newValue.remove(targetUid);
+            // 转换为json字符串
+            String newValueStr = jsonMapper.writeValueAsString(newValue);
+            // 更新数据库
+            Boolean updateResult = reviewMapper.updatePhotoValue(photoid, newValueStr);
+            if (!updateResult) {
+                result.put("status", false);
+                result.put("message", "0");
+                return result;
+            } else {
+                result.put("status", true);
+                return result;
+            }
+        } else if (projType == 1) {
+            // 筛片
+            List<Object> value = jsonMapper.readValue(
+                    originalValue,
+                    new TypeReference<List<Object>>() {}
+            );
+            if (value.isEmpty()) {
+                result.put("status", false);
+                result.put("message", "0");
+                return result;
+            }
+            // 是否是此用户评分
+            if (!Objects.equals(String.valueOf(value.get(0)), targetUid)) {
+                result.put("status", false);
+                result.put("message", "20");
+                return result;
+            }
+            // 筛片
+            String newValueStr = "[]";
+            // 更新数据库
+            Boolean updateResult = reviewMapper.updatePhotoValue(photoid, newValueStr);
+            if (!updateResult) {
+                result.put("status", false);
+                result.put("message", "0");
+                return result;
+            } else {
+                result.put("status", true);
+                return result;
+            }
+
+        } else {
+            result.put("status", true);
+            return result;
+        }
     }
 
     // 获取照片列表
@@ -258,66 +337,7 @@ public class ReviewAPI {
         return new Respond<>(true, "true", data);
     }
 
-    // 获取单张照片的数据
-    @GetMapping("/fetch_photo_data")
-    public Respond<HashMap<String, Object>> fetchPhotoData(
-            @RequestParam("adminUid") int uid,
-            @RequestParam("adminToken") String token,
-            @RequestParam("photoid") int photoid
-    ) {
-        // 验证用户
-        if (!userMapper.checkAdmin(uid, token)) {
-            return new Respond<>(false, "5", null);
-        }
-
-        // 获取photo信息
-        Optional<EntityReviewPhotos> photoOpt = reviewMapper.getPhotoById(photoid);
-        if (photoOpt.isEmpty()) {
-            return new Respond<>(false, "25", null);
-        }
-
-        // 获取photo的value字段
-        String valueStr = photoOpt.get().value;
-        JsonMapper jsonMapper = new JsonMapper();
-        JsonNode root = jsonMapper.readTree(valueStr);
-
-        // 判断value的json类型
-        if (root.isObject()) {
-            // 审片模式
-            HashMap<String, List<Object>> value =
-                    jsonMapper.readValue(
-                            valueStr,
-                            new TypeReference<HashMap<String, List<Object>>>() {}
-                    );
-            HashMap<String, Object> data = new HashMap<>();
-            data.put("photoid", photoOpt.get().id);
-            data.put("name", photoOpt.get().name);
-            data.put("proj", projMapper.getProjNameById(photoOpt.get().proj));
-            data.put("project_type", 0);
-            data.put("author", photoOpt.get().author);
-            data.put("value", value);
-            return new Respond<>(true, "true", data);
-        } else if (root.isArray()) {
-            // 筛片模式
-            List<Object> value =
-                    jsonMapper.readValue(
-                            valueStr,
-                            new TypeReference<List<Object>>() {}
-                    );
-            HashMap<String, Object> data = new HashMap<>();
-            data.put("photoid", photoOpt.get().id);
-            data.put("name", photoOpt.get().name);
-            data.put("proj", projMapper.getProjNameById(photoOpt.get().proj));
-            data.put("project_type", 1);
-            data.put("author", photoOpt.get().author);
-            data.put("value", value);
-            return new Respond<>(true, "true", data);
-        } else {
-            return new Respond<>(false, "0", null);
-        }
-    }
-
-    // 提交评分
+    // 提交初始评分
     @PostMapping("/submit")
     public Respond<Integer> submitPhotos(
             @RequestParam("submit_type") String submitType,
@@ -325,17 +345,17 @@ public class ReviewAPI {
             @RequestBody HashMap<String, Object> body
     ) {
         if (!body.containsKey("photoid")||
-                !body.containsKey("uid") ||
-                !body.containsKey("token") ||
-                !body.containsKey("score") ||
-                !body.containsKey("note")
+            !body.containsKey("uid") ||
+            !body.containsKey("token") ||
+            !body.containsKey("score") ||
+            !body.containsKey("note")
         ) {
             return new Respond<>(false, "1", null);
         }
         if (!(body.get("uid") instanceof Integer) ||
-                !(body.get("token") instanceof String) ||
-                !(body.get("score") instanceof Integer) ||
-                !(body.get("note") instanceof String)
+            !(body.get("token") instanceof String) ||
+            !(body.get("score") instanceof Integer) ||
+            !(body.get("note") instanceof String)
         ) {
             return new Respond<>(false, "1", null);
         }
@@ -430,6 +450,191 @@ public class ReviewAPI {
 
             default:
                 return new Respond<>(false, "1", 0);
+        }
+    }
+
+    /**
+     * 删除某评分
+     * param photoid 照片ID
+     * param uid 用户ID
+     */
+    @PostMapping("/delete_score")
+    public Respond<String> deleteScore(
+            @RequestBody HashMap<String, Object> body
+    ) {
+        if (!body.containsKey("photoid")||
+            !body.containsKey("uid") ||
+            !body.containsKey("adminUid") ||
+            !body.containsKey("adminToken")
+        ) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("photoid") instanceof Integer) ||
+            !(body.get("uid") instanceof Integer) ||
+            !(body.get("adminUid") instanceof Integer) ||
+            !(body.get("adminToken") instanceof String)
+        ) {
+            return new Respond<>(false, "1", null);
+        }
+
+        // 获取参数
+        int photoid = (int) body.get("photoid");
+        String targetUid = String.valueOf((int) body.get("uid"));
+        int adminUid = (int) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
+
+        // 验证管理员
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+
+        // 获取photo信息
+        Optional<EntityReviewPhotos> photoOpt = reviewMapper.getPhotoById(photoid);
+        if (photoOpt.isEmpty()) {
+            return new Respond<>(false, "25", null);
+        }
+        // 获取工程
+        String projId = photoOpt.get().proj;
+        Optional<EntityReviewProj> projOpt = projMapper.getProjById(projId);
+        if (projOpt.isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+        // 工程类型
+        int projType = projOpt.get().type;
+        // 评分数据
+        String originalValue = photoOpt.get().value;
+
+        HashMap<String, Object> result = this.deleteScoreSingle(targetUid, photoid, originalValue, projType);
+        return new Respond<>(
+                (Boolean) result.get("status"),
+                (String) result.get("message"),
+                null
+        );
+    }
+
+    /**
+     * 批量删除工程内某评分
+     * param proj 工程ID
+     * param uid 用户ID
+     */
+    @PostMapping("/delete_score_all")
+    public Respond<Integer> deleteScoreAll(
+            @RequestBody HashMap<String, Object> body
+    ) {
+        if (!body.containsKey("proj") ||
+            !body.containsKey("uid") ||
+            !body.containsKey("adminUid") ||
+            !body.containsKey("adminToken")
+        ) {
+            return new Respond<>(false, "1", null);
+        }
+
+        if (!(body.get("proj") instanceof String) ||
+            !(body.get("uid") instanceof Integer) ||
+            !(body.get("adminUid") instanceof Integer) ||
+            !(body.get("adminToken") instanceof String)
+        ) {
+            return new Respond<>(false, "1", null);
+        }
+
+        String projId = (String) body.get("proj");
+        String targetUid = String.valueOf((int) body.get("uid"));
+        int adminUid = (int) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
+
+        // 验证管理员
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+
+        // 验证工程
+        Optional<EntityReviewProj> projOpt = projMapper.getProjById(projId);
+        if (projOpt.isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+
+        int projType = projOpt.get().type;
+        if (projType != 0 && projType != 1) {
+            return new Respond<>(false, "0", null);
+        }
+
+        List<EntityReviewPhotos> photos =
+                reviewMapper.getAllPhotos(projId, null);
+        int deletedCount = 0;
+
+        for (EntityReviewPhotos photo : photos) {
+            // 评分原数据
+            String originalValue = photo.value;
+            // photoid
+            int photoid = photo.id;
+
+            // 执行
+            HashMap<String, Object> result = this.deleteScoreSingle(targetUid, photoid, originalValue, projType);
+            if (result.get("status").equals(false)) {
+                continue;
+            }
+            deletedCount++;
+        }
+
+        return new Respond<>(true, "true", deletedCount);
+    }
+
+    // 获取单张照片的数据
+    @GetMapping("/fetch_photo_data")
+    public Respond<HashMap<String, Object>> fetchPhotoData(
+            @RequestParam("adminUid") int uid,
+            @RequestParam("adminToken") String token,
+            @RequestParam("photoid") int photoid
+    ) {
+        // 验证用户
+        if (!userMapper.checkAdmin(uid, token)) {
+            return new Respond<>(false, "5", null);
+        }
+
+        // 获取photo信息
+        Optional<EntityReviewPhotos> photoOpt = reviewMapper.getPhotoById(photoid);
+        if (photoOpt.isEmpty()) {
+            return new Respond<>(false, "25", null);
+        }
+
+        // 获取photo的value字段
+        String valueStr = photoOpt.get().value;
+        JsonMapper jsonMapper = new JsonMapper();
+        JsonNode root = jsonMapper.readTree(valueStr);
+
+        // 判断value的json类型
+        if (root.isObject()) {
+            // 审片模式
+            HashMap<String, List<Object>> value =
+                    jsonMapper.readValue(
+                            valueStr,
+                            new TypeReference<HashMap<String, List<Object>>>() {}
+                    );
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("photoid", photoOpt.get().id);
+            data.put("name", photoOpt.get().name);
+            data.put("proj", projMapper.getProjNameById(photoOpt.get().proj));
+            data.put("project_type", 0);
+            data.put("author", photoOpt.get().author);
+            data.put("value", value);
+            return new Respond<>(true, "true", data);
+        } else if (root.isArray()) {
+            // 筛片模式
+            List<Object> value =
+                    jsonMapper.readValue(
+                            valueStr,
+                            new TypeReference<List<Object>>() {}
+                    );
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("photoid", photoOpt.get().id);
+            data.put("name", photoOpt.get().name);
+            data.put("proj", projMapper.getProjNameById(photoOpt.get().proj));
+            data.put("project_type", 1);
+            data.put("author", photoOpt.get().author);
+            data.put("value", value);
+            return new Respond<>(true, "true", data);
+        } else {
+            return new Respond<>(false, "0", null);
         }
     }
 

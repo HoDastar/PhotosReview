@@ -149,6 +149,10 @@
     background: purple;
 }
 
+.color_orange {
+    background-color: rgb(234, 88, 12);
+}
+
 .widget {
     background: var(--color-bg);
     border-radius: 10px;
