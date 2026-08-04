@@ -7,6 +7,7 @@
     "project_status": "Project Status",
     "author": "Author",
     "upload": "Upload",
+    "recheck": "Recheck",
     "thumbnail": "Thumbnail",
     "photos_pool": "Photos Pool",
     "create_project": "Create Project",
@@ -59,6 +60,7 @@
     "coming_soon": "Coming Soon",
     "project_mode": "Project Mode",
     "history_mode": "History Mode",
+    "recheck_mode": "Recheck Mode",
     "view_results": "View Results",
     "preliminary_results": "Preliminary Results",
     "fetch_results": "Fetch Preliminary Results",
@@ -72,6 +74,12 @@
     "preliminary_average": "Preliminary Average",
     "preliminary_variance": "Preliminary Variance",
     "dispute_list": "Dispute List",
+    "dispute_index": "Dispute Index",
+    "dispute_reasons": "Dispute Reasons",
+    "dispute_reason_large_dispersion": "High Score Dispersion",
+    "dispute_reason_large_range": "Large Score Range",
+    "dispute_reason_polarization": "Score Polarization",
+    "dispute_reason_outlier": "Outlier Score Present",
     "recheck_status": "Recheck Status",
     "disputed": "Disputed",
     "include_in_recheck": "Include in Recheck",
@@ -102,6 +110,8 @@
     "operation": "Operation",
     "add_task": "Add Task",
     "task_list": "Task List",
+    "preliminary_task": "Preliminary Task",
+    "recheck_task": "Recheck Task",
     "dblclick_to_edit": "Double click to edit",
     "allname": "Name",
     "input_allname": "Name...",
@@ -138,6 +148,16 @@
     "failed_rows": "Failed item(s): ",
     "batch_delete": "Batch Delete",
     "description_batch_delete": "Batch delete items by filtering conditions. Please be cautious when using this function.",
+    "uid": "UID",
+    "yes": "Yes",
+    "no": "No",
+    "preliminary_scoring_details": "Preliminary Scoring Details",
+    "recheck_scoring_details": "Recheck Scoring Details",
+    "confirm_final_score": "Confirm Final Score",
+    "final_score": "Final Score",
+    "final_score_range": "Enter a score from 1 to {max} in increments of 0.1",
+    "final_score_invalid": "The final score must be from 1 to {max} in increments of 0.1.",
+    "final_score_saved": "Final score saved.",
     "modal_content_fail": [
         {
             "index": 0,
@@ -277,7 +297,7 @@
         {
             "index": 27,
             "title": "Warning",
-            "message": "You haven't joined this project."
+            "message": "You haven't joined the preliminary of this project."
         },
         {
             "index": 28,
@@ -288,6 +308,26 @@
           "index": 29,
           "title": "Warming",
           "message": "This user was banned."
+        },
+        {
+          "index": 30,
+          "title": "Warming",
+          "message": "This project doesn't start the recheck or already ended."
+        },
+        {
+          "index": 31,
+          "title": "Warming",
+          "message": "You haven't joined the recheck of this project."
+        },
+        {
+          "index": 32,
+          "title": "Warming",
+          "message": "Note is necessary in recheck mode."
+        },
+        {
+          "index": 33,
+          "title": "Warming",
+          "message": "The score is out of range."
         }
     ],
     "modal_content_success": [

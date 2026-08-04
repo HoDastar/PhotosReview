@@ -316,7 +316,7 @@
 
             <hr>
 
-            <h3 class="subtitle"><span data-i18n="task_list"></span></h3>
+            <h3 class="subtitle"><span data-i18n="preliminary_task"></span></h3>
             <table class="common-table">
                 <thead>
                 <tr>
@@ -345,6 +345,30 @@
                     </tr>
                 </tbody>
             </table>
+            <h3 class="subtitle"><span data-i18n="recheck_task"></span></h3>
+            <table class="common-table">
+                <thead>
+                <tr>
+                    <th>UID</th>
+                    <th><span data-i18n="operation"></span></th>
+                </tr>
+                </thead>
+                <tbody id="recheckDistributionContainer">
+                <tr>
+                    <td class="text-edit"><input class="text-input on-distribution" placeholder="UID" /></td>
+                    <td>
+                        <span class="btn edit"><i class="fa-solid fa-circle-plus"></i></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-edit">10010</td>
+                    <td>
+                        <span class="btn del"><i class="fa-solid fa-trash"></i></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
             <div class="form-submit">
                 <button class="button-common" id="cancelManageDist" data-i18n="cancel">Cancel</button>
                 <button class="button-common" id="saveManageDist" data-i18n="save">Save</button>
@@ -524,13 +548,15 @@
                 <tr>
                     <th><span data-i18n="photoid"></span></th>
                     <th><span data-i18n="thumbnail"></span></th>
+                    <th><span data-i18n="dispute_index"></span></th>
+                    <th><span data-i18n="dispute_reasons"></span></th>
                     <th><span data-i18n="recheck_status"></span></th>
                     <th><span data-i18n="operation"></span></th>
                 </tr>
                 </thead>
                 <tbody id="disputePhotosTableBody">
                 <tr class="result-placeholder-row">
-                    <td colspan="4" data-i18n="no_result_data"></td>
+                    <td colspan="6" data-i18n="no_result_data"></td>
                 </tr>
                 </tbody>
             </table>

@@ -33,6 +33,7 @@ public class ProjMapper {
                         rs.getInt("type"),
                         rs.getInt("max"),
                         rs.getString("task"),
+                        rs.getString("recheck"),
                         rs.getString("thumbnail"),
                         rs.getInt("status"),
                         rs.getString("time"),
@@ -57,12 +58,13 @@ public class ProjMapper {
     public Boolean createProj(String projId, String name, int type, int max, String thumbnail) {
         try {
             jdbcTemplate.update(
-                    "INSERT INTO review_proj(projid, name, type, max, task, thumbnail, status, time, display) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO review_proj(projid, name, type, max, task, recheck, thumbnail, status, time, display) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     projId,
                     name,
                     type,
                     max,
                     "{}",
+                    "[]",
                     thumbnail,
                     0,
                     Utilities.nowTimeString(),
@@ -126,6 +128,7 @@ public class ProjMapper {
                                 rs.getInt("type"),
                                 rs.getInt("max"),
                                 rs.getString("task"),
+                                rs.getString("recheck"),
                                 rs.getString("thumbnail"),
                                 rs.getInt("status"),
                                 rs.getString("time"),
@@ -158,6 +161,7 @@ public class ProjMapper {
                                 rs.getInt("type"),
                                 rs.getInt("max"),
                                 rs.getString("task"),
+                                rs.getString("recheck"),
                                 rs.getString("thumbnail"),
                                 rs.getInt("status"),
                                 rs.getString("time"),
@@ -230,11 +234,11 @@ public class ProjMapper {
      * @param task 工程任务
      * @return 修改结果
      */
-    public Boolean updateProjTask(String projId, String task) {
+    public Boolean updateProjTask(String projId, String task, String recheck) {
         try {
             int rowsAffected = jdbcTemplate.update(
-                    "UPDATE review_proj SET task = ? WHERE projid = ?",
-                    task, projId
+                    "UPDATE review_proj SET task = ?, recheck = ?  WHERE projid = ?",
+                    task, recheck, projId
             );
             return rowsAffected > 0;
         } catch (Exception e) {
@@ -345,17 +349,16 @@ public class ProjMapper {
         );
     }
 
-    public Boolean addRecheck(int photoId, String projId, String value) {
+    public Boolean addRecheck(int photoId, String projId) {
         try {
             int rowsAffected = jdbcTemplate.update(
                     """
-                    INSERT INTO review_recheck(photoid, proj, value)
-                    VALUES (?, ?, ?)
+                    INSERT INTO review_recheck(photoid, proj, value, final_score)
+                    VALUES (?, ?, ?, ?)
                     ON CONFLICT(photoid) DO UPDATE SET
-                        proj = excluded.proj,
-                        value = excluded.value
+                        proj = excluded.proj
                     """,
-                    photoId, projId, value
+                    photoId, projId, "{}", -1
             );
             return rowsAffected > 0;
         } catch (Exception e) {

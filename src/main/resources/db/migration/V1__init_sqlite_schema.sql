@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS review_proj (
     type INTEGER NOT NULL,
     max INTEGER NOT NULL DEFAULT 4,
     task TEXT NOT NULL,
+    recheck TEXT NOT NULL,
     thumbnail TEXT NOT NULL,
     status INTEGER NOT NULL,
     time TEXT NOT NULL,
@@ -56,5 +57,6 @@ WHERE NOT EXISTS (
 CREATE TABLE IF NOT EXISTS review_recheck (
     photoid INTEGER NOT NULL PRIMARY KEY,
     proj TEXT NOT NULL,
-    value TEXT NOT NULL
+    value TEXT NOT NULL,
+    final_score REAL NOT NULL
 );

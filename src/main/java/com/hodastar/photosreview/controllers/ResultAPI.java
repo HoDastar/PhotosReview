@@ -2,6 +2,7 @@ package com.hodastar.photosreview.controllers;
 
 import com.hodastar.photosreview.entities.EntityReviewPhotos;
 import com.hodastar.photosreview.entities.EntityReviewProj;
+import com.hodastar.photosreview.entities.EntityReviewRecheck;
 import com.hodastar.photosreview.mappers.ProjMapper;
 import com.hodastar.photosreview.mappers.ReviewMapper;
 import com.hodastar.photosreview.mappers.UserMapper;
@@ -12,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.hodastar.photosreview.utils.Utilities.*;
 
 /**
  * 管理端结果统计接口。
@@ -37,6 +42,11 @@ public class ResultAPI {
     private static final int MIN_DISPUTE_REVIEWERS = 4;
     // 分歧指数超过该阈值时，将照片判定为争议照片。
     private static final double DISPUTE_THRESHOLD = 0.4;
+    // 争议原因使用稳定代码返回，由前端按当前语言转换为展示文本。
+    private static final String DISPUTE_REASON_LARGE_DISPERSION = "large_dispersion";
+    private static final String DISPUTE_REASON_LARGE_RANGE = "large_range";
+    private static final String DISPUTE_REASON_POLARIZATION = "polarization";
+    private static final String DISPUTE_REASON_OUTLIER = "outlier";
 
     private final UserMapper userMapper;
     private final ProjMapper projMapper;
@@ -50,6 +60,92 @@ public class ResultAPI {
         this.userMapper = userMapper;
         this.projMapper = projMapper;
         this.reviewMapper = reviewMapper;
+    }
+
+    /**
+     * 获取单张照片的数据
+     *
+     * @param uid
+     * @param token
+     * @param photoid 图片id
+     * @return
+     */
+    @GetMapping("/fetch_photo_data")
+    public Respond<HashMap<String, Object>> fetchPhotoData(
+            @RequestParam("adminUid") int uid,
+            @RequestParam("adminToken") String token,
+            @RequestParam("photoid") int photoid
+    ) {
+        // 验证用户
+        if (!userMapper.checkAdmin(uid, token)) {
+            return new Respond<>(false, "5", null);
+        }
+
+        // 获取photo信息
+        Optional<EntityReviewPhotos> photoOpt = reviewMapper.getPhotoById(photoid);
+        if (photoOpt.isEmpty()) {
+            return new Respond<>(false, "25", null);
+        }
+
+        // 获取photo的value字段
+        Optional<EntityReviewProj> projOpt = projMapper.getProjById(photoOpt.get().proj);
+        if (projOpt.isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+
+        String valueStr = photoOpt.get().value;
+        JsonMapper jsonMapper = new JsonMapper();
+        JsonNode root = jsonMapper.readTree(valueStr);
+
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("max_score", projOpt.get().max);
+        data.put("is_recheck", false);
+
+        // 判断value的json类型
+        if (root.isObject()) {
+            // 审片模式
+            HashMap<String, List<Object>> value =
+                    jsonMapper.readValue(
+                            valueStr,
+                            new TypeReference<HashMap<String, List<Object>>>() {}
+                    );
+            data.put("photoid", photoOpt.get().id);
+            data.put("name", photoOpt.get().name);
+            data.put("proj", projMapper.getProjNameById(photoOpt.get().proj));
+            data.put("project_type", 0);
+            data.put("author", photoOpt.get().author);
+            data.put("preliminary", value);
+        } else if (root.isArray()) {
+            // 筛片模式
+            List<Object> value =
+                    jsonMapper.readValue(
+                            valueStr,
+                            new TypeReference<List<Object>>() {}
+                    );
+            data.put("photoid", photoOpt.get().id);
+            data.put("name", photoOpt.get().name);
+            data.put("proj", projMapper.getProjNameById(photoOpt.get().proj));
+            data.put("project_type", 1);
+            data.put("author", photoOpt.get().author);
+            data.put("preliminary", value);
+        } else {
+            return new Respond<>(false, "0", null);
+        }
+
+        // 检测是否有复审
+        Optional<EntityReviewRecheck> recheckOpt = reviewMapper.getRecheckPhotoById(photoid);
+        if (recheckOpt.isPresent()) {
+            HashMap<String, List<Object>> value =
+                    jsonMapper.readValue(
+                            recheckOpt.get().value,
+                            new TypeReference<HashMap<String, List<Object>>>() {}
+                    );
+            data.put("is_recheck", true);
+            data.put("recheck", value);
+            data.put("final_score", recheckOpt.get().finalScore);
+        }
+
+        return new Respond<>(true, "true", data);
     }
 
     /**
@@ -106,15 +202,18 @@ public class ResultAPI {
 
             // 少于四名评分人员时不进行分歧或离群判断。
             if (scores.size() >= MIN_DISPUTE_REVIEWERS) {
-                double disagreementIndex = calculateDisagreementIndex(scores, proj.max);
+                double disputeIndex = calculateDisagreementIndex(scores, proj.max);
                 boolean hasOutlier = hasOutlier(scores, proj.max);
+                List<String> disputeReasons = calculateDisputeReasons(scores, proj.max, hasOutlier);
                 // 分歧指数超限或存在离群值，任一条件成立即列为争议照片。
-                if (disagreementIndex > DISPUTE_THRESHOLD || hasOutlier) {
+                if (disputeIndex > DISPUTE_THRESHOLD || hasOutlier) {
                     HashMap<String, Object> disputePhoto = new HashMap<>();
                     disputePhoto.put("photoid", photo.id);
                     disputePhoto.put("name", photo.name);
                     disputePhoto.put("author", photo.author);
                     disputePhoto.put("value", roundOne(photoScore));
+                    disputePhoto.put("disputeIndex", roundTwo(disputeIndex));
+                    disputePhoto.put("disputeReasons", disputeReasons);
                     disputePhotos.add(disputePhoto);
                 }
             }
@@ -230,6 +329,35 @@ public class ResultAPI {
     }
 
     /**
+     * 根据分歧指数的组成项和离群检测结果生成争议原因代码。
+     *
+     * <p>各组成项沿用总体争议阈值 0.4。由于总体指数是三个组成项的加权平均值，
+     * 当总体指数超过阈值时，至少会有一个组成项超过同一阈值。</p>
+     */
+    private List<String> calculateDisputeReasons(List<Double> scores, int maxScore, boolean hasOutlier) {
+        List<String> reasons = new ArrayList<>();
+        double average = mean(scores);
+        double standardDeviation = Math.sqrt(populationVariance(scores, average));
+        double standardDeviationNormalized = clamp(standardDeviation / (maxScore / 2.0));
+        double rangeNormalized = clamp((Collections.max(scores) - Collections.min(scores)) / maxScore);
+        double polarization = calculatePolarization(scores, maxScore);
+
+        if (standardDeviationNormalized > DISPUTE_THRESHOLD) {
+            reasons.add(DISPUTE_REASON_LARGE_DISPERSION);
+        }
+        if (rangeNormalized > DISPUTE_THRESHOLD) {
+            reasons.add(DISPUTE_REASON_LARGE_RANGE);
+        }
+        if (polarization > DISPUTE_THRESHOLD) {
+            reasons.add(DISPUTE_REASON_POLARIZATION);
+        }
+        if (hasOutlier) {
+            reasons.add(DISPUTE_REASON_OUTLIER);
+        }
+        return reasons;
+    }
+
+    /**
      * 计算评分的两极化程度。
      *
      * <p>低分组定义为不高于 Max × 40%，高分组定义为不低于 Max × 60%。
@@ -299,57 +427,6 @@ public class ResultAPI {
         }
         // 所有绝对偏差的中位数为零时，改用相对于 Max 的固定距离兜底。
         return sorted.stream().anyMatch(score -> Math.abs(score - median) > maxScore * 0.35);
-    }
-
-    /**
-     * 计算算术平均值；空集合返回 0。
-     */
-    private double mean(List<Double> values) {
-        if (values.isEmpty()) {
-            return 0.0;
-        }
-        return values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-    }
-
-    /**
-     * 计算总体方差；空集合返回 0。
-     */
-    private double populationVariance(List<Double> values, double average) {
-        if (values.isEmpty()) {
-            return 0.0;
-        }
-        return values.stream()
-                .mapToDouble(value -> Math.pow(value - average, 2))
-                .average()
-                .orElse(0.0);
-    }
-
-    /**
-     * 计算已按升序排列集合的中位数；空集合返回 0。
-     */
-    private double median(List<Double> sortedValues) {
-        if (sortedValues.isEmpty()) {
-            return 0.0;
-        }
-        int middle = sortedValues.size() / 2;
-        if (sortedValues.size() % 2 == 0) {
-            return (sortedValues.get(middle - 1) + sortedValues.get(middle)) / 2.0;
-        }
-        return sortedValues.get(middle);
-    }
-
-    /**
-     * 将数值四舍五入到一位小数。
-     */
-    private double roundOne(double value) {
-        return Math.round(value * 10.0) / 10.0;
-    }
-
-    /**
-     * 将数值限制在 [0, 1] 区间。
-     */
-    private double clamp(double value) {
-        return Math.max(0.0, Math.min(1.0, value));
     }
 
 }

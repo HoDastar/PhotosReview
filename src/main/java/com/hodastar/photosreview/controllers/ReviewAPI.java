@@ -2,6 +2,7 @@ package com.hodastar.photosreview.controllers;
 
 import com.hodastar.photosreview.entities.EntityReviewPhotos;
 import com.hodastar.photosreview.entities.EntityReviewProj;
+import com.hodastar.photosreview.entities.EntityReviewRecheck;
 import com.hodastar.photosreview.mappers.ReviewMapper;
 import com.hodastar.photosreview.mappers.ProjMapper;
 import com.hodastar.photosreview.mappers.UserMapper;
@@ -9,6 +10,7 @@ import com.hodastar.photosreview.utils.Respond;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
@@ -28,6 +30,7 @@ public class ReviewAPI {
     private ReviewMapper reviewMapper;
     private static final Logger log =
             LoggerFactory.getLogger(ReviewAPI.class);
+    private ObjectMapper jsonMapper = new ObjectMapper();
 
     // 检查int是否存在多个集合中的其中一个
     private boolean checkIntInCollections(int value, List<List<Integer>> collections) {
@@ -53,53 +56,91 @@ public class ReviewAPI {
         return photoData;
     }
 
+    // 审片模式数据修改
+    private String updateReviewData(
+            int uid,
+            String originalValue,
+            int score,
+            String note
+    ) {
+        // 解析
+        HashMap<String, List<Object>> value =
+                jsonMapper.readValue(
+                        originalValue,
+                        new TypeReference<HashMap<String, List<Object>>>() {}
+                );
+
+        // 更新评分数据
+        List<Object> newScoreData = new ArrayList<>();
+        newScoreData.add(score);
+        newScoreData.add(note);
+        value.put(String.valueOf(uid), newScoreData);
+        // 转换为json字符串
+        return jsonMapper.writeValueAsString(value);
+    }
+
+    // 筛片模式数据修改
+    private String updateScreenData(
+            int uid,
+            int score,
+            String note
+    ) {
+        // 定义新的value
+        List<Object> newValue = new ArrayList<>();
+        newValue.add(String.valueOf(uid));
+        newValue.add(score);
+        newValue.add(note);
+        // 转换为json字符串
+        return jsonMapper.writeValueAsString(newValue);
+    }
+
     // 单次提交评分
     private Boolean submitSingle(
             int uid,
             Optional<EntityReviewProj> projOpt,
             Optional<EntityReviewPhotos> photoOpt,
-            int photoid, int score, String note
+            int score, String note
     ) {
-        ObjectMapper jsonMapper = new ObjectMapper();
+        if (photoOpt.isEmpty()) {
+            return false;
+        }
         // 判断工程类型
         if (projOpt.get().type == 0) {
-            // 评分原数据
-            String originalValue = photoOpt.get().value;
-            // 解析
-            HashMap<String, List<Object>> value =
-                    jsonMapper.readValue(
-                            originalValue,
-                            new TypeReference<HashMap<String, List<Object>>>() {}
-                    );
-
-            // 更新评分数据
-            List<Object> newScoreData = new ArrayList<>();
-            newScoreData.add(score);
-            newScoreData.add(note);
-            value.put(String.valueOf(uid), newScoreData);
-            // 转换为json字符串
-            String newValueStr = jsonMapper.writeValueAsString(value);
+            String newValueStr = updateReviewData(uid, photoOpt.get().value, score, note);
 
             // 更新数据库
-            Boolean updateResult = reviewMapper.updatePhotoValue(photoid, newValueStr);
+            Boolean updateResult = reviewMapper.updatePhotoValue(photoOpt.get().id, newValueStr);
             if (!updateResult) {
                 return false;
             }
         } else if (projOpt.get().type == 1) {
-            // 定义新的value
-            List<Object> newValue = new ArrayList<>();
-            newValue.add(String.valueOf(uid));
-            newValue.add(score);
-            newValue.add(note);
-            // 转换为json字符串
-            String newValueStr = jsonMapper.writeValueAsString(newValue);
+            String newValueStr = updateScreenData(uid, score, note);
 
             // 更新数据库
-            Boolean updateResult = reviewMapper.updatePhotoValue(photoid, newValueStr);
+            Boolean updateResult = reviewMapper.updatePhotoValue(photoOpt.get().id, newValueStr);
             if (!updateResult) {
                 return false;
             }
         } else {
+            return false;
+        }
+        return true;
+    }
+
+    // 单次提交复审评分
+    private Boolean submitRecheckSingle(
+            int uid,
+            Optional<EntityReviewRecheck> photoOpt,
+            int score, String note
+    ) {
+        if (photoOpt.isEmpty()) {
+            return false;
+        }
+        String newValueStr = updateReviewData(uid, photoOpt.get().value, score, note);
+
+        // 更新数据库
+        Boolean updateResult = reviewMapper.updateRecheckValue(photoOpt.get().photoid, newValueStr);
+        if (!updateResult) {
             return false;
         }
         return true;
@@ -209,7 +250,6 @@ public class ReviewAPI {
         }
 
         // 获取任务内容
-        ObjectMapper jsonMapper = new ObjectMapper();
         HashMap<String, List<List<Integer>>> taskAll =
                 jsonMapper.readValue(
                         projOpt.get().task,
@@ -318,6 +358,100 @@ public class ReviewAPI {
         return new Respond<>(true, "true", data);
     }
 
+    // 获取复审列表
+    @GetMapping("/fetch_recheck_list")
+    public Respond<HashMap<String, Object>> fetchRecheckList(
+            @RequestParam("uid") int uid,
+            @RequestParam("token") String token,
+            @RequestParam("proj") String projId
+    ) {
+        // 验证用户
+        if (!userMapper.checkToken(uid, token)) {
+            return new Respond<>(false, "4", null);
+        }
+
+        // 获取项目
+        Optional<EntityReviewProj> projOpt = projMapper.getProjById(projId);
+        if (projOpt.isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+        // 检查工程状态
+        if (projOpt.get().status != 3) {
+            return new Respond<>(false, "30", null);
+        }
+
+        // 获取复审人名单
+        List<String> recheck = jsonMapper.readValue(projOpt.get().recheck, new TypeReference<List<String>>() {});
+        if (recheck == null || recheck.isEmpty()) {
+            return new Respond<>(false, "31", null);
+        }
+        if (!recheck.contains(String.valueOf(uid))) {
+            return new Respond<>(false, "31", null);
+        }
+
+        // 获取复审照片列表
+        List<EntityReviewRecheck> photos = reviewMapper.getRecheckPhotos(projId);
+        // unread数组集合
+        List<HashMap<String, Object>> unreadList = new ArrayList<>();
+        // read数组集合
+        List<HashMap<String, Object>> readList = new ArrayList<>();
+        // 结果数组集合
+        List<Object> result = new ArrayList<>();
+
+        // 遍历图片列表
+        for (EntityReviewRecheck recheckPhoto : photos) {
+            String valueStr = recheckPhoto.value;
+            // 原图片信息
+            Optional<EntityReviewPhotos> photoOpt = reviewMapper.getPhotoById(recheckPhoto.photoid);
+            if (photoOpt.isEmpty()) {
+                continue;
+            }
+            EntityReviewPhotos photo = photoOpt.get();
+
+            // 如果value字段为空或null
+            if (valueStr == null) {
+                unreadList.add(addPhotoToList(photo.id, photo.name, "unread", 0, null));
+                result.add(addPhotoToList(photo.id, photo.name, "unread", 0, null));
+                continue;
+            }
+
+            // 读取value字段
+            HashMap<String, List<Object>> value =
+                    jsonMapper.readValue(
+                            valueStr,
+                            new TypeReference<HashMap<String, List<Object>>>() {}
+                    );
+
+            if (!value.containsKey(String.valueOf(uid)) || value.get(String.valueOf(uid)) == null) {
+                // 如果数据中没有该uid的数据
+                unreadList.add(addPhotoToList(photo.id, photo.name, "unread", 0, null));
+                result.add(addPhotoToList(photo.id, photo.name, "unread", 0, null));
+            } else {
+                // 添加
+                List<Object> reviewData = value.get(String.valueOf(uid));
+                int score = (int) reviewData.get(0);
+                String note = (String) reviewData.get(1);
+                readList.add(addPhotoToList(photo.id, photo.name, "read", score, note));
+                result.add(addPhotoToList(photo.id, photo.name, "read", score, note));
+            }
+        }
+
+        HashMap<String, Object> data = new HashMap<>();
+        // 任务总量
+        data.put("all", photos.size());
+        // 剩余任务
+        data.put("remaining", unreadList.size());
+        // 已完成任务
+        data.put("read", readList.size());
+        // 任务类型
+        data.put("type", projOpt.get().type);
+        data.put("max", projOpt.get().max);
+
+        data.put("list", result);
+
+        return new Respond<>(true, "true", data);
+    }
+
     // 获取照片列表（管理员）
     @GetMapping("fetch_photo_list_all")
     public Respond<List<EntityReviewPhotos>> fetchPhotoListAll(
@@ -409,7 +543,7 @@ public class ReviewAPI {
                     return new Respond<>(false, "26", null);
                 }
 
-                Boolean result = submitSingle(uid, projOpt, photoOpt, photoid, score, note);
+                Boolean result = submitSingle(uid, projOpt, photoOpt, score, note);
                 if (result) {
                     return new Respond<>(true, "true", 1);
                 } else {
@@ -440,7 +574,7 @@ public class ReviewAPI {
                     if (!Objects.equals(photoOptBatch.get().proj, projId)) {
                         continue;
                     }
-                    Boolean batchResult = submitSingle(uid, projOpt, photoOptBatch, id, score, note);
+                    Boolean batchResult = submitSingle(uid, projOpt, photoOptBatch, score, note);
                     if (!batchResult) {
                         continue;
                     }
@@ -450,6 +584,130 @@ public class ReviewAPI {
 
             default:
                 return new Respond<>(false, "1", 0);
+        }
+    }
+
+    // 提交复审评分
+    @PostMapping("/recheck")
+    public Respond<Integer> recheck(
+            @RequestParam("proj") String projId,
+            @RequestBody HashMap<String, Object> body
+    ) {
+        if (!body.containsKey("photoid")||
+            !body.containsKey("uid") ||
+            !body.containsKey("token") ||
+            !body.containsKey("score") ||
+            !body.containsKey("note")
+        ) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("photoid") instanceof Integer) ||
+            !(body.get("uid") instanceof Integer) ||
+            !(body.get("token") instanceof String) ||
+            !(body.get("score") instanceof Integer) ||
+            !(body.get("note") instanceof String)
+        ) {
+            return new Respond<>(false, "1", null);
+        }
+
+        int uid = (int) body.get("uid");
+        String token = (String) body.get("token");
+        // 验证用户
+        if (!userMapper.checkToken(uid, token)) {
+            return new Respond<>(false, "4", null);
+        }
+
+        // 获取项目
+        Optional<EntityReviewProj> projOpt = projMapper.getProjById(projId);
+        if (projOpt.isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+        // 检查工程状态
+        if (projOpt.get().status != 3) {
+            return new Respond<>(false, "30", null);
+        }
+
+        int score = (int) body.get("score");
+        String note = (String) body.get("note");
+
+        // 检查评分范围
+        if (score < 1 || score > projOpt.get().max) {
+            return new Respond<>(false, "1", null);
+        }
+        // 检查批注长度
+        if (note.isBlank()) {
+            return new Respond<>(false, "1", null);
+        }
+        if (note.length() > 500) {
+            return new Respond<>(false, "6", null);
+        }
+
+        int photoid = (int) body.get("photoid");
+        // 获取photo信息
+        Optional<EntityReviewRecheck> photoOpt = reviewMapper.getRecheckPhotoById(photoid);
+        if (photoOpt.isEmpty()) {
+            return new Respond<>(false, "25", null);
+        }
+        // 比对项目
+        if (!Objects.equals(photoOpt.get().proj, projId)) {
+            return new Respond<>(false, "26", null);
+        }
+
+        Boolean result = submitRecheckSingle(uid, photoOpt, score, note);
+        if (result) {
+            return new Respond<>(true, "true", 1);
+        } else {
+            return new Respond<>(false, "0", 0);
+        }
+    }
+
+    // 提交最终评分
+    @PostMapping("/final")
+    public Respond<Integer> submitFinal(
+            @RequestBody HashMap<String, Object> body
+    ) {
+        if (!body.containsKey("photoid")||
+            !body.containsKey("uid") ||
+            !body.containsKey("token") ||
+            !body.containsKey("score")
+        ) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("photoid") instanceof Integer) ||
+            !(body.get("uid") instanceof Integer) ||
+            !(body.get("token") instanceof String) ||
+            !(body.get("score") instanceof Number)
+        ) {
+            return new Respond<>(false, "1", null);
+        }
+
+        int uid = (int) body.get("uid");
+        String token = (String) body.get("token");
+        int photoid = (int) body.get("photoid");
+        double score = ((Number) body.get("score")).doubleValue();
+
+        if (!userMapper.checkAdmin(uid, token)) {
+            return new Respond<>(false, "5", null);
+        }
+        Optional<EntityReviewRecheck> photoOpt = reviewMapper.getRecheckPhotoById(photoid);
+        if (photoOpt.isEmpty()) {
+            return new Respond<>(false, "25", null);
+        }
+        String projId = photoOpt.get().proj;
+        Optional<EntityReviewProj> projOpt = projMapper.getProjById(projId);
+        if (projOpt.isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+        double scoreInTenths = score * 10;
+        if (score < 1 || score > projOpt.get().max || Math.abs(scoreInTenths - Math.rint(scoreInTenths)) > 1e-9) {
+            return new Respond<>(false, "33", null);
+        }
+
+        Boolean result = reviewMapper.updateFinalScore(photoid, score);
+        if (result) {
+            return new Respond<>(true, "true", 1);
+        } else {
+            return new Respond<>(false, "0", 0);
         }
     }
 
@@ -576,66 +834,102 @@ public class ReviewAPI {
             deletedCount++;
         }
 
+        List<EntityReviewRecheck> recheckPhotos = reviewMapper.getRecheckPhotos(projId);
+        for (EntityReviewRecheck recheckPhoto : recheckPhotos) {
+            HashMap<String, Object> result = this.deleteRecheckScoreSingle(
+                    targetUid,
+                    recheckPhoto.photoid,
+                    recheckPhoto.value
+            );
+            if (result.get("status").equals(false)) {
+                continue;
+            }
+            deletedCount++;
+        }
+
         return new Respond<>(true, "true", deletedCount);
     }
 
-    // 获取单张照片的数据
-    @GetMapping("/fetch_photo_data")
-    public Respond<HashMap<String, Object>> fetchPhotoData(
-            @RequestParam("adminUid") int uid,
-            @RequestParam("adminToken") String token,
-            @RequestParam("photoid") int photoid
+    private HashMap<String, Object> deleteRecheckScoreSingle(
+            String targetUid,
+            int photoid,
+            String originalValue
     ) {
-        // 验证用户
-        if (!userMapper.checkAdmin(uid, token)) {
+        HashMap<String, Object> result = new HashMap<>();
+        if (originalValue == null || originalValue.isEmpty()) {
+            result.put("status", false);
+            result.put("message", "0");
+            return result;
+        }
+
+        HashMap<String, List<Object>> value =
+                jsonMapper.readValue(
+                        originalValue,
+                        new TypeReference<HashMap<String, List<Object>>>() {}
+                );
+        if (!value.containsKey(targetUid)) {
+            result.put("status", false);
+            result.put("message", "20");
+            return result;
+        }
+
+        HashMap<String, List<Object>> newValue = new HashMap<>(value);
+        newValue.remove(targetUid);
+        String newValueStr = jsonMapper.writeValueAsString(newValue);
+        if (!reviewMapper.updateRecheckValue(photoid, newValueStr)) {
+            result.put("status", false);
+            result.put("message", "0");
+            return result;
+        }
+
+        result.put("status", true);
+        result.put("message", "true");
+        return result;
+    }
+
+    @PostMapping("/delete_recheck_score")
+    public Respond<String> deleteRecheckScore(
+            @RequestBody HashMap<String, Object> body
+    ) {
+        if (!body.containsKey("photoid") ||
+            !body.containsKey("uid") ||
+            !body.containsKey("adminUid") ||
+            !body.containsKey("adminToken")
+        ) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("photoid") instanceof Integer) ||
+            !(body.get("uid") instanceof Integer) ||
+            !(body.get("adminUid") instanceof Integer) ||
+            !(body.get("adminToken") instanceof String)
+        ) {
+            return new Respond<>(false, "1", null);
+        }
+
+        int photoid = (int) body.get("photoid");
+        String targetUid = String.valueOf((int) body.get("uid"));
+        int adminUid = (int) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
+
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
             return new Respond<>(false, "5", null);
         }
 
-        // 获取photo信息
-        Optional<EntityReviewPhotos> photoOpt = reviewMapper.getPhotoById(photoid);
-        if (photoOpt.isEmpty()) {
+        Optional<EntityReviewRecheck> recheckOpt = reviewMapper.getRecheckPhotoById(photoid);
+        if (recheckOpt.isEmpty()) {
             return new Respond<>(false, "25", null);
         }
 
-        // 获取photo的value字段
-        String valueStr = photoOpt.get().value;
-        JsonMapper jsonMapper = new JsonMapper();
-        JsonNode root = jsonMapper.readTree(valueStr);
-
-        // 判断value的json类型
-        if (root.isObject()) {
-            // 审片模式
-            HashMap<String, List<Object>> value =
-                    jsonMapper.readValue(
-                            valueStr,
-                            new TypeReference<HashMap<String, List<Object>>>() {}
-                    );
-            HashMap<String, Object> data = new HashMap<>();
-            data.put("photoid", photoOpt.get().id);
-            data.put("name", photoOpt.get().name);
-            data.put("proj", projMapper.getProjNameById(photoOpt.get().proj));
-            data.put("project_type", 0);
-            data.put("author", photoOpt.get().author);
-            data.put("value", value);
-            return new Respond<>(true, "true", data);
-        } else if (root.isArray()) {
-            // 筛片模式
-            List<Object> value =
-                    jsonMapper.readValue(
-                            valueStr,
-                            new TypeReference<List<Object>>() {}
-                    );
-            HashMap<String, Object> data = new HashMap<>();
-            data.put("photoid", photoOpt.get().id);
-            data.put("name", photoOpt.get().name);
-            data.put("proj", projMapper.getProjNameById(photoOpt.get().proj));
-            data.put("project_type", 1);
-            data.put("author", photoOpt.get().author);
-            data.put("value", value);
-            return new Respond<>(true, "true", data);
-        } else {
-            return new Respond<>(false, "0", null);
-        }
+        HashMap<String, Object> result = this.deleteRecheckScoreSingle(
+                targetUid,
+                photoid,
+                recheckOpt.get().value
+        );
+        return new Respond<>(
+                (Boolean) result.get("status"),
+                (String) result.get("message"),
+                null
+        );
     }
 
 }

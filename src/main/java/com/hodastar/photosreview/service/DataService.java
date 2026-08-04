@@ -31,6 +31,7 @@ public class DataService {
                         rs.getInt("type"),
                         rs.getInt("max"),
                         rs.getString("task"),
+                        rs.getString("recheck"),
                         rs.getString("thumbnail"),
                         rs.getInt("status"),
                         rs.getString("time"),
@@ -73,7 +74,8 @@ public class DataService {
                 (rs, rowNum) -> new EntityReviewRecheck(
                         rs.getInt("photoid"),
                         rs.getString("proj"),
-                        rs.getString("value")
+                        rs.getString("value"),
+                        rs.getDouble("final_score")
                 )
         );
     }
@@ -84,7 +86,8 @@ public class DataService {
                 (rs, rowNum) -> new EntityReviewRecheck(
                         rs.getInt("photoid"),
                         rs.getString("proj"),
-                        rs.getString("value")
+                        rs.getString("value"),
+                        rs.getDouble("final_score")
                 ), proj
         );
     }

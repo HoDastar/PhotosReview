@@ -3,6 +3,12 @@ let currentRecheckPhotos = [];
 let currentResultPhotos = [];
 let disputePhotosCurrentPage = 1;
 let disputePhotosPageSize = 10;
+const disputeReasonI18nKeys = {
+    large_dispersion: "dispute_reason_large_dispersion",
+    large_range: "dispute_reason_large_range",
+    polarization: "dispute_reason_polarization",
+    outlier: "dispute_reason_outlier"
+};
 
 async function loadViewResults(index, id, updateHistory = true) {
     if (!projList[index]) {
@@ -230,6 +236,23 @@ function createDisputePhotoRow(photo) {
     }
     row.appendChild(thumbnailCell);
 
+    const disputeIndexCell = document.createElement("td");
+    const disputeIndex = Number(photo.disputeIndex);
+    disputeIndexCell.textContent = Number.isFinite(disputeIndex)
+        ? disputeIndex.toFixed(2)
+        : "--";
+    row.appendChild(disputeIndexCell);
+
+    const disputeReasonsCell = document.createElement("td");
+    const disputeReasons = Array.isArray(photo.disputeReasons)
+        ? photo.disputeReasons
+            .map((reason) => disputeReasonI18nKeys[reason])
+            .filter(Boolean)
+            .map((i18nKey) => i18n.lookUp(i18nKey))
+        : [];
+    disputeReasonsCell.textContent = disputeReasons.length > 0 ? disputeReasons.join(", ") : "--";
+    row.appendChild(disputeReasonsCell);
+
     const statusCell = document.createElement("td");
     const status = document.createElement("span");
     const statusKey = photo.recheck ? "rechecking" : "disputed";
@@ -259,15 +282,15 @@ function createDisputePhotoRow(photo) {
             toggleButton.style.pointerEvents = "";
         }
     });
-    actionGroup.appendChild(toggleButton);
 
     const previewButton = document.createElement("span");
     previewButton.classList.add("btn", "edit");
     previewButton.dataset.i18nTitle = "preview";
     previewButton.title = i18n.lookUp("preview");
     previewButton.innerHTML = '<i class="fa-solid fa-eye"></i>';
-    previewButton.addEventListener("click", () => previewPhotoReviewData(photo.photoid));
+    previewButton.addEventListener("click", () => previewPhotoReviewData(photo.photoid, 1));
     actionGroup.appendChild(previewButton);
+    actionGroup.appendChild(toggleButton);
 
     actionCell.appendChild(actionGroup);
     row.appendChild(actionCell);
@@ -306,7 +329,7 @@ function renderDisputePhotosPage() {
     if (currentResultPhotos.length === 0) {
         const row = document.createElement("tr");
         const cell = document.createElement("td");
-        cell.colSpan = 4;
+        cell.colSpan = 6;
         cell.dataset.i18n = currentPreliminaryResult ? "no_dispute_photos" : "no_result_data";
         cell.textContent = i18n.lookUp(cell.dataset.i18n);
         row.appendChild(cell);

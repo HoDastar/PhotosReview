@@ -13,7 +13,8 @@ let selectedUploadToProjName;
  *          "10011": [[0, 438]]
  *      }
  */
-let currentTaskList;
+let currentPreliminaryTaskList;
+let currentRecheckTaskList;
 let photosPool = {};
 let currentManagePhotosList = [];
 

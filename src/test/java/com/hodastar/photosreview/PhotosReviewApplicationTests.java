@@ -76,5 +76,8 @@ class PhotosReviewApplicationTests {
     }
 
     void f() {
+        System.out.println(
+                reviewMapper.getRecheckPhotos("d2a18223-d148-4242-b7e3-23f7fa7c283d")
+        );
     }
 }

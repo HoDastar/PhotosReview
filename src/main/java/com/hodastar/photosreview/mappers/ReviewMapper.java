@@ -1,6 +1,7 @@
 package com.hodastar.photosreview.mappers;
 
 import com.hodastar.photosreview.entities.EntityReviewPhotos;
+import com.hodastar.photosreview.entities.EntityReviewRecheck;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -87,6 +88,20 @@ public class ReviewMapper {
         );
     }
 
+    // 获取复审照片列表
+    public List<EntityReviewRecheck> getRecheckPhotos(String projId) {
+        return jdbcTemplate.query(
+                "SELECT * FROM review_recheck WHERE proj = ? ORDER BY photoid ASC",
+                (rs, rowNum) -> new EntityReviewRecheck(
+                            rs.getInt("photoid"),
+                            rs.getString("proj"),
+                            rs.getString("value"),
+                            rs.getDouble("final_score")
+                    ),
+                projId
+        );
+    }
+
     // 通过photoid查询图片
     public Optional<EntityReviewPhotos> getPhotoById(int photoId) {
         List<EntityReviewPhotos> list = jdbcTemplate.query(
@@ -100,7 +115,25 @@ public class ReviewMapper {
                             rs.getString("value")
                     );
                 },
-                photoId);
+                photoId
+        );
+        return list.stream().findFirst();
+    }
+
+    // 通过photoid查询复审图片
+    public Optional<EntityReviewRecheck> getRecheckPhotoById(int photoId) {
+        List<EntityReviewRecheck> list = jdbcTemplate.query(
+                "SELECT * FROM review_recheck WHERE photoid = ?",
+                (rs, rowNum) -> {
+                    return new EntityReviewRecheck(
+                            rs.getInt("photoid"),
+                            rs.getString("proj"),
+                            rs.getString("value"),
+                            rs.getDouble("final_score")
+                    );
+                },
+                photoId
+        );
         return list.stream().findFirst();
     }
 
@@ -129,6 +162,34 @@ public class ReviewMapper {
             int rowsAffected = jdbcTemplate.update(
                     "UPDATE review_data SET value = ? WHERE id = ?",
                     value, photoId
+            );
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // 写入复审评分
+    public Boolean updateRecheckValue(int photoId, String value) {
+        try {
+            int rowsAffected = jdbcTemplate.update(
+                    "UPDATE review_recheck SET value = ? WHERE photoid = ?",
+                    value, photoId
+            );
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // 写入最终评分
+    public Boolean updateFinalScore(int photoId, double finalScore) {
+        try {
+            int rowsAffected = jdbcTemplate.update(
+                    "UPDATE review_recheck SET final_score = ? WHERE photoid = ?",
+                    finalScore, photoId
             );
             return rowsAffected > 0;
         } catch (Exception e) {

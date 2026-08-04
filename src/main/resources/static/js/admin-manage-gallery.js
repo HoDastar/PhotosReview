@@ -200,7 +200,7 @@ let managePhotosCurrentPage = 1;
 let managePhotosPageSize = 10;
 let managePhotosCurrentAuthor = null;
 
-async function renderReviewDataModal(data) {
+async function renderReviewDataModal(data, type) {
     const modal = document.getElementById("reviewDataModal");
     const overlay = document.getElementById("modalOverlay");
     const titleEl = document.getElementById("reviewDataModalTitle");
@@ -248,17 +248,23 @@ async function renderReviewDataModal(data) {
             noteEmpty: true
         };
     };
-
-    let reviews = [];
-    if (Array.isArray(data.value)) {
-        if (data.value.length > 0 && Array.isArray(data.value[0])) {
-            reviews = data.value.map((review) => normalizeReview(review[0], review.slice(1)));
-        } else if (data.value.length > 0) {
-            reviews = [normalizeReview(data.value[0], data.value.slice(1))];
+    const normalizeReviews = (value) => {
+        if (Array.isArray(value)) {
+            if (value.length > 0 && Array.isArray(value[0])) {
+                return value.map((review) => normalizeReview(review[0], review.slice(1)));
+            }
+            if (value.length > 0) {
+                return [normalizeReview(value[0], value.slice(1))];
+            }
+        } else if (value && typeof value === "object") {
+            return Object.entries(value).map(([reviewer, review]) => normalizeReview(reviewer, review));
         }
-    } else if (data.value && typeof data.value === "object") {
-        reviews = Object.entries(data.value).map(([reviewer, review]) => normalizeReview(reviewer, review));
-    }
+        return [];
+    };
+
+    const reviews = normalizeReviews(data.preliminary);
+    const isRecheck = data.is_recheck === true;
+    const recheckReviews = isRecheck ? normalizeReviews(data.recheck) : [];
 
     const closeModal = () => {
         if (!modal.classList.contains("active")) {
@@ -283,9 +289,10 @@ async function renderReviewDataModal(data) {
     const summaryEl = document.createElement("div");
     summaryEl.classList.add("photos-review-summary");
     [
-        ["Photoid", data.photoid],
+        [i18n.lookUp("photoid"), data.photoid],
         [i18n.lookUp("file_name"), data.name],
-        [i18n.lookUp("author"), data.author]
+        [i18n.lookUp("author"), data.author],
+        [i18n.lookUp("recheck_status"), i18n.lookUp(isRecheck ? "yes" : "no")]
     ].forEach(([label, value]) => {
         const itemEl = document.createElement("div");
         itemEl.classList.add("photos-review-summary-item");
@@ -296,122 +303,213 @@ async function renderReviewDataModal(data) {
     summarySectionEl.appendChild(summaryEl);
     shellEl.appendChild(summarySectionEl);
 
-    const reviewsSectionEl = document.createElement("section");
-    reviewsSectionEl.classList.add("photos-review-section");
-    reviewsSectionEl.appendChild(
-        createTextElement(
-            "h5",
-            "photos-review-section-title",
-            `${i18n.lookUp("scoring_details")} (${reviews.length})`
-        )
-    );
+    const reviewGroups = [
+        {
+            title: i18n.lookUp("preliminary_scoring_details"),
+            items: reviews,
+            deleteEndpoint: "/api/review/delete_score"
+        },
+        ...(isRecheck ? [{
+            title: i18n.lookUp("recheck_scoring_details"),
+            items: recheckReviews,
+            deleteEndpoint: "/api/review/delete_recheck_score"
+        }] : [])
+    ];
+    reviewGroups.forEach((reviewGroup) => {
+        if (type === 1 && reviewGroup.title === i18n.lookUp("preliminary_scoring_details") && isRecheck) {
+            return;
+        }
+        const reviewsSectionEl = document.createElement("section");
+        reviewsSectionEl.classList.add("photos-review-section");
+        reviewsSectionEl.appendChild(
+            createTextElement("h5", "photos-review-section-title", `${reviewGroup.title} (${reviewGroup.items.length})`)
+        );
 
-    const reviewsListEl = document.createElement("div");
-    reviewsListEl.classList.add("photos-review-list");
+        const reviewsListEl = document.createElement("div");
+        reviewsListEl.classList.add("photos-review-list");
 
-    if (reviews.length === 0) {
-        reviewsListEl.appendChild(
+        if (reviewGroup.items.length === 0) {
+            reviewsListEl.appendChild(
+                createTextElement(
+                    "div",
+                    "photos-review-empty",
+                    i18n.lookUp("score_empty")
+                )
+            );
+        } else {
+            reviewGroup.items.forEach((review) => {
+                const reviewEl = document.createElement("article");
+                reviewEl.classList.add("photos-review-item");
+
+                const reviewHeaderEl = document.createElement("div");
+                reviewHeaderEl.classList.add("photos-review-item-header");
+
+                const reviewerEl = document.createElement("div");
+                reviewerEl.classList.add("photos-review-reviewer");
+                reviewerEl.appendChild(createTextElement("span", "photos-review-field-label", i18n.lookUp("uid")));
+                reviewerEl.appendChild(createTextElement("strong", "photos-review-reviewer-value", review.reviewer));
+                reviewHeaderEl.appendChild(reviewerEl);
+
+                const scoreEl = document.createElement("div");
+                scoreEl.classList.add("photos-review-score");
+                scoreEl.appendChild(
+                    createTextElement(
+                        "span",
+                        "photos-review-field-label",
+                        i18n.lookUp("score")
+                    )
+                );
+                scoreEl.appendChild(createTextElement("strong", "photos-review-score-value", review.score));
+                reviewHeaderEl.appendChild(scoreEl);
+
+                const deleteBtnEl = document.createElement("button");
+                deleteBtnEl.type = "button";
+                deleteBtnEl.classList.add("photos-review-btn", "delete");
+                deleteBtnEl.title = i18n.lookUp("delete");
+                const deleteIconEl = document.createElement("i");
+                deleteIconEl.classList.add("fa-solid", "fa-trash");
+                deleteBtnEl.appendChild(deleteIconEl);
+                deleteBtnEl.appendChild(document.createTextNode(i18n.lookUp("delete")));
+                reviewHeaderEl.appendChild(deleteBtnEl);
+
+                deleteBtnEl.addEventListener("click", async () => {
+                    const confirm = await openModal(
+                        i18n.lookUp("modal_content_confirm")[5].title,
+                        i18n.lookUp("modal_content_confirm")[5].message
+                    );
+                    if (!confirm) {
+                        return;
+                    }
+
+                    const param = {
+                        "photoid": data.photoid,
+                        "uid": parseInt(review.reviewer, 10),
+                        "adminUid": uid,
+                        "adminToken": token
+                    }
+                    const result = await postApi(
+                        url + reviewGroup.deleteEndpoint,
+                        param
+                    )
+
+                    if (!result.result) {
+                        const msg = parseInt(result.message, 10);
+                        await openModal(
+                            i18n.lookUp("modal_content_fail")[msg].title,
+                            i18n.lookUp("modal_content_fail")[msg].message
+                        );
+                        return;
+                    }
+                    showBubble(
+                        i18n.lookUp("modal_content_success")[0].message,
+                        "blue",
+                        "#fff"
+                    )
+                    reviewEl.remove();
+                })
+
+                const noteEl = document.createElement("div");
+                noteEl.classList.add("photos-review-note");
+                noteEl.appendChild(
+                    createTextElement(
+                        "span",
+                        "photos-review-field-label",
+                        i18n.lookUp("note")
+                    )
+                );
+                const noteContentEl = createTextElement("p", "photos-review-note-content", review.note);
+                if (review.noteEmpty) {
+                    noteContentEl.classList.add("photos-review-note-empty");
+                }
+                noteEl.appendChild(noteContentEl);
+
+                reviewEl.appendChild(reviewHeaderEl);
+                reviewEl.appendChild(noteEl);
+                reviewsListEl.appendChild(reviewEl);
+            });
+        }
+
+        reviewsSectionEl.appendChild(reviewsListEl);
+        shellEl.appendChild(reviewsSectionEl);
+    });
+
+    if (isRecheck) {
+        const maxScore = Number(data.max_score);
+        const finalScoreSectionEl = document.createElement("section");
+        finalScoreSectionEl.classList.add("photos-review-section");
+        finalScoreSectionEl.appendChild(
+            createTextElement("h5", "photos-review-section-title", i18n.lookUp("confirm_final_score"))
+        );
+
+        const finalScoreFormEl = document.createElement("div");
+        finalScoreFormEl.classList.add("photos-review-final-score-form");
+        const finalScoreInputGroupEl = document.createElement("div");
+        finalScoreInputGroupEl.classList.add("photos-review-final-score-input-group");
+        finalScoreInputGroupEl.appendChild(
+            createTextElement("label", "photos-review-field-label", i18n.lookUp("final_score"))
+        );
+
+        const finalScoreInputEl = document.createElement("input");
+        finalScoreInputEl.type = "text";
+        finalScoreInputEl.inputMode = "decimal";
+        finalScoreInputEl.autocomplete = "off";
+        finalScoreInputEl.classList.add("photos-review-score-input");
+        finalScoreInputEl.placeholder = i18n.lookUp("final_score_range").replace("{max}", displayText(maxScore));
+        if (Number(data.final_score) >= 1) {
+            finalScoreInputEl.value = Number(data.final_score).toFixed(1);
+        }
+        finalScoreInputGroupEl.appendChild(finalScoreInputEl);
+        finalScoreInputGroupEl.appendChild(
             createTextElement(
-                "div",
-                "photos-review-empty",
-                i18n.lookUp("score_empty")
+                "p",
+                "photos-review-final-score-hint",
+                i18n.lookUp("final_score_range").replace("{max}", displayText(maxScore))
             )
         );
-    } else {
-        reviews.forEach((review) => {
-            const reviewEl = document.createElement("article");
-            reviewEl.classList.add("photos-review-item");
+        finalScoreFormEl.appendChild(finalScoreInputGroupEl);
 
-            const reviewHeaderEl = document.createElement("div");
-            reviewHeaderEl.classList.add("photos-review-item-header");
-
-            const reviewerEl = document.createElement("div");
-            reviewerEl.classList.add("photos-review-reviewer");
-            reviewerEl.appendChild(createTextElement("span", "photos-review-field-label", "UID"));
-            reviewerEl.appendChild(createTextElement("strong", "photos-review-reviewer-value", review.reviewer));
-            reviewHeaderEl.appendChild(reviewerEl);
-
-            const scoreEl = document.createElement("div");
-            scoreEl.classList.add("photos-review-score");
-            scoreEl.appendChild(
-                createTextElement(
-                    "span",
-                    "photos-review-field-label",
-                    i18n.lookUp("score")
-                )
-            );
-            scoreEl.appendChild(createTextElement("strong", "photos-review-score-value", review.score));
-            reviewHeaderEl.appendChild(scoreEl);
-
-            const deleteBtnEl = document.createElement("button");
-            deleteBtnEl.type = "button";
-            deleteBtnEl.classList.add("photos-review-delete-btn");
-            deleteBtnEl.title = i18n.lookUp("delete");
-            const deleteIconEl = document.createElement("i");
-            deleteIconEl.classList.add("fa-solid", "fa-trash");
-            deleteBtnEl.appendChild(deleteIconEl);
-            deleteBtnEl.appendChild(document.createTextNode(i18n.lookUp("delete")));
-            reviewHeaderEl.appendChild(deleteBtnEl);
-
-            deleteBtnEl.addEventListener("click", async () => {
-                const confirm = await openModal(
-                    i18n.lookUp("modal_content_confirm")[5].title,
-                    i18n.lookUp("modal_content_confirm")[5].message
+        const submitFinalScoreBtnEl = document.createElement("button");
+        submitFinalScoreBtnEl.type = "button";
+        submitFinalScoreBtnEl.classList.add("photos-review-btn");
+        const submitFinalScoreIconEl = document.createElement("i");
+        submitFinalScoreIconEl.classList.add("fa-solid", "fa-check");
+        submitFinalScoreBtnEl.appendChild(submitFinalScoreIconEl);
+        submitFinalScoreBtnEl.appendChild(document.createTextNode(i18n.lookUp("submit")));
+        submitFinalScoreBtnEl.addEventListener("click", async () => {
+            const scoreText = finalScoreInputEl.value.trim();
+            const score = Number(scoreText);
+            const validPrecision = /^\d+(?:\.\d)?$/.test(scoreText);
+            if (!validPrecision || !Number.isFinite(score) || score < 1 || score > maxScore) {
+                await openModal(
+                    i18n.lookUp("error"),
+                    i18n.lookUp("final_score_invalid").replace("{max}", displayText(maxScore))
                 );
-                if (!confirm) {
-                    return;
-                }
-
-                const param = {
-                    "photoid": data.photoid,
-                    "uid": parseInt(review.reviewer, 10),
-                    "adminUid": uid,
-                    "adminToken": token
-                }
-                const result = await postApi(
-                    url + "/api/review/delete_score",
-                    param
-                )
-
-                if (!result.result) {
-                    const msg = parseInt(result.message, 10);
-                    await openModal(
-                        i18n.lookUp("modal_content_fail")[msg].title,
-                        i18n.lookUp("modal_content_fail")[msg].message
-                    );
-                    return;
-                }
-                showBubble(
-                    i18n.lookUp("modal_content_success")[0].message,
-                    "blue",
-                    "#fff"
-                )
-                reviewEl.remove();
-            })
-
-            const noteEl = document.createElement("div");
-            noteEl.classList.add("photos-review-note");
-            noteEl.appendChild(
-                createTextElement(
-                    "span",
-                    "photos-review-field-label",
-                    i18n.lookUp("note")
-                )
-            );
-            const noteContentEl = createTextElement("p", "photos-review-note-content", review.note);
-            if (review.noteEmpty) {
-                noteContentEl.classList.add("photos-review-note-empty");
+                return;
             }
-            noteEl.appendChild(noteContentEl);
 
-            reviewEl.appendChild(reviewHeaderEl);
-            reviewEl.appendChild(noteEl);
-            reviewsListEl.appendChild(reviewEl);
+            submitFinalScoreBtnEl.disabled = true;
+            const result = await postApi(url + "/api/review/final", {
+                photoid: Number(data.photoid),
+                uid,
+                token,
+                score
+            });
+            submitFinalScoreBtnEl.disabled = false;
+            if (!result.result) {
+                const msg = parseInt(result.message, 10);
+                await openModal(
+                    i18n.lookUp("modal_content_fail")[msg]?.title || i18n.lookUp("error"),
+                    i18n.lookUp("modal_content_fail")[msg]?.message || result.message
+                );
+                return;
+            }
+            finalScoreInputEl.value = score.toFixed(1);
+            showBubble(i18n.lookUp("final_score_saved"), "blue", "#fff");
         });
+        finalScoreFormEl.appendChild(submitFinalScoreBtnEl);
+        finalScoreSectionEl.appendChild(finalScoreFormEl);
+        shellEl.appendChild(finalScoreSectionEl);
     }
-
-    reviewsSectionEl.appendChild(reviewsListEl);
-    shellEl.appendChild(reviewsSectionEl);
     bodyEl.replaceChildren(shellEl);
 
     closeBtnEl.onclick = closeModal;
@@ -421,9 +519,9 @@ async function renderReviewDataModal(data) {
     modalNum++;
 }
 
-async function previewPhotoReviewData(photoId) {
+async function previewPhotoReviewData(photoId, type = 0) {
     const result = await getApi(
-        url + "/api/review/fetch_photo_data?adminUid=" + uid
+        url + "/api/result/fetch_photo_data?adminUid=" + uid
         + "&adminToken=" + encodeURIComponent(token)
         + "&photoid=" + photoId
     );
@@ -435,7 +533,7 @@ async function previewPhotoReviewData(photoId) {
         );
         return;
     }
-    await renderReviewDataModal(result.data || {});
+    await renderReviewDataModal(result.data || {}, type);
 }
 
 function createManagePhotoRow(photo, index) {
@@ -470,19 +568,10 @@ function createManagePhotoRow(photo, index) {
 
     const previewBtnEl = document.createElement("span");
     previewBtnEl.classList.add("btn", "edit");
-    previewBtnEl.title = "preview";
+    previewBtnEl.title = i18n.lookUp("preview");
     previewBtnEl.innerHTML = `<i class="fa-solid fa-eye"></i>`;
     previewBtnEl.addEventListener("click", async () => {
-        const result = await getApi(url + `/api/review/fetch_photo_data?adminUid=${uid}&adminToken=${token}&photoid=${photo.id}`);
-        if (!result.result) {
-            const msg = parseInt(result.message, 10);
-            await openModal(
-                i18n.lookUp("modal_content_fail")[msg]?.title || "Error",
-                i18n.lookUp("modal_content_fail")[msg]?.message || result.message
-            );
-            return;
-        }
-        await renderReviewDataModal(result.data || {});
+        previewPhotoReviewData(photo.id);
     });
     actionGroupEl.appendChild(previewBtnEl);
 

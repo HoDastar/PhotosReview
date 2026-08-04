@@ -2,6 +2,7 @@ package com.hodastar.photosreview.controllers;
 
 import com.hodastar.photosreview.entities.EntityReviewPhotos;
 import com.hodastar.photosreview.entities.EntityReviewProj;
+import com.hodastar.photosreview.entities.EntityReviewRecheck;
 import com.hodastar.photosreview.entities.EntityReviewUsers;
 import com.hodastar.photosreview.mappers.ProjMapper;
 import com.hodastar.photosreview.mappers.ReviewMapper;
@@ -36,6 +37,7 @@ public class ProjAPI {
     private static final Logger log =
             LoggerFactory.getLogger(ProjAPI.class);
     private final Map<Integer, Long> progressAllCooldown = new ConcurrentHashMap<>();
+    private ObjectMapper jsonMapper = new ObjectMapper();
 
     public ProjAPI(ProjMapper projMapper, UserMapper userMapper, ReviewMapper reviewMapper) {
         this.projMapper = projMapper;
@@ -111,7 +113,7 @@ public class ProjAPI {
             return new Respond<>(false, "14", null);
         }
 
-        if (projOpt.get().status != 1) {
+        if (projOpt.get().status != 1 && projOpt.get().status != 3) {
             return new Respond<>(false, "24", null);
         }
 
@@ -121,6 +123,48 @@ public class ProjAPI {
         for (EntityReviewUsers user : users) {
             uidNameMap.put(String.valueOf(user.uid), user.allname);
         }
+
+        if (projOpt.get().status == 3) {
+            List<HashMap<String, Object>> data = new java.util.ArrayList<>();
+            if (projOpt.get().recheck == null || projOpt.get().recheck.isBlank()) {
+                return new Respond<>(true, "success", data);
+            }
+
+            List<String> recheckUsers = jsonMapper.readValue(
+                    projOpt.get().recheck,
+                    new tools.jackson.core.type.TypeReference<List<String>>() {}
+            );
+            if (recheckUsers == null || recheckUsers.isEmpty()) {
+                return new Respond<>(true, "success", data);
+            }
+
+            List<EntityReviewRecheck> recheckPhotos = reviewMapper.getRecheckPhotos(projOpt.get().projId);
+            for (String uid : new LinkedHashSet<>(recheckUsers)) {
+                int read = 0;
+                for (EntityReviewRecheck photo : recheckPhotos) {
+                    if (photo.value == null || photo.value.isBlank()) {
+                        continue;
+                    }
+                    HashMap<String, List<Object>> value = jsonMapper.readValue(
+                            photo.value,
+                            new tools.jackson.core.type.TypeReference<HashMap<String, List<Object>>>() {}
+                    );
+                    if (value.containsKey(uid) && value.get(uid) != null) {
+                        read++;
+                    }
+                }
+
+                HashMap<String, Object> userProgress = new HashMap<>();
+                userProgress.put("uid", uid);
+                userProgress.put("allname", uidNameMap.getOrDefault(uid, uid));
+                userProgress.put("all", recheckPhotos.size());
+                userProgress.put("read", read);
+                userProgress.put("remaining", recheckPhotos.size() - read);
+                data.add(userProgress);
+            }
+            return new Respond<>(true, "success", data);
+        }
+
         HashMap<String, List<List<Integer>>> taskAll = jsonMapper.readValue(
                 projOpt.get().task,
                 new tools.jackson.core.type.TypeReference<HashMap<String, List<List<Integer>>>>() {}
@@ -204,11 +248,9 @@ public class ProjAPI {
             return new Respond<>(false, "28", null);
         }
         progressAllCooldown.put(adminUid, now);
-
-        ObjectMapper jsonMapper = new ObjectMapper();
         // 工程列表
         List<EntityReviewProj> projList = projMapper.getProjList().stream()
-                .filter(proj -> proj.status == 1)
+                .filter(proj -> proj.status == 1 || proj.status == 3)
                 .toList();
         // 用户列表
         Map<String, String> uidNameMap = userMapper.getUserList().stream()
@@ -220,6 +262,43 @@ public class ProjAPI {
         Map<String, HashMap<String, Object>> resultMap = new HashMap<>();
 
         for (EntityReviewProj proj : projList) {
+            if (proj.status == 3) {
+                if (proj.recheck == null || proj.recheck.isBlank()) {
+                    continue;
+                }
+                List<String> recheckUsers = jsonMapper.readValue(
+                        proj.recheck,
+                        new tools.jackson.core.type.TypeReference<List<String>>() {}
+                );
+                if (recheckUsers == null || recheckUsers.isEmpty()) {
+                    continue;
+                }
+
+                List<EntityReviewRecheck> recheckPhotos = reviewMapper.getRecheckPhotos(proj.projId);
+                for (String uid : new LinkedHashSet<>(recheckUsers)) {
+                    int read = 0;
+                    for (EntityReviewRecheck photo : recheckPhotos) {
+                        if (photo.value == null || photo.value.isBlank()) {
+                            continue;
+                        }
+                        HashMap<String, List<Object>> value = jsonMapper.readValue(
+                                photo.value,
+                                new tools.jackson.core.type.TypeReference<HashMap<String, List<Object>>>() {}
+                        );
+                        if (value.containsKey(uid) && value.get(uid) != null) {
+                            read++;
+                        }
+                    }
+
+                    HashMap<String, Object> userData = resultMap.getOrDefault(uid, new HashMap<>());
+                    userData.put("uid", uid);
+                    userData.put("allname", uidNameMap.getOrDefault(uid, uid));
+                    userData.put("all", ((int) userData.getOrDefault("all", 0)) + recheckPhotos.size());
+                    userData.put("read", ((int) userData.getOrDefault("read", 0)) + read);
+                    resultMap.put(uid, userData);
+                }
+                continue;
+            }
             // 任务列表
             HashMap<String, List<List<Integer>>> taskAll = jsonMapper.readValue(
                     proj.task,
@@ -644,15 +723,26 @@ public class ProjAPI {
             @RequestBody HashMap<String, Object> body
     ) {
         // 检查参数
-        if (!body.containsKey("projId") || !body.containsKey("task") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
+        if (!body.containsKey("projId") ||
+            !body.containsKey("task") ||
+            !body.containsKey("recheck") ||
+            !body.containsKey("adminUid") ||
+            !body.containsKey("adminToken")
+        ) {
             return new Respond<>(false, "1", null);
         }
-        if (!(body.get("projId") instanceof String) || !(body.get("task") instanceof String) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
+        if (!(body.get("projId") instanceof String) ||
+            !(body.get("task") instanceof String) ||
+            !(body.get("recheck") instanceof String) ||
+            !(body.get("adminUid") instanceof Integer) ||
+            !(body.get("adminToken") instanceof String)
+        ) {
             return new Respond<>(false, "1", null);
         }
 
         String projId = (String) body.get("projId");
         String task = (String) body.get("task");
+        String recheck = (String) body.get("recheck");
         int adminUid = (Integer) body.get("adminUid");
         String adminToken = (String) body.get("adminToken");
 
@@ -668,7 +758,7 @@ public class ProjAPI {
         }
 
         // 更新数据库
-        Boolean result = projMapper.updateProjTask(projId, task);
+        Boolean result = projMapper.updateProjTask(projId, task, recheck);
         if (!result) {
             return new Respond<>(false, "0", null);
         }
@@ -853,8 +943,7 @@ public class ProjAPI {
 
         Boolean updated;
         if (recheck) {
-            String originalValue = photoOpt.get().value == null ? "{}" : photoOpt.get().value;
-            updated = projMapper.addRecheck(photoId, projId, originalValue);
+            updated = projMapper.addRecheck(photoId, projId);
         } else {
             updated = projMapper.deleteRecheck(photoId, projId);
         }

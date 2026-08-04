@@ -231,7 +231,7 @@
                     a_status = i18n.lookUp("rechecking");
                     a_status_color = 'color_purple';
                     btlist = `
-                        <button onclick=""><i class="fa-solid fa-rocket"></i> ${i18n.lookUp("coming_soon")}</button>
+                        <button onclick="go_url('proj.html?proj=${proj.proj_id}&type=recheck',1)"><i class="fa-solid fa-check-double"></i> ${i18n.lookUp("recheck_mode")}</button>
                         `
                     break;
 

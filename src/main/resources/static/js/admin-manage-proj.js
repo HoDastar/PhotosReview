@@ -206,6 +206,7 @@ async function loadManageDist(index, id) {
         return;
     }
     const distributionContainerEl = document.getElementById("distributionContainer");
+    const recheckDistributionContainerEl = document.getElementById("recheckDistributionContainer");
     const manageProjNameEl = document.getElementById("manageProjName");
     const manageTotalEl = document.getElementById("manageTotal");
 
@@ -216,7 +217,8 @@ async function loadManageDist(index, id) {
     manageTotalEl.innerHTML = total;
 
     // 获取当前项目的task分发列表
-    currentTaskList = JSON.parse(projList[index].task);
+    currentPreliminaryTaskList = JSON.parse(projList[index].task);
+    currentRecheckTaskList = JSON.parse(projList[index].recheck);
 
     /**
      * 通过uid和第n项修改first和end
@@ -227,44 +229,58 @@ async function loadManageDist(index, id) {
      */
     const editTask = (uid, n, first, end) => {
         const uidStr = String(uid);
-        currentTaskList[uidStr][n] = [first, end];
-        render();
+        currentPreliminaryTaskList[uidStr][n] = [first, end];
+        renderP();
     }
     /**
      * 新增此uid用户一项任务
      * @param uid uid
      * @param first first
      * @param end end
+     * @param type 0:初审 1:复审
      */
-    const addTask = (uid, first, end) => {
+    const addTask = (uid, first, end, type = 0) => {
         const uidStr = String(uid);
-        // 判断是不是第一个
-        if (Object.keys(currentTaskList).length === 0) {
-        }
-        if (currentTaskList[uidStr]) {
-            currentTaskList[uidStr].push([first, end]);
+        if (type === 0){
+            // 判断是不是第一个
+            if (Object.keys(currentPreliminaryTaskList).length === 0) {
+            }
+            if (currentPreliminaryTaskList[uidStr]) {
+                currentPreliminaryTaskList[uidStr].push([first, end]);
+            } else {
+                currentPreliminaryTaskList[uidStr] = [[first, end]];
+            }
+            renderP();
+        } else if (type === 1) {
+            currentRecheckTaskList.push(uidStr);
+            renderR();
         } else {
-            currentTaskList[uidStr] = [[first, end]];
+            return;
         }
-        render();
     }
     /**
      * 删除此uid用户的第n项任务
      * @param uid
      * @param n
+     * @param type 0:初审 1:复审
      */
-    const delTask = (uid, n) => {
+    const delTask = (uid, n, type = 0) => {
         const uidStr = String(uid);
-        if (currentTaskList[uidStr]) {
-            currentTaskList[uidStr].splice(n, 1);
-            if (currentTaskList[uidStr].length === 0) {
-                delete currentTaskList[uidStr];
+        if (type === 0) {
+            if (currentPreliminaryTaskList[uidStr]) {
+                currentPreliminaryTaskList[uidStr].splice(n, 1);
+                if (currentPreliminaryTaskList[uidStr].length === 0) {
+                    delete currentPreliminaryTaskList[uidStr];
+                }
+                renderP();
             }
-            render();
+        } else if (type === 1) {
+            currentRecheckTaskList = currentRecheckTaskList.filter(item => item !== uidStr);
+            renderR();
         }
     }
     // 渲染
-    const render = () => {
+    const renderP = () => {
         distributionContainerEl.innerHTML = "";
 
         /**
@@ -317,7 +333,7 @@ async function loadManageDist(index, id) {
          * @End
          */
 
-        if (Object.keys(currentTaskList).length === 0) {
+        if (Object.keys(currentPreliminaryTaskList).length === 0) {
             const trEl = document.createElement("tr");
             const tdEl = document.createElement("td");
             tdEl.colSpan = 4;
@@ -326,7 +342,7 @@ async function loadManageDist(index, id) {
             distributionContainerEl.appendChild(trEl);
         } else {
             // UID的所有任务
-            Object.entries(currentTaskList).forEach(([uid, tasks]) => {
+            Object.entries(currentPreliminaryTaskList).forEach(([uid, tasks]) => {
                 // UID下的每一项任务
                 tasks.forEach((task, index) => {
                     // 创建行
@@ -446,8 +462,100 @@ async function loadManageDist(index, id) {
         });
     }
 
+    const renderR = () => {
+        recheckDistributionContainerEl.innerHTML = "";
+
+        /**
+         * 添加表单
+         * @Begin
+         */
+            // UID
+        const addEl = document.createElement("tr");
+        const addUidTdEl = document.createElement("td");
+        addUidTdEl.classList.add("text-edit");
+        const addUidInputEl = document.createElement("input");
+        addUidInputEl.classList.add("text-input", "on-distribution");
+        addUidInputEl.setAttribute("autocomplete", "off");
+        addUidInputEl.placeholder = "UID";
+        addUidTdEl.appendChild(addUidInputEl);
+        addEl.appendChild(addUidTdEl);
+
+        // add按钮
+        const addBtnTdEl = document.createElement("td");
+        const addBtnEl = document.createElement("span");
+        addBtnEl.classList.add("btn", "edit");
+        addBtnEl.title = i18n.lookUp("add");
+        addBtnEl.innerHTML = `<i class="fa-solid fa-circle-plus"></i>`;
+        addBtnTdEl.appendChild(addBtnEl);
+        addEl.appendChild(addBtnTdEl);
+
+        recheckDistributionContainerEl.appendChild(addEl);
+
+        // 注册Add表单
+        addBtnEl.addEventListener("click", () => {
+            const uid = parseInt(addUidInputEl.value, 10);
+            if (isNaN(uid) || uid <= 0) {
+                openModal(
+                    i18n.lookUp("modal_content_fail")[17].title,
+                    i18n.lookUp("modal_content_fail")[17].message
+                );
+                return;
+            }
+            addTask(uid, 0, 0, 1);
+        });
+
+        /**
+         * 添加表单
+         * @End
+         */
+
+        if (currentRecheckTaskList.length === 0) {
+            const trEl = document.createElement("tr");
+            const tdEl = document.createElement("td");
+            tdEl.colSpan = 4;
+            tdEl.innerHTML = i18n.lookUp("no_task");
+            trEl.appendChild(tdEl);
+            recheckDistributionContainerEl.appendChild(trEl);
+        } else {
+            // UID的所有任务
+            currentRecheckTaskList.forEach((uid, index) => {
+                // 创建行
+                const trEl = document.createElement("tr");
+
+                // UID列
+                const uidTdEl = document.createElement("td");
+                uidTdEl.classList.add("text-edit");
+                uidTdEl.innerHTML = uid;
+                uidTdEl.style.cursor = 'default';
+                trEl.appendChild(uidTdEl);
+
+                // 删除按钮
+                const delTdEl = document.createElement("td");
+                const delBtnEl = document.createElement("span");
+                delBtnEl.classList.add("btn", "del");
+                delBtnEl.title = i18n.lookUp("delete");
+                delBtnEl.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+                // 删除按钮事件
+                delBtnEl.addEventListener("click",async  () => {
+                    let confirm = await openModal(
+                        i18n.lookUp("modal_content_confirm")[4].title,
+                        i18n.lookUp("modal_content_confirm")[4].message
+                    );
+                    if (confirm) {
+                        delTask(uid, index, 1);
+                    }
+                });
+                delTdEl.appendChild(delBtnEl);
+                trEl.appendChild(delTdEl);
+
+                recheckDistributionContainerEl.appendChild(trEl);
+            });
+        }
+    }
+
     // 首次渲染
-    render();
+    renderP();
+    renderR();
 }
 async function refreshManageProjectInfo() {
     await getProj();
@@ -507,10 +615,12 @@ async function saveManageProj() {
 }
 // Save Manage Distribution
 async function saveManageDist() {
-    const task = JSON.stringify(currentTaskList);
+    const task = JSON.stringify(currentPreliminaryTaskList);
+    const recheck = JSON.stringify(currentRecheckTaskList);
     const param = {
         projId: currentManageProjId,
         task: task,
+        recheck: recheck,
         adminUid: uid,
         adminToken: token
     }

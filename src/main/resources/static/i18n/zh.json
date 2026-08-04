@@ -7,6 +7,7 @@
     "project_status": "工程状态",
     "author": "作者",
     "upload": "上传",
+    "recheck": "复审",
     "thumbnail": "缩略图",
     "photos_pool": "图集",
     "create_project": "新建工程",
@@ -59,6 +60,7 @@
     "coming_soon": "等待中",
     "project_mode": "工程模式",
     "history_mode": "历史模式",
+    "recheck_mode": "复审模式",
     "view_results": "查看结果",
     "preliminary_results": "初审结果",
     "fetch_results": "获取初审结果",
@@ -72,6 +74,12 @@
     "preliminary_average": "初审平均分",
     "preliminary_variance": "初审方差",
     "dispute_list": "争议列表",
+    "dispute_index": "争议指数",
+    "dispute_reasons": "争议原因",
+    "dispute_reason_large_dispersion": "评分离散较大",
+    "dispute_reason_large_range": "评分极差较大",
+    "dispute_reason_polarization": "评分存在两极化",
+    "dispute_reason_outlier": "存在离群评分",
     "recheck_status": "复审状态",
     "disputed": "有争议",
     "include_in_recheck": "列入复审",
@@ -101,6 +109,8 @@
     "operation": "操作",
     "add_task": "添加任务",
     "task_list": "任务列表",
+    "preliminary_task": "初审任务",
+    "recheck_task": "复审任务",
     "dblclick_to_edit": "双击编辑",
     "allname": "姓名",
     "input_allname": "请输入姓名...",
@@ -137,6 +147,16 @@
     "failed_rows": "失败个数：",
     "batch_delete": "批量删除",
     "description_batch_delete": "删除选中项，请谨慎操作！",
+    "uid": "UID",
+    "yes": "是",
+    "no": "否",
+    "preliminary_scoring_details": "初审评分详情",
+    "recheck_scoring_details": "复审评分详情",
+    "confirm_final_score": "确定最终分数",
+    "final_score": "最终分数",
+    "final_score_range": "请输入 1 到 {max} 之间、精度为 0.1 的小数",
+    "final_score_invalid": "最终分数必须在 1 到 {max} 之间，小数点后 0.1。",
+    "final_score_saved": "最终分数已保存。",
     "modal_content_fail": [
         {
             "index": 0,
@@ -276,7 +296,7 @@
         {
             "index": 27,
             "title": "警告",
-            "message": "该用户未加入本工程。"
+            "message": "该用户未加入本工程的初审。"
         },
         {
             "index": 28,
@@ -287,6 +307,26 @@
           "index": 29,
           "title": "警告",
           "message": "该账号已被封禁。"
+        },
+        {
+          "index": 30,
+          "title": "警告",
+          "message": "该工程未开始复审或已结束。"
+        },
+        {
+          "index": 31,
+          "title": "警告",
+          "message": "该用户未加入本工程的复审。"
+        },
+        {
+          "index": 32,
+          "title": "警告",
+          "message": "复审模式下必须填写批注。"
+        },
+        {
+          "index": 33,
+          "title": "警告",
+          "message": "分数大小超出范围。"
         }
     ],
     "modal_content_success": [

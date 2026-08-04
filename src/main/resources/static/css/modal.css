@@ -222,7 +222,7 @@
 
 .photos-review-summary {
       display: grid;
-      grid-template-columns: minmax(110px, 0.7fr) minmax(180px, 1.7fr) minmax(140px, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
 }
 
@@ -308,7 +308,8 @@
       color: var(--color-fg-secondary);
       font-style: italic;
 }
-.photos-review-delete-btn {
+
+.photos-review-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -318,22 +319,57 @@
       border: 1px solid var(--color-border);
       border-radius: 999px;
       background: var(--color-bg);
-      color: var(--color-fg);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
       cursor: pointer;
       font: inherit;
       font-size: 13px;
       transition: all 0.5s;
 }
 
-.photos-review-delete-btn:hover {
-    border: 1px solid red;
-    color: red;
+.photos-review-btn.delete {
+      border-color: red;
+      color: red;
 }
 
-.photos-review-delete-btn:disabled {
+.photos-review-btn:disabled {
       color: var(--color-fg-disabled);
       cursor: not-allowed;
       opacity: 0.65;
+}
+
+.photos-review-final-score-form {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+}
+
+.photos-review-final-score-input-group {
+      flex: 1 1 auto;
+      min-width: 0;
+}
+
+.photos-review-score-input {
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 38px;
+      padding: 8px 10px;
+      border: 1px solid var(--color-border2);
+      border-radius: 6px;
+      background: var(--color-input-bg);
+      color: var(--color-input-fg);
+      font: inherit;
+}
+
+.photos-review-score-input:focus {
+      border-color: var(--color-primary);
+      outline: none;
+}
+
+.photos-review-final-score-hint {
+      margin: 6px 0 0;
+      color: var(--color-fg-secondary);
+      font-size: 12px;
 }
 
 .photos-review-empty {
@@ -361,8 +397,13 @@
             grid-template-columns: 1fr;
       }
 
-      .photos-review-delete-btn {
+      .photos-review-btn {
             justify-self: start;
+      }
+
+      .photos-review-final-score-form {
+            align-items: stretch;
+            flex-direction: column;
       }
 }
 .confirm-btn {
