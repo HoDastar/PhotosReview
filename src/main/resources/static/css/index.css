@@ -176,13 +176,8 @@
 .footer {
     text-align: center;
     background-color: var(--color-bg2);
-    color: #fff;
+    color: var(--color-fg);
     padding: 30px;
-}
-
-.click_me {
-    text-decoration: underline;
-    cursor: pointer;
 }
 
 @media (min-width: 761px) and (max-width: 1040px) {

@@ -8,6 +8,7 @@ async function loadManageGallery(index, id, updateHistory = true) {
     }
     currentManageProjId = id;
     goPage("manageGallery", updateHistory);
+    await loadManageDist(index, id);
     loadManagePhotosList();
 }
 
@@ -504,6 +505,9 @@ async function renderReviewDataModal(data, type) {
                 return;
             }
             finalScoreInputEl.value = score.toFixed(1);
+            if (typeof refreshRecheckList === "function") {
+                await refreshRecheckList(false);
+            }
             showBubble(i18n.lookUp("final_score_saved"), "blue", "#fff");
         });
         finalScoreFormEl.appendChild(submitFinalScoreBtnEl);
@@ -571,6 +575,10 @@ function createManagePhotoRow(photo, index) {
     previewBtnEl.title = i18n.lookUp("preview");
     previewBtnEl.innerHTML = `<i class="fa-solid fa-eye"></i>`;
     previewBtnEl.addEventListener("click", async () => {
+        document.getElementById("managePhotosTableBody").querySelectorAll("tr").forEach(el => {
+            el.removeAttribute("class");
+        })
+        trEl.classList.add("mark");
         previewPhotoReviewData(photo.id);
     });
     actionGroupEl.appendChild(previewBtnEl);
@@ -638,6 +646,7 @@ function renderManagePhotosPage() {
     const prevBtnEl = document.getElementById("managePhotosPrevPage");
     const nextBtnEl = document.getElementById("managePhotosNextPage");
     const pageSizeSelectEl = document.getElementById("managePhotosPageSize");
+    const selectCurrentPageEl = document.getElementById("selectCurrentManagePhotosPage");
 
     if (!managePhotosTableBodyEl || !photosTotalEl) {
         return;
@@ -647,6 +656,11 @@ function renderManagePhotosPage() {
     managePhotosTableBodyEl.innerHTML = "";
     const length = currentManagePhotosList.length;
     photosTotalEl.innerHTML = String(length);
+
+    if (selectCurrentPageEl) {
+        selectCurrentPageEl.checked = false;
+        selectCurrentPageEl.disabled = length === 0;
+    }
 
     if (pageSizeSelectEl) {
         pageSizeSelectEl.value = String(managePhotosPageSize);
@@ -724,6 +738,25 @@ function initManagePhotosPagination() {
         return;
     }
     paginationEl.dataset.initialized = "true";
+
+    const selectCurrentPageEl = document.getElementById("selectCurrentManagePhotosPage");
+    const managePhotosTableBodyEl = document.getElementById("managePhotosTableBody");
+    selectCurrentPageEl?.addEventListener("change", () => {
+        managePhotosTableBodyEl?.querySelectorAll('input[name="input_manage_photo"]')
+            .forEach((checkboxEl) => {
+                checkboxEl.checked = selectCurrentPageEl.checked;
+            });
+    });
+    managePhotosTableBodyEl?.addEventListener("change", (event) => {
+        if (!event.target.matches('input[name="input_manage_photo"]') || !selectCurrentPageEl) {
+            return;
+        }
+        const pageCheckboxes = Array.from(
+            managePhotosTableBodyEl.querySelectorAll('input[name="input_manage_photo"]')
+        );
+        selectCurrentPageEl.checked = pageCheckboxes.length > 0
+            && pageCheckboxes.every((checkboxEl) => checkboxEl.checked);
+    });
 
     // 上一页：页码减一后重新渲染列表。
     document.getElementById("managePhotosPrevPage")?.addEventListener("click", () => {

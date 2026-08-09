@@ -5,7 +5,8 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Admin</title>
-    <link rel="stylesheet" href="css/root.css">
+    <script src="js/theme-init.js?v=0.1"></script>
+    <link rel="stylesheet" href="css/root.css?v=0.7">
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/input.css">
     <link rel="stylesheet" href="css/modal.css">
@@ -83,6 +84,8 @@
                     data-i18n="manage_user">Manage User</span></button>
             <button class="panel-btn" data-page="viewProgress"><i class="fa-solid fa-chart-line"></i> <span
                     data-i18n="view_progress">View Progress</span></button>
+            <button class="panel-btn" data-page="outputData"><i class="fa-solid fa-file-export"></i> <span
+                    data-i18n="output">Output</span></button>
             <button class="panel-btn" data-page="systemSettings"><i class="fa-solid fa-gear"></i> <span data-i18n="settings"></span></button>
             <div class="icon-toggle-group">
                 <button class="icon-toggle" id="darkToggle" data-i18n-title="switch_theme">
@@ -314,66 +317,6 @@
                 <button class="button-common" id="saveManageProj" data-i18n="save">Save</button>
             </div>
 
-            <hr>
-
-            <h3 class="subtitle"><span data-i18n="preliminary_task"></span></h3>
-            <table class="common-table">
-                <thead>
-                <tr>
-                    <th>UID</th>
-                    <th><span data-i18n="first"></span></th>
-                    <th><span data-i18n="last"></span></th>
-                    <th><span data-i18n="operation"></span></th>
-                </tr>
-                </thead>
-                <tbody id="distributionContainer">
-                    <tr>
-                        <td class="text-edit"><input class="text-input on-distribution" placeholder="UID" /></td>
-                        <td class="text-edit"><input class="text-input on-distribution" data-i18n-placeholder="first" /></td>
-                        <td class="text-edit"><input class="text-input on-distribution" data-i18n-placeholder="last" /></td>
-                        <td>
-                            <span class="btn edit"><i class="fa-solid fa-circle-plus"></i></span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-edit">10010</td>
-                        <td class="text-edit">0</td>
-                        <td class="text-edit">999</td>
-                        <td>
-                            <span class="btn del"><i class="fa-solid fa-trash"></i></span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <h3 class="subtitle"><span data-i18n="recheck_task"></span></h3>
-            <table class="common-table">
-                <thead>
-                <tr>
-                    <th>UID</th>
-                    <th><span data-i18n="operation"></span></th>
-                </tr>
-                </thead>
-                <tbody id="recheckDistributionContainer">
-                <tr>
-                    <td class="text-edit"><input class="text-input on-distribution" placeholder="UID" /></td>
-                    <td>
-                        <span class="btn edit"><i class="fa-solid fa-circle-plus"></i></span>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-edit">10010</td>
-                    <td>
-                        <span class="btn del"><i class="fa-solid fa-trash"></i></span>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-
-            <div class="form-submit">
-                <button class="button-common" id="cancelManageDist" data-i18n="cancel">Cancel</button>
-                <button class="button-common" id="saveManageDist" data-i18n="save">Save</button>
-            </div>
-
         </section>
 
         <section class="viewer" id="manageGallery" style="display: none;">
@@ -448,7 +391,11 @@
             <table class="common-table form-manage-photos">
                 <thead>
                     <tr>
-                        <th>Photoid</th>
+                        <th>
+                            <label class="checkbox">
+                                <input type="checkbox" id="selectCurrentManagePhotosPage"><span class="box"></span>Photoid
+                            </label>
+                        </th>
                         <th><span data-i18n="thumbnail"></span></th>
                         <th><span data-i18n="author"></span></th>
                         <th><span data-i18n="operation"></span></th>
@@ -483,6 +430,66 @@
                         <span data-i18n="download">Download</span>
                     </button>
                 </div>
+            </div>
+
+            <hr>
+
+            <h3 class="subtitle"><span data-i18n="preliminary_task"></span></h3>
+            <table class="common-table">
+                <thead>
+                <tr>
+                    <th>UID</th>
+                    <th><span data-i18n="first"></span></th>
+                    <th><span data-i18n="last"></span></th>
+                    <th><span data-i18n="operation"></span></th>
+                </tr>
+                </thead>
+                <tbody id="distributionContainer">
+                    <tr>
+                        <td class="text-edit"><input class="text-input on-distribution" placeholder="UID" /></td>
+                        <td class="text-edit"><input class="text-input on-distribution" data-i18n-placeholder="first" /></td>
+                        <td class="text-edit"><input class="text-input on-distribution" data-i18n-placeholder="last" /></td>
+                        <td>
+                            <span class="btn edit"><i class="fa-solid fa-circle-plus"></i></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-edit">10010</td>
+                        <td class="text-edit">0</td>
+                        <td class="text-edit">999</td>
+                        <td>
+                            <span class="btn del"><i class="fa-solid fa-trash"></i></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 class="subtitle"><span data-i18n="recheck_task"></span></h3>
+            <table class="common-table">
+                <thead>
+                <tr>
+                    <th>UID</th>
+                    <th><span data-i18n="operation"></span></th>
+                </tr>
+                </thead>
+                <tbody id="recheckDistributionContainer">
+                <tr>
+                    <td class="text-edit"><input class="text-input on-distribution" placeholder="UID" /></td>
+                    <td>
+                        <span class="btn edit"><i class="fa-solid fa-circle-plus"></i></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-edit">10010</td>
+                    <td>
+                        <span class="btn del"><i class="fa-solid fa-trash"></i></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="form-submit">
+                <button class="button-common" id="cancelManageDist" data-i18n="cancel">Cancel</button>
+                <button class="button-common" id="saveManageDist" data-i18n="save">Save</button>
             </div>
 
             <hr>
@@ -529,8 +536,8 @@
                 <tr>
                     <td class="result-metric-label" data-i18n="preliminary_average"></td>
                     <td class="result-metric-value" id="resultPreliminaryAverage">--</td>
-                    <td class="result-metric-label" data-i18n="preliminary_variance"></td>
-                    <td class="result-metric-value" id="resultPreliminaryVariance">--</td>
+                    <td class="result-metric-label" data-i18n="preliminary_median"></td>
+                    <td class="result-metric-value" id="resultPreliminaryMedian">--</td>
                 </tr>
                 <tr>
                     <td class="result-metric-label" data-i18n="dispute_count"></td>
@@ -543,14 +550,18 @@
             <hr>
 
             <h3 class="subtitle"><span data-i18n="dispute_list"></span></h3>
-            <table class="common-table form-manage-photos">
+            <table class="common-table form-manage-photos" id="disputePhotosTable">
                 <thead>
                 <tr>
-                    <th><span data-i18n="photoid"></span></th>
+                    <th data-sort-key="photoid" aria-sort="none" tabindex="0">
+                        <label class="checkbox">
+                            <input type="checkbox" id="selectCurrentDisputePhotosPage"><span class="box"></span><span data-i18n="photoid"></span>
+                        </label>
+                    </th>
                     <th><span data-i18n="thumbnail"></span></th>
-                    <th><span data-i18n="dispute_index"></span></th>
-                    <th><span data-i18n="dispute_reasons"></span></th>
-                    <th><span data-i18n="recheck_status"></span></th>
+                    <th data-sort-key="disputeIndex" aria-sort="none" tabindex="0"><span data-i18n="dispute_index"></span></th>
+                    <th data-sort-key="disputeReasons" aria-sort="none" tabindex="0"><span data-i18n="dispute_reasons"></span></th>
+                    <th data-sort-key="recheck" aria-sort="descending" tabindex="0"><span data-i18n="recheck_status"></span></th>
                     <th><span data-i18n="operation"></span></th>
                 </tr>
                 </thead>
@@ -574,6 +585,74 @@
                     <span data-i18n="refresh"></span>
                 </button>
             </div>
+            <div class="selected-photo-actions">
+                <div class="selected-photo-actions__title" data-i18n="actions_on_selected_items"></div>
+                <div class="selected-photo-actions__buttons">
+                    <button type="button" class="button-square common" id="includeSelectedDisputePhotos">
+                        <i class="fa-solid fa-circle-plus"></i>
+                        <span data-i18n="include_in_recheck"></span>
+                    </button>
+                    <button type="button" class="button-square del" id="removeSelectedDisputePhotos">
+                        <i class="fa-solid fa-circle-minus"></i>
+                        <span data-i18n="remove_from_recheck"></span>
+                    </button>
+                </div>
+            </div>
+            <hr>
+
+            <h3 class="subtitle"><span data-i18n="build_final_result"></span></h3>
+            <div class="result-fetch-toolbar">
+                <button type="button" class="button-common" id="buildFinalResult">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span data-i18n="build_final_result"></span>
+                </button>
+                <button type="button" class="button-common" id="previewFinalResult">
+                    <i class="fa-solid fa-eye"></i>
+                    <span data-i18n="preview"></span>
+                </button>
+            </div>
+            <div class="form-row">
+                <div class="form-label">
+                    <div class="title" data-i18n="export_photos_by_score_range"></div>
+                    <div class="desc" data-i18n="description_export_photos_by_score_range"></div>
+                </div>
+                <div class="form-control score-range-controls">
+                    <label class="score-range-field" for="exportPhotosMinScore">
+                        <span data-i18n="minimum_score"></span>
+                        <input type="number" class="text-input" id="exportPhotosMinScore"
+                               min="1" max="3" step="0.1" value="1"/>
+                    </label>
+                    <label class="score-range-field" for="exportPhotosMaxScore">
+                        <span data-i18n="maximum_score"></span>
+                        <input type="number" class="text-input" id="exportPhotosMaxScore"
+                               min="1" max="3" step="0.1" value="3"/>
+                    </label>
+                </div>
+            </div>
+            <div class="form-submit">
+                <button type="button" class="button-common" id="exportPhotosByScoreRange">
+                    <i class="fa-solid fa-file-zipper"></i>
+                    <span data-i18n="download"></span>
+                </button>
+            </div>
+            <form id="personalResultPreviewForm">
+                <div class="form-row">
+                    <div class="form-label">
+                        <div class="title" data-i18n="personal_result_preview"></div>
+                        <div class="desc" data-i18n="description_personal_result_preview"></div>
+                    </div>
+                    <div class="form-control">
+                        <input type="text" class="text-input" id="personalResultAuthor"
+                               data-i18n-placeholder="input_author" maxlength="100"/>
+                    </div>
+                </div>
+                <div class="form-submit">
+                    <button type="submit" class="button-common" id="previewPersonalResult">
+                        <i class="fa-solid fa-eye"></i>
+                        <span data-i18n="preview"></span>
+                    </button>
+                </div>
+            </form>
         </section>
 
         <section class="viewer" id="manageUser" style="display: none;">
@@ -661,6 +740,45 @@
             </div>
             <div id="singleProjProgressList" class="progress-list"></div>
         </section>
+
+        <section class="viewer" id="outputData" style="display: none;">
+            <h2><i class="fa-solid fa-file-export"></i> <span data-i18n="output">Output</span></h2>
+
+            <h3 class="subtitle"><span data-i18n="output_project_data"></span></h3>
+            <div class="form-row">
+                <div class="form-label">
+                    <label class="title" for="outputProjectSelect" data-i18n="select_project"></label>
+                    <div class="desc" data-i18n="description_output_project_data"></div>
+                </div>
+                <div class="form-control">
+                    <select class="text-input output-project-select" id="outputProjectSelect"></select>
+                </div>
+            </div>
+            <div class="form-submit">
+                <button type="button" class="button-common" id="downloadProjectData">
+                    <i class="fa-solid fa-file-zipper"></i>
+                    <span data-i18n="download"></span>
+                </button>
+            </div>
+
+            <!--
+            <hr>
+
+            <h3 class="subtitle"><span data-i18n="output_all_project_data"></span></h3>
+            <div class="form-row">
+                <div class="form-label">
+                    <div class="title" data-i18n="all_project_data"></div>
+                    <div class="desc" data-i18n="description_output_all_project_data"></div>
+                </div>
+            </div>
+            <div class="form-submit">
+                <button type="button" class="button-common" id="downloadAllProjectData">
+                    <i class="fa-solid fa-file-zipper"></i>
+                    <span data-i18n="download"></span>
+                </button>
+            </div>
+            -->
+        </section>
     </div>
 </main>
 </body>
@@ -670,10 +788,11 @@
 <script src="./js/i18n.js"></script>
 <script src="./js/url.js"></script>
 <script src="./js/modal.js"></script>
-<script src="./js/view.js"></script>
+<script src="./js/view.js?v=0.1"></script>
 <script src="./js/admin-create.js"></script>
 <script src="./js/admin-manage-proj.js"></script>
 <script src="js/admin-manage-gallery.js"></script>
+<script src="js/admin-output.js"></script>
 <script src="js/admin-result.js"></script>
 <script src="./js/admin-user.js"></script>
 <script src="./js/admin-settings.js"></script>

@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS review_data (
     value TEXT NOT NULL
 );
 
+CREATE INDEX idx_review_data_proj ON review_data(proj);
+
 INSERT OR IGNORE INTO sqlite_sequence(name, seq) VALUES ('review_data', 999);
 
 CREATE TABLE IF NOT EXISTS review_config (
@@ -59,4 +61,13 @@ CREATE TABLE IF NOT EXISTS review_recheck (
     proj TEXT NOT NULL,
     value TEXT NOT NULL,
     final_score REAL NOT NULL
+);
+
+CREATE INDEX idx_review_recheck_proj ON review_recheck(proj);
+
+CREATE TABLE IF NOT EXISTS review_result (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    proj TEXT NOT NULL UNIQUE,
+    value TEXT NOT NULL,
+    time TEXT NOT NULL
 );

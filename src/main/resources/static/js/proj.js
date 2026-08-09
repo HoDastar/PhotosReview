@@ -265,6 +265,11 @@ class classPhotoList {
             }
             // 更新当前页面数据
             this.updateArray(this.page, score, note);
+            // 自动切换下一张
+            if (settings.autoNext) {
+                pageView.nextPage();
+            }
+            this.updatePhoto();
             return;
         }
 

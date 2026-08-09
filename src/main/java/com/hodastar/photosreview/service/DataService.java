@@ -4,19 +4,23 @@ import com.hodastar.photosreview.entities.EntityReviewPhotos;
 import com.hodastar.photosreview.entities.EntityReviewProj;
 import com.hodastar.photosreview.entities.EntityReviewRecheck;
 import com.hodastar.photosreview.entities.EntityReviewUsers;
+import com.hodastar.photosreview.mappers.ProjMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class DataService {
     private final JdbcTemplate jdbcTemplate;
+    private final ProjMapper projMapper;
 
-    public DataService(JdbcTemplate jdbcTemplate) {
+    public DataService(JdbcTemplate jdbcTemplate, ProjMapper projMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.projMapper = projMapper;
     }
     private ObjectMapper jsonMapper = new ObjectMapper();
 
@@ -106,7 +110,7 @@ public class DataService {
         );
     }
 
-    public String saveAllProjData() {
+    public HashMap<String, Object> saveAllProjData() {
         // 获取数据
         List<EntityReviewProj> projList = getProjList();
         List<EntityReviewPhotos> dataList = getDataList();
@@ -116,24 +120,20 @@ public class DataService {
         map.put("proj", projList);
         map.put("data", dataList);
         map.put("recheck", recheckList);
-        return jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(map);
+        return map;
     }
 
-    public String saveProjData(String projId) {
+    public HashMap<String, Object> saveProjData(String projId) {
         // 获取数据
+        Optional<EntityReviewProj> projOpt = projMapper.getProjById(projId);
+        if (projOpt.isEmpty()) return null;
         List<EntityReviewPhotos> dataList = getDataListByProj(projId);
         List<EntityReviewRecheck> recheckList = getRecheckListByProj(projId);
 
-        // 第一个数据
-        EntityReviewPhotos firstData = dataList.isEmpty() ? null : dataList.get(0);
-        if (firstData == null) {
-
-        }
-
         HashMap<String, Object> map = new HashMap<>();
-        map.put("proj", projId);
+        map.put("proj", projOpt.get());
         map.put("data", dataList);
         map.put("recheck", recheckList);
-        return jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(map);
+        return map;
     }
 }

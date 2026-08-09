@@ -33,6 +33,10 @@ function goPage(p, updateHistory = true) {
         v.style.display = v.id === p ? 'block' : 'none';
     });
 
+    if (p === "outputData" && typeof populateOutputProjectSelect === "function") {
+        populateOutputProjectSelect();
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const newParams = new URLSearchParams();
     newParams.set("p", p);
@@ -231,6 +235,7 @@ function bindLoadingButton(id, handler) {
     // Loading website information
     await loadWebsiteInfo();
     await getProj();
+    initOutputPage();
     await loadManageUserList();
     await loadSystemSettingsForm();
     await loadAllProgress(false);
@@ -270,8 +275,21 @@ function bindLoadingButton(id, handler) {
     bindLoadingButton("deleteSelectedPhotos", deleteSelectedPhotos);
     bindLoadingButton("deleteUserScores", deleteUserScores);
     bindLoadingButton("fetchPreliminaryResult", fetchPreliminaryResult);
+    bindLoadingButton("buildFinalResult", buildFinalResultData);
+    bindLoadingButton("exportPhotosByScoreRange", exportPhotosByScoreRange);
+    bindLoadingButton("downloadProjectData", downloadProjectData);
+    document.getElementById("previewFinalResult")?.addEventListener("click", () => {
+        void previewFinalResultPage();
+    });
+    document.getElementById("personalResultPreviewForm")?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        void previewPersonalResultPage();
+    });
     bindLoadingButton("refreshDisputePhotos", () => refreshRecheckList(true));
+    bindLoadingButton("includeSelectedDisputePhotos", () => setSelectedDisputePhotosRecheck(true));
+    bindLoadingButton("removeSelectedDisputePhotos", () => setSelectedDisputePhotosRecheck(false));
     initDisputePhotosPagination();
+    initDisputePhotosSorting();
 
     const imgInputUploadEl = document.getElementById("imgInputUpload")
     const selectImageToPoolEl = document.getElementById("selectImagesToPool")

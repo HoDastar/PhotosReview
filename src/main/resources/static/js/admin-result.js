@@ -3,6 +3,8 @@ let currentRecheckPhotos = [];
 let currentResultPhotos = [];
 let disputePhotosCurrentPage = 1;
 let disputePhotosPageSize = 10;
+let disputePhotosSortKey = "recheck";
+let disputePhotosSortDirection = "desc";
 const disputeReasonI18nKeys = {
     large_dispersion: "dispute_reason_large_dispersion",
     large_range: "dispute_reason_large_range",
@@ -20,6 +22,7 @@ async function loadViewResults(index, id, updateHistory = true) {
     }
 
     currentManageProjId = id;
+    configureScoreRangeExport(projList[index].max);
     goPage("viewResults", updateHistory);
     resetPreliminaryResultView();
 
@@ -44,7 +47,10 @@ function readPreliminaryResultCache(projId) {
             return null;
         }
         const parsed = JSON.parse(raw);
-        if (!parsed || parsed.projectId !== projId || !Array.isArray(parsed.disputePhotos)) {
+        if (!parsed
+                || parsed.projectId !== projId
+                || !Array.isArray(parsed.disputePhotos)
+                || !Number.isFinite(Number(parsed.preliminaryMedian))) {
             return null;
         }
         return parsed;
@@ -59,6 +65,9 @@ function resetPreliminaryResultView() {
     currentRecheckPhotos = [];
     currentResultPhotos = [];
     disputePhotosCurrentPage = 1;
+    disputePhotosSortKey = "recheck";
+    disputePhotosSortDirection = "desc";
+    updateDisputePhotosSortHeaders();
 
     [
         "resultProjectName",
@@ -66,7 +75,7 @@ function resetPreliminaryResultView() {
         "resultDisputeCount",
         "resultDisputeRate",
         "resultPreliminaryAverage",
-        "resultPreliminaryVariance"
+        "resultPreliminaryMedian"
     ].forEach((id) => {
         const element = document.getElementById(id);
         if (element) {
@@ -82,9 +91,9 @@ function resetPreliminaryResultView() {
     renderDisputePhotosPage();
 }
 
-function formatResultDecimal(value) {
+function formatResultDecimal(value, fractionDigits = 1) {
     const number = Number(value);
-    return Number.isFinite(number) ? number.toFixed(1) : "--";
+    return Number.isFinite(number) ? number.toFixed(fractionDigits) : "--";
 }
 
 function renderPreliminaryResult(data) {
@@ -93,8 +102,8 @@ function renderPreliminaryResult(data) {
         resultScoredTotal: Number.isFinite(Number(data.scoredTotal)) ? String(data.scoredTotal) : "--",
         resultDisputeCount: Number.isFinite(Number(data.disputeCount)) ? String(data.disputeCount) : "--",
         resultDisputeRate: formatResultDecimal(data.disputeRate) + "%",
-        resultPreliminaryAverage: formatResultDecimal(data.preliminaryAverage),
-        resultPreliminaryVariance: formatResultDecimal(data.preliminaryVariance)
+        resultPreliminaryAverage: formatResultDecimal(data.preliminaryAverage, 2),
+        resultPreliminaryMedian: formatResultDecimal(data.preliminaryMedian, 2)
     };
 
     Object.entries(values).forEach(([id, value]) => {
@@ -160,6 +169,115 @@ async function fetchPreliminaryResult() {
     showBubble(i18n.lookUp("results_fetched"), "blue", "#fff");
 }
 
+async function buildFinalResultData() {
+    if (!currentManageProjId) {
+        return;
+    }
+
+    const confirmed = await openModal(
+        i18n.lookUp("modal_content_confirm")[6].title,
+        i18n.lookUp("modal_content_confirm")[6].message
+    );
+    if (!confirmed) {
+        return;
+    }
+
+    const result = await postApi(url + "/api/result/build_overall_result", {
+        projId: currentManageProjId,
+        adminUid: uid,
+        adminToken: token
+    });
+    if (!result.result) {
+        const error = getResultApiError(result);
+        await openModal(error.title, error.message);
+        return;
+    }
+
+    showBubble(i18n.lookUp("final_result_built"), "blue", "#fff");
+}
+
+function configureScoreRangeExport(projectMax) {
+    const minInput = document.getElementById("exportPhotosMinScore");
+    const maxInput = document.getElementById("exportPhotosMaxScore");
+    const normalizedMax = Number(projectMax);
+    if (!minInput || !maxInput || !Number.isFinite(normalizedMax) || normalizedMax < 1) {
+        return;
+    }
+
+    minInput.max = String(normalizedMax);
+    maxInput.max = String(normalizedMax);
+    minInput.value = "1";
+    maxInput.value = String(normalizedMax);
+}
+
+async function exportPhotosByScoreRange() {
+    if (!currentManageProjId) {
+        await openModal(i18n.lookUp("error"), i18n.lookUp("missing_project_id"));
+        return;
+    }
+
+    const project = projList.find((item) => item.projId === currentManageProjId);
+    const projectMax = Number(project?.max);
+    const minInput = document.getElementById("exportPhotosMinScore");
+    const maxInput = document.getElementById("exportPhotosMaxScore");
+    const minScore = Number(minInput?.value);
+    const maxScore = Number(maxInput?.value);
+
+    if (!Number.isFinite(projectMax)
+            || !Number.isFinite(minScore)
+            || !Number.isFinite(maxScore)
+            || minScore < 1
+            || maxScore > projectMax
+            || minScore > maxScore) {
+        await openModal(
+            i18n.lookUp("error"),
+            i18n.lookUp("invalid_score_range").replace("{max}", String(projectMax))
+        );
+        return;
+    }
+
+    startAdminFileDownload("/api/result/export_photos_by_score_range", {
+        projId: currentManageProjId,
+        minScore,
+        maxScore,
+        uid,
+        token
+    });
+    showBubble(i18n.lookUp("archive_download_started"), "blue", "#fff");
+}
+
+async function previewFinalResultPage() {
+    if (!currentManageProjId) {
+        await openModal(i18n.lookUp("error"), i18n.lookUp("missing_project_id"));
+        return;
+    }
+    go_url(
+        url + "/overall_view.html?proj_id=" + encodeURIComponent(currentManageProjId),
+        1
+    );
+}
+
+async function previewPersonalResultPage() {
+    if (!currentManageProjId) {
+        await openModal(i18n.lookUp("error"), i18n.lookUp("missing_project_id"));
+        return;
+    }
+
+    const authorInput = document.getElementById("personalResultAuthor");
+    const selectedAuthor = authorInput?.value.trim() || "";
+    if (!selectedAuthor) {
+        await openModal(i18n.lookUp("error"), i18n.lookUp("missing_personal_result_author"));
+        authorInput?.focus();
+        return;
+    }
+
+    go_url(
+        url + "/personal_view.html?proj_id=" + encodeURIComponent(currentManageProjId)
+        + "&author=" + encodeURIComponent(selectedAuthor),
+        1
+    );
+}
+
 async function refreshRecheckList(showError = true) {
     if (!currentManageProjId) {
         return;
@@ -204,13 +322,80 @@ function mergeResultPhotos() {
         });
     });
 
-    currentResultPhotos = Array.from(merged.values()).sort((left, right) => {
-        if (left.recheck !== right.recheck) {
-            return left.recheck ? -1 : 1;
-        }
-        return left.photoid - right.photoid;
-    });
+    currentResultPhotos = Array.from(merged.values());
     renderDisputePhotosPage();
+}
+
+function isFinalReviewed(photo) {
+    const finalScore = Number(photo.final_score);
+    const maxScore = Number(currentPreliminaryResult?.max);
+    return Boolean(photo.recheck)
+        && Number.isFinite(finalScore)
+        && Number.isFinite(maxScore)
+        && finalScore >= 1
+        && finalScore <= maxScore;
+}
+
+function getDisputePhotoStatusRank(photo) {
+    if (isFinalReviewed(photo)) {
+        return 2;
+    }
+    return photo.recheck ? 1 : 0;
+}
+
+function compareDisputePhotos(left, right) {
+    let comparison = 0;
+
+    if (disputePhotosSortKey === "photoid") {
+        comparison = Number(left.photoid) - Number(right.photoid);
+    } else if (disputePhotosSortKey === "name") {
+        comparison = String(left.name || "").localeCompare(
+            String(right.name || ""),
+            undefined,
+            {numeric: true, sensitivity: "base"}
+        );
+    } else if (disputePhotosSortKey === "disputeIndex") {
+        const leftIndex = Number(left.disputeIndex);
+        const rightIndex = Number(right.disputeIndex);
+        const leftMissing = !Number.isFinite(leftIndex);
+        const rightMissing = !Number.isFinite(rightIndex);
+        if (leftMissing !== rightMissing) {
+            return leftMissing ? 1 : -1;
+        }
+        if (!leftMissing) {
+            comparison = leftIndex - rightIndex;
+        }
+    } else if (disputePhotosSortKey === "disputeReasons") {
+        const leftReasons = Array.isArray(left.disputeReasons) ? left.disputeReasons : [];
+        const rightReasons = Array.isArray(right.disputeReasons) ? right.disputeReasons : [];
+        comparison = leftReasons.length - rightReasons.length;
+        if (comparison === 0) {
+            comparison = leftReasons.join(",").localeCompare(rightReasons.join(","));
+        }
+    } else if (disputePhotosSortKey === "recheck") {
+        comparison = getDisputePhotoStatusRank(left) - getDisputePhotoStatusRank(right);
+    }
+
+    if (comparison !== 0) {
+        return disputePhotosSortDirection === "asc" ? comparison : -comparison;
+    }
+    return Number(left.photoid) - Number(right.photoid);
+}
+
+function getSortedDisputePhotos() {
+    return [...currentResultPhotos].sort(compareDisputePhotos);
+}
+
+function updateDisputePhotosSortHeaders() {
+    document.querySelectorAll("#disputePhotosTable thead th[data-sort-key]").forEach((header) => {
+        const isActive = header.dataset.sortKey === disputePhotosSortKey;
+        header.setAttribute(
+            "aria-sort",
+            isActive
+                ? (disputePhotosSortDirection === "asc" ? "ascending" : "descending")
+                : "none"
+        );
+    });
 }
 
 function createDisputePhotoRow(photo) {
@@ -218,7 +403,10 @@ function createDisputePhotoRow(photo) {
     row.dataset.photoId = String(photo.photoid);
 
     const idCell = document.createElement("td");
-    idCell.textContent = String(photo.photoid);
+    idCell.innerHTML = '<label class="checkbox">'
+        + '<input type="checkbox" name="input_dispute_photo" value="' + photo.photoid + '">'
+        + '<span class="box"></span>' + photo.photoid
+        + '</label>';
     row.appendChild(idCell);
 
     const thumbnailCell = document.createElement("td");
@@ -255,8 +443,14 @@ function createDisputePhotoRow(photo) {
 
     const statusCell = document.createElement("td");
     const status = document.createElement("span");
-    const statusKey = photo.recheck ? "rechecking" : "disputed";
-    status.classList.add("tag", photo.recheck ? "color_purple" : "color_orange");
+    const finalReviewed = isFinalReviewed(photo);
+    const statusKey = finalReviewed
+        ? "final_reviewed"
+        : (photo.recheck ? "rechecking" : "disputed");
+    const statusColor = finalReviewed
+        ? "color_green"
+        : (photo.recheck ? "color_purple" : "color_orange");
+    status.classList.add("tag", statusColor);
     status.dataset.i18n = statusKey;
     status.textContent = i18n.lookUp(statusKey);
     statusCell.appendChild(status);
@@ -288,7 +482,13 @@ function createDisputePhotoRow(photo) {
     previewButton.dataset.i18nTitle = "preview";
     previewButton.title = i18n.lookUp("preview");
     previewButton.innerHTML = '<i class="fa-solid fa-eye"></i>';
-    previewButton.addEventListener("click", () => previewPhotoReviewData(photo.photoid, 1));
+    previewButton.addEventListener("click", () => {
+        document.getElementById("disputePhotosTableBody").querySelectorAll("tr").forEach(el => {
+            el.removeAttribute("class");
+        })
+        row.classList.add("mark");
+        previewPhotoReviewData(photo.photoid, 1)}
+    );
     actionGroup.appendChild(previewButton);
     actionGroup.appendChild(toggleButton);
 
@@ -297,20 +497,54 @@ function createDisputePhotoRow(photo) {
     return row;
 }
 
-async function setPhotoRecheck(photo, recheck) {
-    const result = await postApi(url + "/api/proj/set_recheck", {
-        photoid: photo.photoid,
+async function requestPhotoRecheck(photoId, recheck) {
+    return postApi(url + "/api/proj/set_recheck", {
+        photoid: photoId,
         projId: currentManageProjId,
         recheck,
         adminUid: uid,
         adminToken: token
     });
+}
+
+async function setPhotoRecheck(photo, recheck) {
+    const result = await requestPhotoRecheck(photo.photoid, recheck);
     if (!result.result) {
         const error = getResultApiError(result);
         await openModal(error.title, error.message);
         return;
     }
     await refreshRecheckList(false);
+    showBubble(i18n.lookUp("recheck_updated"), "blue", "#fff");
+}
+
+async function setSelectedDisputePhotosRecheck(recheck) {
+    const selectedPhotoIds = Array.from(
+        document.querySelectorAll('input[name="input_dispute_photo"]:checked')
+    ).map((element) => Number(element.value));
+
+    if (selectedPhotoIds.length === 0) {
+        return;
+    }
+
+    const failures = [];
+    for (const photoId of selectedPhotoIds) {
+        const photo = currentResultPhotos.find((item) => Number(item.photoid) === photoId);
+        if (!photo || Boolean(photo.recheck) === recheck) {
+            continue;
+        }
+        const result = await requestPhotoRecheck(photoId, recheck);
+        if (!result.result) {
+            failures.push(result);
+        }
+    }
+
+    await refreshRecheckList(false);
+    if (failures.length > 0) {
+        const error = getResultApiError(failures[0]);
+        await openModal(error.title, error.message);
+        return;
+    }
     showBubble(i18n.lookUp("recheck_updated"), "blue", "#fff");
 }
 
@@ -321,11 +555,17 @@ function renderDisputePhotosPage() {
     const prevButton = document.getElementById("disputePhotosPrevPage");
     const nextButton = document.getElementById("disputePhotosNextPage");
     const pageSizeSelect = document.getElementById("disputePhotosPageSize");
+    const selectCurrentPage = document.getElementById("selectCurrentDisputePhotosPage");
     if (!body) {
         return;
     }
 
     body.innerHTML = "";
+
+    if (selectCurrentPage) {
+        selectCurrentPage.checked = false;
+        selectCurrentPage.disabled = currentResultPhotos.length === 0;
+    }
     if (currentResultPhotos.length === 0) {
         const row = document.createElement("tr");
         const cell = document.createElement("td");
@@ -340,10 +580,11 @@ function renderDisputePhotosPage() {
         return;
     }
 
-    const totalPages = Math.max(1, Math.ceil(currentResultPhotos.length / disputePhotosPageSize));
+    const sortedPhotos = getSortedDisputePhotos();
+    const totalPages = Math.max(1, Math.ceil(sortedPhotos.length / disputePhotosPageSize));
     disputePhotosCurrentPage = Math.min(Math.max(1, disputePhotosCurrentPage), totalPages);
     const start = (disputePhotosCurrentPage - 1) * disputePhotosPageSize;
-    currentResultPhotos
+    sortedPhotos
         .slice(start, start + disputePhotosPageSize)
         .forEach((photo) => body.appendChild(createDisputePhotoRow(photo)));
 
@@ -386,6 +627,25 @@ function initDisputePhotosPagination() {
         return;
     }
     pagination.dataset.initialized = "true";
+
+    const selectCurrentPage = document.getElementById("selectCurrentDisputePhotosPage");
+    const body = document.getElementById("disputePhotosTableBody");
+    selectCurrentPage?.addEventListener("change", () => {
+        body?.querySelectorAll('input[name="input_dispute_photo"]')
+            .forEach((checkbox) => {
+                checkbox.checked = selectCurrentPage.checked;
+            });
+    });
+    body?.addEventListener("change", (event) => {
+        if (!event.target.matches('input[name="input_dispute_photo"]') || !selectCurrentPage) {
+            return;
+        }
+        const pageCheckboxes = Array.from(
+            body.querySelectorAll('input[name="input_dispute_photo"]')
+        );
+        selectCurrentPage.checked = pageCheckboxes.length > 0
+            && pageCheckboxes.every((checkbox) => checkbox.checked);
+    });
     document.getElementById("disputePhotosPrevPage")?.addEventListener("click", () => {
         if (disputePhotosCurrentPage > 1) {
             disputePhotosCurrentPage -= 1;
@@ -405,4 +665,41 @@ function initDisputePhotosPagination() {
         renderDisputePhotosPage();
     });
 
+}
+
+function initDisputePhotosSorting() {
+    const headers = document.querySelectorAll("#disputePhotosTable thead th[data-sort-key]");
+    headers.forEach((header) => {
+        if (header.dataset.sortInitialized === "true") {
+            return;
+        }
+        header.dataset.sortInitialized = "true";
+
+        const activateSort = () => {
+            const sortKey = header.dataset.sortKey;
+            if (disputePhotosSortKey === sortKey) {
+                disputePhotosSortDirection = disputePhotosSortDirection === "asc" ? "desc" : "asc";
+            } else {
+                disputePhotosSortKey = sortKey;
+                disputePhotosSortDirection = sortKey === "recheck" ? "desc" : "asc";
+            }
+            disputePhotosCurrentPage = 1;
+            updateDisputePhotosSortHeaders();
+            renderDisputePhotosPage();
+        };
+
+        header.addEventListener("click", (event) => {
+            if (event.target.closest(".checkbox")) {
+                return;
+            }
+            activateSort();
+        });
+        header.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                activateSort();
+            }
+        });
+    });
+    updateDisputePhotosSortHeaders();
 }

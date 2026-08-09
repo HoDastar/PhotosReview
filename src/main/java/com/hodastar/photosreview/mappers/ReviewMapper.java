@@ -52,6 +52,17 @@ public class ReviewMapper {
         );
     }
 
+    // 获取工程全部照片文件名
+    public List<String> getAllPhotosName(
+            String projId
+    ) {
+        return jdbcTemplate.query(
+                "SELECT * FROM review_data WHERE proj = ? ORDER BY id ASC",
+                (rs, rowNum) -> rs.getString("name"),
+                projId
+        );
+    }
+
     // 根据工程id、闭区间获取照片列表
     public List<EntityReviewPhotos> getPhotos(
             String projId,

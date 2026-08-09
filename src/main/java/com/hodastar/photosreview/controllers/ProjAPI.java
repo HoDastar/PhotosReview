@@ -548,7 +548,7 @@ public class ProjAPI {
 
     // 删除工程
     @PostMapping("/delete_proj")
-    public Respond<String> delete_proj(@RequestBody HashMap<String, Object> body) {
+    public Respond<String> delete_proj(@RequestBody HashMap<String, Object> body) throws IOException {
         // 检查参数
         if (!body.containsKey("projId") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
             return new Respond<>(false, "1", null);
@@ -571,6 +571,13 @@ public class ProjAPI {
         if (!result) {
             return new Respond<>(false, "0", null);
         }
+        // dir
+        String baseDir = System.getProperty("user.dir");
+        String dirStr = baseDir + File.separator +
+                "data" + File.separator +
+                "proj" + File.separator +
+                projId + File.separator;
+        FileUtil.removeDir(dirStr);
 
         return new Respond<>(true, "success", null);
     }

@@ -4,12 +4,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Comparator;
 import java.util.Objects;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class FileUtil {
 
@@ -90,5 +95,74 @@ public class FileUtil {
     public static void deleteFile(String dirStr, String fileName) throws IOException {
         Path dir = Paths.get(dirStr + fileName);
         Files.deleteIfExists(dir);
+    }
+
+    // 删除文件夹
+    public static void removeDir(String dirStr) throws IOException {
+        Path dir = Paths.get(dirStr);
+        if (!Files.exists(dir)) {
+            return;
+        }
+        Files.walk(dir)
+                .sorted(Comparator.reverseOrder())
+                .forEach(path -> {
+                    try {
+                        Files.delete(path);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                });
+    }
+
+
+    /**
+     * 将目录递归压缩到 ZipOutputStream
+     *
+     * @param sourceDir 要压缩的目录
+     * @param zos       zip输出流
+     */
+    public static void zipDirectory(
+            Path sourceDir,
+            ZipOutputStream zos
+    ) throws IOException {
+        String rootDirName = sourceDir.getFileName().toString();
+
+        try (Stream<Path> stream = Files.walk(sourceDir)) {
+            stream.filter(Files::isRegularFile)
+                .forEach(path -> {
+                    try {
+                        // 保留最外层目录名
+                        String entryName =
+                                rootDirName + "/"
+                                        + sourceDir.relativize(path)
+                                        .toString()
+                                        .replace("\\", "/");
+
+                        ZipEntry entry =
+                                new ZipEntry(entryName);
+                        zos.putNextEntry(entry);
+                        Files.copy(path, zos);
+                        zos.closeEntry();
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                });
+        }
+    }
+
+    /**
+     * 将文件压缩到 ZipOutputStream
+     *
+     * @param filePath  要压缩的文件目录
+     * @param zos       zip输出流
+     */
+    public static void zipFileList(
+            Path filePath,
+            ZipOutputStream zos
+    ) throws IOException {
+        ZipEntry entry = new ZipEntry(filePath.getFileName().toString());
+        zos.putNextEntry(entry);
+        Files.copy(filePath, zos);
+        zos.closeEntry();
     }
 }

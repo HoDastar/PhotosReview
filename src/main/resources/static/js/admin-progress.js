@@ -2,7 +2,7 @@ function renderProgressList(containerId, rows) {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
     if (!rows || rows.length === 0) {
-        container.innerHTML = `<div class="progress-failed">${i18n.lookUp('no_user')}</div>`;
+        container.innerHTML = `<div class="progress-failed">${i18n.lookUp('no_task')}</div>`;
         return;
     }
     rows.forEach(item => {

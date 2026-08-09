@@ -331,7 +331,7 @@ public class ProjMapper {
     public List<HashMap<String, Object>> getRecheckPhotoList(String projId) {
         return jdbcTemplate.query(
                 """
-                SELECT r.photoid, d.name, d.author, r.value
+                SELECT r.photoid, d.name, d.author, r.value, r.final_score
                 FROM review_recheck r
                 LEFT JOIN review_data d ON d.id = r.photoid AND d.proj = r.proj
                 WHERE r.proj = ?
@@ -343,6 +343,7 @@ public class ProjMapper {
                     item.put("name", rs.getString("name"));
                     item.put("author", rs.getString("author"));
                     item.put("value", rs.getString("value"));
+                    item.put("final_score", rs.getDouble("final_score"));
                     return item;
                 },
                 projId

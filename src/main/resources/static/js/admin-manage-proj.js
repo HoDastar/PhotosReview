@@ -137,6 +137,20 @@ async function getProj() {
     }
 }
 
+async function fetchManageProjCount(projId) {
+    const result = await getApi(url + `/api/proj/get_proj_count?proj_id=${projId}&adminUid=${uid}&adminToken=${token}`);
+    if (!result.result) {
+        const msg = parseInt(result.message, 10);
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+        return null;
+    }
+
+    return result.data;
+}
+
 // Load Manage Project List
 async function loadManageProj(index, id, updateHistory = true) {
     if (!projList[index]) {
@@ -153,6 +167,11 @@ async function loadManageProj(index, id, updateHistory = true) {
     const reviewDisplayInput = document.querySelectorAll('#manageProj input[name="review_display"]');
     const reviewStatusInput = document.querySelectorAll('#manageProj input[name="review_status"]');
     const proj = projList[index];
+    const manageProjNameEl = document.getElementById("manageProjName");
+    const manageTotalEl = document.getElementById("manageTotal");
+
+    manageProjNameEl.textContent = proj.name;
+    manageTotalEl.textContent = "--";
 
     projNameEl.value = proj.name;
     if (proj.display === 0) {
@@ -184,7 +203,11 @@ async function loadManageProj(index, id, updateHistory = true) {
         default:
             break;
     }
-    await loadManageDist(index, id);
+
+    const total = await fetchManageProjCount(proj.projId);
+    if (total !== null) {
+        manageTotalEl.textContent = String(total);
+    }
 }
 // Load Manage Distribution List
 async function loadManageDist(index, id) {
@@ -196,15 +219,11 @@ async function loadManageDist(index, id) {
         return;
     }
     // 获取工程总量
-    const resultTotal = await getApi(url + `/api/proj/get_proj_count?proj_id=${projList[index].projId}&adminUid=${uid}&adminToken=${token}`);
-    if (!resultTotal.result) {
-        const msg = parseInt(resultTotal.message, 10);
-        await openModal(
-            i18n.lookUp("modal_content_fail")[msg].title,
-            i18n.lookUp("modal_content_fail")[msg].message
-        );
+    const total = await fetchManageProjCount(projList[index].projId);
+    if (total === null) {
         return;
     }
+
     const distributionContainerEl = document.getElementById("distributionContainer");
     const recheckDistributionContainerEl = document.getElementById("recheckDistributionContainer");
     const manageProjNameEl = document.getElementById("manageProjName");
@@ -212,7 +231,6 @@ async function loadManageDist(index, id) {
 
     currentManageProjId = id;
 
-    const total = resultTotal.data;
     manageProjNameEl.innerHTML = projList[index].name;
     manageTotalEl.innerHTML = total;
 
@@ -638,30 +656,39 @@ async function saveManageDist() {
 }
 // Delete Project
 async function deleteProj(id) {
-    const confirm = await openModal(
+    let confirm = await openModal(
         i18n.lookUp("modal_content_confirm")[1].title,
-        i18n.lookUp("modal_content_confirm")[1].message,
-        true
+        i18n.lookUp("modal_content_confirm")[1].message
     );
-    if (confirm) {
-        const result = await postApi(url + "/api/proj/delete_proj", {
-            projId: id,
-            adminUid: uid,
-            adminToken: token
-        });
-        const msg = parseInt(result.message, 10);
-        if (!result.result) {
-            await openModal(
-                i18n.lookUp("modal_content_fail")[msg].title,
-                i18n.lookUp("modal_content_fail")[msg].message
-            );
-        } else {
-            await openModal(
-                i18n.lookUp("modal_content_success")[0].title,
-                i18n.lookUp("modal_content_success")[0].message
-            );
-            await getProj();
-        }
+    if (!confirm) {
+        return;
+    }
+
+    confirm = await openModal(
+        i18n.lookUp("modal_content_confirm")[5].title,
+        i18n.lookUp("modal_content_confirm")[5].message
+    );
+    if (!confirm) {
+        return;
+    }
+
+    const result = await postApi(url + "/api/proj/delete_proj", {
+        projId: id,
+        adminUid: uid,
+        adminToken: token
+    });
+    const msg = parseInt(result.message, 10);
+    if (!result.result) {
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+    } else {
+        await openModal(
+            i18n.lookUp("modal_content_success")[0].title,
+            i18n.lookUp("modal_content_success")[0].message
+        );
+        await getProj();
     }
 }
 
