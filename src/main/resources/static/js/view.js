@@ -1,4 +1,5 @@
 const url = window.location.origin;
+const rootElement = document.documentElement;
 
 window.onload = async () => {
     const loader = document.getElementById('loading-overlay');
@@ -9,12 +10,13 @@ window.onload = async () => {
     const darkToggle = document.getElementById('darkToggle');
     const darkIcon = document.getElementById('darkIcon');
     function setDarkMode(on) {
+        rootElement.classList.toggle('dark', on);
+        document.body.classList.toggle('dark', on);
         if (on) {
             try{
                 changeSpecificFillValues('#f5f5f5', "#282a2b");
                 changeSpecificFillValues('#42a5f5', "#247ac0");
             } catch (error) {}
-            document.body.classList.add('dark');
             darkToggle.classList.add('active');
             darkIcon.classList.remove('fa-moon');
             darkIcon.classList.add('fa-sun');
@@ -24,7 +26,6 @@ window.onload = async () => {
                 changeSpecificFillValues('#282a2b', "#f5f5f5");
                 changeSpecificFillValues('#247ac0', "#42a5f5");
             } catch (error) {}
-            document.body.classList.remove('dark');
             darkToggle.classList.remove('active');
             darkIcon.classList.remove('fa-sun');
             darkIcon.classList.add('fa-moon');
@@ -32,7 +33,7 @@ window.onload = async () => {
         }
     }
     darkToggle.onclick = function () {
-        const isDark = document.body.classList.contains('dark');
+        const isDark = rootElement.classList.contains('dark');
         setDarkMode(!isDark);
     };
     const dark = localStorage.getItem('darkmode');

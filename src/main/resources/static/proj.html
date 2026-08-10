@@ -7,7 +7,8 @@
     <title>proj - default</title>
     <!-- 引入 Font Awesome 图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-    <link rel="stylesheet" href="css/root.css">
+    <script src="js/theme-init.js?v=0.1"></script>
+    <link rel="stylesheet" href="css/root.css?v=0.7">
     <link rel="stylesheet" href="css/modal.css">
     <link rel="stylesheet" href="css/input.css">
     <link rel="stylesheet" href="css/switch.css">
@@ -88,7 +89,7 @@
             </button>
         </div>
 
-        <div class="widget">
+        <div class="widget" id="batch_widget">
             <h3><i class="fa-solid fa-sliders"></i> <span data-i18n="batch_operation"></span></h3>
             <p><span data-i18n="tempid_list"></span>: </p>
             <input type="text" id="html_list" class="mid-input" data-i18n-placeholder="input_example_list" placeholder="输入示例：(0,3,4)" style="display: block;">
@@ -96,7 +97,7 @@
             <input type="text" id="html_range" class="mid-input" data-i18n-placeholder="input_example_range" placeholder="输入示例： (2,7)" style="display: block;">
         </div>
 
-        <div class="widget">
+        <div class="widget" id="setting_widget">
             <h3><i class="fa-solid fa-gear" style="animation: spin 2s linear infinite;"></i> <span data-i18n="settings"></span></h3>
             <div class="switch-row">
                 <span class="label-text" data-i18n="batch_operation_list"></span>
@@ -178,6 +179,6 @@
 <script src="js/utils.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/modal.js"></script>
-<script src="js/view.js"></script>
+<script src="js/view.js?v=0.1"></script>
 <script src="js/url.js"></script>
 <script src="js/proj.js"></script>

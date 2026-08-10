@@ -69,4 +69,62 @@ public class Utilities {
     public static String generateUUID() {
         return java.util.UUID.randomUUID().toString();
     }
+
+    /**
+     * 计算算术平均值；空集合返回 0。
+     */
+    public static double mean(List<Double> values) {
+        if (values.isEmpty()) {
+            return 0.0;
+        }
+        return values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+    }
+
+    /**
+     * 计算总体方差；空集合返回 0。
+     */
+    public static double populationVariance(List<Double> values, double average) {
+        if (values.isEmpty()) {
+            return 0.0;
+        }
+        return values.stream()
+                .mapToDouble(value -> Math.pow(value - average, 2))
+                .average()
+                .orElse(0.0);
+    }
+
+    /**
+     * 计算已按升序排列集合的中位数；空集合返回 0。
+     */
+    public static double median(List<Double> sortedValues) {
+        if (sortedValues.isEmpty()) {
+            return 0.0;
+        }
+        int middle = sortedValues.size() / 2;
+        if (sortedValues.size() % 2 == 0) {
+            return (sortedValues.get(middle - 1) + sortedValues.get(middle)) / 2.0;
+        }
+        return sortedValues.get(middle);
+    }
+
+    /**
+     * 将数值四舍五入到一位小数。
+     */
+    public static double roundOne(double value) {
+        return Math.round(value * 10.0) / 10.0;
+    }
+
+    /**
+     * 将数值四舍五入到两位小数。
+     */
+    public static double roundTwo(double value) {
+        return Math.round(value * 100.0) / 100.0;
+    }
+
+    /**
+     * 将数值限制在 [0, 1] 区间。
+     */
+    public static double clamp(double value) {
+        return Math.max(0.0, Math.min(1.0, value));
+    }
 }

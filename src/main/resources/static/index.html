@@ -7,8 +7,8 @@
     <title></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <link rel="stylesheet" href="css/modal.css">
-    <link rel="stylesheet" href="css/root.css?v=0.1">
-    <link rel="stylesheet" href="css/index.css?v=0.1">
+    <script src="js/theme-init.js?v=0.1"></script>
+    <link rel="stylesheet" href="css/root.css?v=0.7">
     <link rel="stylesheet" href="css/index.css">
 </head>
 
@@ -153,7 +153,7 @@
 </html>
 <script src="js/utils.js"></script>
 <script src="js/url.js"></script>
-<script src="js/view.js"></script>
+<script src="js/view.js?v=0.1"></script>
 <script src="js/i18n.js"></script>
 <script src="js/modal.js"></script>
 <script>
@@ -220,15 +220,23 @@
                     break;
 
                 case 2:
-                    a_status = i18n.lookUp("closing");
-                    a_status_color = 'color_purple';
+                    a_status = i18n.lookUp("finished");
+                    a_status_color = 'color_orange';
                     btlist = `
                         <button onclick=""><i class="fa-solid fa-rocket"></i> ${i18n.lookUp("coming_soon")}</button>
                         `
                     break;
 
                 case 3:
-                    a_status = i18n.lookUp("finished");
+                    a_status = i18n.lookUp("rechecking");
+                    a_status_color = 'color_purple';
+                    btlist = `
+                        <button onclick="go_url('proj.html?proj=${proj.proj_id}&type=recheck',1)"><i class="fa-solid fa-check-double"></i> ${i18n.lookUp("recheck_mode")}</button>
+                        `
+                    break;
+
+                case 4:
+                    a_status = i18n.lookUp("end");
                     a_status_color = 'color_red';
                     btlist = `
                         <button onclick="go_url('overall_view.html?proj_id=${proj.proj_id}',1)"><i class="fa-solid fa-eye"></i> ${i18n.lookUp("view_results")}</button>

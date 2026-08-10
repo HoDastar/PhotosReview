@@ -195,6 +195,64 @@ public class UserAPI {
         return result ? new Respond<>(true, "success", null) : new Respond<>(false, "0", null);
     }
 
+    // 管理员设置
+    @PostMapping("/setAdmin")
+    public Respond<String> setAdmin(@RequestBody HashMap<String, Object> body) {
+        if (
+                !body.containsKey("uid") ||
+                !body.containsKey("type") ||
+                !body.containsKey("adminUid") ||
+                !body.containsKey("adminToken")
+        ) {
+            return new Respond<>(false, "1", null);
+        }
+        if (
+                !(body.get("uid") instanceof Integer) ||
+                !(body.get("type") instanceof Integer) ||
+                !(body.get("adminUid") instanceof Integer) ||
+                !(body.get("adminToken") instanceof String)
+        ) {
+            return new Respond<>(false, "1", null);
+        }
+        int uid = (Integer) body.get("uid");
+        int type = (Integer) body.get("type");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
+
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+        if (uid == adminUid) {
+            return new Respond<>(false, "5", null);
+        }
+
+        Optional<EntityReviewUsers> user = userMapper.getUserByUid(uid);
+        if (user.isEmpty()) {
+            return new Respond<>(false, "20", null);
+        }
+        if (user.get().status == 2) {
+            return new Respond<>(false, "29", null);
+
+        }
+
+        Boolean result;
+        if (type == 1) {
+            // 撤去
+            result = userMapper.updateStatus(uid, 1);
+        } else if (type == 0) {
+            // 设置
+            result = userMapper.updateStatus(uid, 0);
+        } else {
+            return new Respond<>(false, "1", null);
+        }
+
+        if (!result) {
+            return  new Respond<>(false, "0", null);
+        }
+
+        return new Respond<>(true, "success", null);
+    }
+
     // 通过uid删除用户
     @PostMapping("/delete_user")
     public Respond<String> deleteUser(@RequestBody HashMap<String, Object> body) {
@@ -256,6 +314,10 @@ public class UserAPI {
         // 验证密码
         if (!CryptUtil.checkBCEcrypt(password, user.get().password)) {
             return new Respond<>(false, "2", null);
+        }
+        // 检查封禁
+        if (user.get().status == 2) {
+            return new Respond<>(false, "29", null);
         }
         // 更新登录时间
         long currentTime = System.currentTimeMillis() / 1000;

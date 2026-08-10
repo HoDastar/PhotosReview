@@ -5,6 +5,8 @@
 }
 
 :root {
+    color-scheme: light;
+
     /* Background Layers */
     --color-bg: #ffffff;
     /* 主背景 */
@@ -61,7 +63,9 @@
     --row-odd: #eeeeee;
 }
 
+:root.dark,
 body.dark {
+    color-scheme: dark;
 
     /* Background Layers */
     --color-bg: #151718;
@@ -280,29 +284,38 @@ body {
     margin: 3px;
 }
 
-@media (max-width: 768px) {
-    .dark-toggle,
-    .lang-toggle {
-        top: auto;
-        transform: none;
-        bottom: 16px;
-    }
-
-    .dark-toggle {
-        right: 16px;
-    }
-
-    .lang-toggle {
-        right: 72px;
-    }
-
-    .dark-toggle:hover,
-    .lang-toggle:hover {
-        transform: scale(1.06);
-    }
+.button-square {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 92px;
+    padding: 9px 16px;
+    border: 1px solid var(--color-border2);
+    border-radius: 4px;
+    background: var(--color-input-bg);
+    color: var(--color-input-fg);
+    font-weight: 700;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 
+.button-square.del:hover {
+    border-color: rgb(220, 38, 38);
+    background: rgb(220, 38, 38);
+    color: #fff;
+}
 
+.button-square.common:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-btn-fg);
+}
+
+.click_me {
+    text-decoration: underline;
+    cursor: pointer;
+}
 
 /* 透明图标切换按钮（admin/index 指定区域使用） */
 .icon-toggle-group {
@@ -337,6 +350,59 @@ body {
     transform: scale(0.95);
 }
 
+/* 全局应用滚动条样式 */
+* {
+    scrollbar-width: thin;           /* Firefox */
+    scrollbar-color: #3399ff var(--color-bg2); /* 滑块颜色 滑道颜色 Firefox */
+}
+
+/* Chrome, Edge, Safari */
+*::-webkit-scrollbar {
+    width: 10px;      /* 垂直滚动条宽度 */
+    height: 10px;     /* 水平滚动条高度 */
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--color-bg2);  /* 滑道颜色 */
+    border-radius: 5px;
+}
+
+*::-webkit-scrollbar-corner {
+    background: var(--color-bg2);
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #3399ff;  /* 滑块颜色 */
+    border-radius: 5px;
+    border: 2px solid var(--color-border); /* 滑块边距，制造“悬浮感” */
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background-color: #1a73e8; /* 滑块悬停颜色 */
+}
+
 :root {
     --color-success: #16a34a;
+}
+
+@media (max-width: 768px) {
+    .dark-toggle,
+    .lang-toggle {
+        top: auto;
+        transform: none;
+        bottom: 16px;
+    }
+
+    .dark-toggle {
+        right: 16px;
+    }
+
+    .lang-toggle {
+        right: 72px;
+    }
+
+    .dark-toggle:hover,
+    .lang-toggle:hover {
+        transform: scale(1.06);
+    }
 }

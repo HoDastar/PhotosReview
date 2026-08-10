@@ -1,6 +1,7 @@
 package com.hodastar.photosreview;
 
 import com.hodastar.photosreview.mappers.ReviewMapper;
+import com.hodastar.photosreview.service.DataService;
 import com.hodastar.photosreview.utils.CryptUtil;
 import com.hodastar.photosreview.utils.FileUtil;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,8 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.hodastar.photosreview.config.Config.LOGIN_SESSION_FILE_DIR;
 
@@ -23,10 +26,12 @@ class PhotosReviewApplicationTests {
 
     @Autowired
     private ReviewMapper reviewMapper;
+    @Autowired
+    private DataService dataService;
 
     @Test
     void contextLoads() throws Exception {
-        d();
+        f();
     }
 
     void a() {
@@ -62,5 +67,17 @@ class PhotosReviewApplicationTests {
         } else if (root.isArray()) {
             System.out.println("List 类型");
         }
+    }
+
+    void e() {
+        System.out.println(
+                dataService.saveProjData("d2a18223-d148-4242-b7e3-23f7fa7c283d")
+        );
+    }
+
+    void f() {
+        System.out.println(
+                reviewMapper.getRecheckPhotos("d2a18223-d148-4242-b7e3-23f7fa7c283d")
+        );
     }
 }

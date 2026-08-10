@@ -2,6 +2,7 @@ package com.hodastar.photosreview.controllers;
 
 import com.hodastar.photosreview.entities.EntityReviewPhotos;
 import com.hodastar.photosreview.entities.EntityReviewProj;
+import com.hodastar.photosreview.entities.EntityReviewRecheck;
 import com.hodastar.photosreview.entities.EntityReviewUsers;
 import com.hodastar.photosreview.mappers.ProjMapper;
 import com.hodastar.photosreview.mappers.ReviewMapper;
@@ -36,6 +37,7 @@ public class ProjAPI {
     private static final Logger log =
             LoggerFactory.getLogger(ProjAPI.class);
     private final Map<Integer, Long> progressAllCooldown = new ConcurrentHashMap<>();
+    private ObjectMapper jsonMapper = new ObjectMapper();
 
     public ProjAPI(ProjMapper projMapper, UserMapper userMapper, ReviewMapper reviewMapper) {
         this.projMapper = projMapper;
@@ -111,7 +113,7 @@ public class ProjAPI {
             return new Respond<>(false, "14", null);
         }
 
-        if (projOpt.get().status != 1) {
+        if (projOpt.get().status != 1 && projOpt.get().status != 3) {
             return new Respond<>(false, "24", null);
         }
 
@@ -121,6 +123,48 @@ public class ProjAPI {
         for (EntityReviewUsers user : users) {
             uidNameMap.put(String.valueOf(user.uid), user.allname);
         }
+
+        if (projOpt.get().status == 3) {
+            List<HashMap<String, Object>> data = new java.util.ArrayList<>();
+            if (projOpt.get().recheck == null || projOpt.get().recheck.isBlank()) {
+                return new Respond<>(true, "success", data);
+            }
+
+            List<String> recheckUsers = jsonMapper.readValue(
+                    projOpt.get().recheck,
+                    new tools.jackson.core.type.TypeReference<List<String>>() {}
+            );
+            if (recheckUsers == null || recheckUsers.isEmpty()) {
+                return new Respond<>(true, "success", data);
+            }
+
+            List<EntityReviewRecheck> recheckPhotos = reviewMapper.getRecheckPhotos(projOpt.get().projId);
+            for (String uid : new LinkedHashSet<>(recheckUsers)) {
+                int read = 0;
+                for (EntityReviewRecheck photo : recheckPhotos) {
+                    if (photo.value == null || photo.value.isBlank()) {
+                        continue;
+                    }
+                    HashMap<String, List<Object>> value = jsonMapper.readValue(
+                            photo.value,
+                            new tools.jackson.core.type.TypeReference<HashMap<String, List<Object>>>() {}
+                    );
+                    if (value.containsKey(uid) && value.get(uid) != null) {
+                        read++;
+                    }
+                }
+
+                HashMap<String, Object> userProgress = new HashMap<>();
+                userProgress.put("uid", uid);
+                userProgress.put("allname", uidNameMap.getOrDefault(uid, uid));
+                userProgress.put("all", recheckPhotos.size());
+                userProgress.put("read", read);
+                userProgress.put("remaining", recheckPhotos.size() - read);
+                data.add(userProgress);
+            }
+            return new Respond<>(true, "success", data);
+        }
+
         HashMap<String, List<List<Integer>>> taskAll = jsonMapper.readValue(
                 projOpt.get().task,
                 new tools.jackson.core.type.TypeReference<HashMap<String, List<List<Integer>>>>() {}
@@ -204,11 +248,9 @@ public class ProjAPI {
             return new Respond<>(false, "28", null);
         }
         progressAllCooldown.put(adminUid, now);
-
-        ObjectMapper jsonMapper = new ObjectMapper();
         // 工程列表
         List<EntityReviewProj> projList = projMapper.getProjList().stream()
-                .filter(proj -> proj.status == 1)
+                .filter(proj -> proj.status == 1 || proj.status == 3)
                 .toList();
         // 用户列表
         Map<String, String> uidNameMap = userMapper.getUserList().stream()
@@ -220,6 +262,43 @@ public class ProjAPI {
         Map<String, HashMap<String, Object>> resultMap = new HashMap<>();
 
         for (EntityReviewProj proj : projList) {
+            if (proj.status == 3) {
+                if (proj.recheck == null || proj.recheck.isBlank()) {
+                    continue;
+                }
+                List<String> recheckUsers = jsonMapper.readValue(
+                        proj.recheck,
+                        new tools.jackson.core.type.TypeReference<List<String>>() {}
+                );
+                if (recheckUsers == null || recheckUsers.isEmpty()) {
+                    continue;
+                }
+
+                List<EntityReviewRecheck> recheckPhotos = reviewMapper.getRecheckPhotos(proj.projId);
+                for (String uid : new LinkedHashSet<>(recheckUsers)) {
+                    int read = 0;
+                    for (EntityReviewRecheck photo : recheckPhotos) {
+                        if (photo.value == null || photo.value.isBlank()) {
+                            continue;
+                        }
+                        HashMap<String, List<Object>> value = jsonMapper.readValue(
+                                photo.value,
+                                new tools.jackson.core.type.TypeReference<HashMap<String, List<Object>>>() {}
+                        );
+                        if (value.containsKey(uid) && value.get(uid) != null) {
+                            read++;
+                        }
+                    }
+
+                    HashMap<String, Object> userData = resultMap.getOrDefault(uid, new HashMap<>());
+                    userData.put("uid", uid);
+                    userData.put("allname", uidNameMap.getOrDefault(uid, uid));
+                    userData.put("all", ((int) userData.getOrDefault("all", 0)) + recheckPhotos.size());
+                    userData.put("read", ((int) userData.getOrDefault("read", 0)) + read);
+                    resultMap.put(uid, userData);
+                }
+                continue;
+            }
             // 任务列表
             HashMap<String, List<List<Integer>>> taskAll = jsonMapper.readValue(
                     proj.task,
@@ -371,28 +450,28 @@ public class ProjAPI {
     @PostMapping("create_proj")
     public Respond<String> create_proj(
             @RequestParam("file") MultipartFile iconFile,
-            @RequestParam("json") String json
+            @RequestParam("body") String json
     ) throws Exception {
         // json转换
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> map = mapper.readValue(json, Map.class);
+        Map<String, Object> body = mapper.readValue(json, Map.class);
 
         // 检查参数
         if (
-                !map.containsKey("name") ||
-                        !map.containsKey("type") ||
-                        !map.containsKey("max") ||
-                        !map.containsKey("adminUid") ||
-                        !map.containsKey("adminToken")
+                !body.containsKey("name") ||
+                !body.containsKey("type") ||
+                !body.containsKey("max") ||
+                !body.containsKey("adminUid") ||
+                !body.containsKey("adminToken")
         ) {
             return new Respond<>(false, "1", null);
         }
         if (
-                !(map.get("name") instanceof String) ||
-                        !(map.get("type") instanceof Integer) ||
-                        !(map.get("max") instanceof Integer) ||
-                        !(map.get("adminUid") instanceof Integer) ||
-                        !(map.get("adminToken") instanceof String)
+                !(body.get("name") instanceof String) ||
+                !(body.get("type") instanceof Integer) ||
+                !(body.get("max") instanceof Integer) ||
+                !(body.get("adminUid") instanceof Integer) ||
+                !(body.get("adminToken") instanceof String)
         ) {
             return new Respond<>(false, "1", null);
         }
@@ -400,11 +479,11 @@ public class ProjAPI {
             return new Respond<>(false, "1", null);
         }
 
-        String name = (String) map.get("name");
-        int type = (Integer) map.get("type");
-        int max = (Integer) map.get("max");
-        int adminUid = (Integer) map.get("adminUid");
-        String adminToken = (String) map.get("adminToken");
+        String name = (String) body.get("name");
+        int type = (Integer) body.get("type");
+        int max = (Integer) body.get("max");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
 
         if (name.isBlank()) {
             return new Respond<>(false, "1", null);
@@ -469,7 +548,7 @@ public class ProjAPI {
 
     // 删除工程
     @PostMapping("/delete_proj")
-    public Respond<String> delete_proj(@RequestBody HashMap<String, Object> body) {
+    public Respond<String> delete_proj(@RequestBody HashMap<String, Object> body) throws IOException {
         // 检查参数
         if (!body.containsKey("projId") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
             return new Respond<>(false, "1", null);
@@ -492,6 +571,13 @@ public class ProjAPI {
         if (!result) {
             return new Respond<>(false, "0", null);
         }
+        // dir
+        String baseDir = System.getProperty("user.dir");
+        String dirStr = baseDir + File.separator +
+                "data" + File.separator +
+                "proj" + File.separator +
+                projId + File.separator;
+        FileUtil.removeDir(dirStr);
 
         return new Respond<>(true, "success", null);
     }
@@ -508,31 +594,31 @@ public class ProjAPI {
     @PostMapping("/update_proj")
     public Respond<String> update_proj(
             @RequestParam(value = "file", required = false) MultipartFile iconFile,
-            @RequestParam("json") String json
+            @RequestParam("body") String json
     ) {
         // json转换
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> map = mapper.readValue(json, Map.class);
+        Map<String, Object> body = mapper.readValue(json, Map.class);
 
         // 检查参数
         if (
-                !map.containsKey("projId") ||
-                        !map.containsKey("adminUid") ||
-                        !map.containsKey("adminToken")
+                !body.containsKey("projId") ||
+                !body.containsKey("adminUid") ||
+                !body.containsKey("adminToken")
         ) {
             return new Respond<>(false, "1", null);
         }
         if (
-                !(map.get("projId") instanceof String) ||
-                        !(map.get("adminUid") instanceof Integer) ||
-                        !(map.get("adminToken") instanceof String)
+                !(body.get("projId") instanceof String) ||
+                !(body.get("adminUid") instanceof Integer) ||
+                !(body.get("adminToken") instanceof String)
         ) {
             return new Respond<>(false, "1", null);
         }
 
-        String projId = (String) map.get("projId");
-        int adminUid = (Integer) map.get("adminUid");
-        String adminToken = (String) map.get("adminToken");
+        String projId = (String) body.get("projId");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
 
         // 检查token
         if (!userMapper.checkAdmin(adminUid, adminToken)) {
@@ -559,8 +645,8 @@ public class ProjAPI {
         display = projOpt.get().display;
         status = projOpt.get().status;
 
-        if (map.containsKey("name")) {
-            String mName = (String) map.get("name");
+        if (body.containsKey("name")) {
+            String mName = (String) body.get("name");
             if (mName.isBlank()) {
                 return new Respond<>(false, "1", null);
             }
@@ -593,22 +679,22 @@ public class ProjAPI {
             String uuid = Utilities.generateUUID();
             thumbnail = uuid + "." + extension;
         }
-        if (map.containsKey("display")) {
-            if (!(map.get("display") instanceof Integer)) {
+        if (body.containsKey("display")) {
+            if (!(body.get("display") instanceof Integer)) {
                 return new Respond<>(false, "1", null);
             }
-            int mDisplay = (Integer) map.get("display");
+            int mDisplay = (Integer) body.get("display");
             if (mDisplay != 0 && mDisplay != 1) {
                 return new Respond<>(false, "1", null);
             }
             display = mDisplay;
         }
-        if (map.containsKey("status")) {
-            if (!(map.get("status") instanceof Integer)) {
+        if (body.containsKey("status")) {
+            if (!(body.get("status") instanceof Integer)) {
                 return new Respond<>(false, "1", null);
             }
-            int mStatus = (Integer) map.get("status");
-            if (mStatus < 0 || mStatus > 3) {
+            int mStatus = (Integer) body.get("status");
+            if (mStatus < 0 || mStatus > 4) {
                 return new Respond<>(false, "1", null);
             }
             status = mStatus;
@@ -644,15 +730,26 @@ public class ProjAPI {
             @RequestBody HashMap<String, Object> body
     ) {
         // 检查参数
-        if (!body.containsKey("projId") || !body.containsKey("task") || !body.containsKey("adminUid") || !body.containsKey("adminToken")) {
+        if (!body.containsKey("projId") ||
+            !body.containsKey("task") ||
+            !body.containsKey("recheck") ||
+            !body.containsKey("adminUid") ||
+            !body.containsKey("adminToken")
+        ) {
             return new Respond<>(false, "1", null);
         }
-        if (!(body.get("projId") instanceof String) || !(body.get("task") instanceof String) || !(body.get("adminUid") instanceof Integer) || !(body.get("adminToken") instanceof String)) {
+        if (!(body.get("projId") instanceof String) ||
+            !(body.get("task") instanceof String) ||
+            !(body.get("recheck") instanceof String) ||
+            !(body.get("adminUid") instanceof Integer) ||
+            !(body.get("adminToken") instanceof String)
+        ) {
             return new Respond<>(false, "1", null);
         }
 
         String projId = (String) body.get("projId");
         String task = (String) body.get("task");
+        String recheck = (String) body.get("recheck");
         int adminUid = (Integer) body.get("adminUid");
         String adminToken = (String) body.get("adminToken");
 
@@ -668,7 +765,7 @@ public class ProjAPI {
         }
 
         // 更新数据库
-        Boolean result = projMapper.updateProjTask(projId, task);
+        Boolean result = projMapper.updateProjTask(projId, task, recheck);
         if (!result) {
             return new Respond<>(false, "0", null);
         }
@@ -685,26 +782,26 @@ public class ProjAPI {
     @PostMapping("upload_image")
     public Respond<String> uploadImage(
             @RequestParam("file") MultipartFile img,
-            @RequestParam("json") String json
+            @RequestParam("body") String json
     ) throws Exception {
         // json转换
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> map = mapper.readValue(json, Map.class);
+        Map<String, Object> body = mapper.readValue(json, Map.class);
 
         // 检查参数
         if (
-                !map.containsKey("projId") ||
-                !map.containsKey("author") ||
-                !map.containsKey("adminUid") ||
-                !map.containsKey("adminToken")
+                !body.containsKey("projId") ||
+                !body.containsKey("author") ||
+                !body.containsKey("adminUid") ||
+                !body.containsKey("adminToken")
         ) {
             return new Respond<>(false, "1", null);
         }
         if (
-                !(map.get("projId") instanceof String) ||
-                !(map.get("author") instanceof String) ||
-                !(map.get("adminUid") instanceof Integer) ||
-                !(map.get("adminToken") instanceof String)
+                !(body.get("projId") instanceof String) ||
+                !(body.get("author") instanceof String) ||
+                !(body.get("adminUid") instanceof Integer) ||
+                !(body.get("adminToken") instanceof String)
         ) {
             return new Respond<>(false, "1", null);
         }
@@ -713,10 +810,10 @@ public class ProjAPI {
             return new Respond<>(false, "1", null);
         }
 
-        String projId = (String) map.get("projId");
-        String author = (String) map.get("author");
-        int adminUid = (Integer) map.get("adminUid");
-        String adminToken = (String) map.get("adminToken");
+        String projId = (String) body.get("projId");
+        String author = (String) body.get("author");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
 
         // 检查token
         if (!userMapper.checkAdmin(adminUid, adminToken)) {
@@ -794,6 +891,74 @@ public class ProjAPI {
             FileUtil.deleteFile(proxyDirStr, webpName);
             return new Respond<>(false, "0", null);
         }
+    }
+
+    @GetMapping("/get_recheck_list")
+    public Respond<List<HashMap<String, Object>>> getRecheckList(
+            @RequestParam("projId") String projId,
+            @RequestParam("adminUid") int adminUid,
+            @RequestParam("adminToken") String adminToken
+    ) {
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+        if (projMapper.getProjById(projId).isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+
+        List<HashMap<String, Object>> recheckList = projMapper.getRecheckPhotoList(projId);
+        recheckList.forEach(item -> item.put("recheck", true));
+        return new Respond<>(true, "success", recheckList);
+    }
+
+    @PostMapping("/set_recheck")
+    public Respond<Boolean> setRecheck(
+            @RequestBody HashMap<String, Object> body
+    ) {
+        if (!body.containsKey("photoid")
+                || !body.containsKey("projId")
+                || !body.containsKey("recheck")
+                || !body.containsKey("adminUid")
+                || !body.containsKey("adminToken")) {
+            return new Respond<>(false, "1", null);
+        }
+        if (!(body.get("photoid") instanceof Integer)
+                || !(body.get("projId") instanceof String)
+                || !(body.get("recheck") instanceof Boolean)
+                || !(body.get("adminUid") instanceof Integer)
+                || !(body.get("adminToken") instanceof String)) {
+            return new Respond<>(false, "1", null);
+        }
+
+        int photoId = (Integer) body.get("photoid");
+        String projId = (String) body.get("projId");
+        boolean recheck = (Boolean) body.get("recheck");
+        int adminUid = (Integer) body.get("adminUid");
+        String adminToken = (String) body.get("adminToken");
+
+        if (!userMapper.checkAdmin(adminUid, adminToken)) {
+            return new Respond<>(false, "5", null);
+        }
+        if (projMapper.getProjById(projId).isEmpty()) {
+            return new Respond<>(false, "14", null);
+        }
+
+        Optional<EntityReviewPhotos> photoOpt = projMapper.getPhotoById(photoId);
+        if (photoOpt.isEmpty() || !projId.equals(photoOpt.get().proj)) {
+            return new Respond<>(false, "25", null);
+        }
+
+        Boolean updated;
+        if (recheck) {
+            updated = projMapper.addRecheck(photoId, projId);
+        } else {
+            updated = projMapper.deleteRecheck(photoId, projId);
+        }
+
+        if (!updated) {
+            return new Respond<>(false, "0", null);
+        }
+        return new Respond<>(true, "success", recheck);
     }
 
     // 删除照片

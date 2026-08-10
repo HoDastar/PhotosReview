@@ -6,18 +6,12 @@ async function createProj() {
     const maxScoreInput = document.querySelector('#createProj input[name="input_project_max_score"]');
     // 非空
     if (!projName || projName.trim() === "" || !reviewTypeInput || !maxScoreInput || fileInput.value === '') {
-        openModal(
-            i18n.lookUp("modal_content_fail")[11].title,
-            i18n.lookUp("modal_content_fail")[11].message
-        );
+        showBubble(i18n.lookUp("modal_content_fail")[11].message, 'red', '#fff');
         return;
     }
 
     if (projName.length > 100) {
-        openModal(
-            i18n.lookUp("modal_content_fail")[6].title,
-            i18n.lookUp("modal_content_fail")[6].message
-        );
+        showBubble(i18n.lookUp("modal_content_fail")[6].message, 'red', '#fff');
         return;
     }
 
@@ -25,7 +19,7 @@ async function createProj() {
     const maxScore = parseInt(maxScoreInput.value, 10);
 
     if (isNaN(maxScore) || maxScore < 3 || maxScore > 10) {
-        await openModal(i18n.lookUp("modal_content_fail")[1].title, i18n.lookUp("modal_content_fail")[1].message);
+        showBubble(i18n.lookUp("modal_content_fail")[1].message, 'red', '#fff');
         return;
     }
 
@@ -46,10 +40,7 @@ async function createProj() {
     const result = await postApiWithFile(url + "/api/proj/create_proj", param, fileInput);
     const msg = parseInt(result.message, 10);
     if (!result.result) {
-        await openModal(
-            i18n.lookUp("modal_content_fail")[msg]["title"],
-            i18n.lookUp("modal_content_fail")[msg]["message"]
-        );
+        showBubble(i18n.lookUp("modal_content_fail")[msg]["message"], 'red', '#fff');
     } else {
         await openModal(
             i18n.lookUp("modal_content_success")[0].title,

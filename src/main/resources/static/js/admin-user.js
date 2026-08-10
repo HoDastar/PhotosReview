@@ -90,23 +90,17 @@ async function registerUser() {
         return;
     }
     if (allname.length > 10) {
-        openModal(
-            i18n.lookUp("modal_content_fail")[6].title,
-            i18n.lookUp("modal_content_fail")[6].message
-        );
+        showBubble(i18n.lookUp("modal_content_fail")[6].message, 'red', '#fff');
         return;
     }
     const statusEl = document.querySelector('#manageUser input[name="register_user_status"]:checked');
     if (!statusEl) {
-        openModal(
-            i18n.lookUp("modal_content_fail")[11].title,
-            i18n.lookUp("modal_content_fail")[11].message
-        );
+        showBubble(i18n.lookUp("modal_content_fail")[11].message, 'red', '#fff');
         return;
     }
     const result = await postApi(url + "/api/user/register", {
         uid: targetUid,
-        allname,
+        allname: allname,
         status: parseInt(statusEl.value, 10),
         adminUid: uid,
         adminToken: token
@@ -129,14 +123,14 @@ async function registerUser() {
 }
 async function resetUserPassword(targetUid) {
     if (!targetUid) {
-        return;
+        return false;
     }
-    const a = await openModal(
+    const r = await openModal(
         i18n.lookUp("modal_content_confirm")[5].title,
         i18n.lookUp("modal_content_confirm")[5].message,
     )
-    if (!a) {
-        return;
+    if (!r) {
+        return false;
     }
     const result = await postApi(url + "/api/user/reset_password", {
         uid: targetUid,
@@ -149,31 +143,30 @@ async function resetUserPassword(targetUid) {
             i18n.lookUp("modal_content_fail")[msg].title,
             i18n.lookUp("modal_content_fail")[msg].message
         );
+        return false;
     } else {
         await openModal(
             i18n.lookUp("modal_content_success")[0].title,
             i18n.lookUp("modal_content_success")[0].message
         );
         await loadManageUserList();
+        return true;
     }
 }
 async function renameUsername(targetUid, name) {
     if (!targetUid) {
-        return;
+        return false;
     }
-    const a = await openModal(
+    const r = await openModal(
         i18n.lookUp("modal_content_confirm")[5].title,
         i18n.lookUp("modal_content_confirm")[5].message,
     )
-    if (!a) {
-        return;
+    if (!r) {
+        return false;
     }
     if (name.length > 10) {
-        openModal(
-            i18n.lookUp("modal_content_fail")[6].title,
-            i18n.lookUp("modal_content_fail")[6].message
-        );
-        return;
+        showBubble(i18n.lookUp("modal_content_fail")[6].message, 'red', '#fff');
+        return false;
     }
     const result = await postApi(url + "/api/user/rename", {
         uid: targetUid,
@@ -183,28 +176,27 @@ async function renameUsername(targetUid, name) {
     });
     const msg = parseInt(result.message, 10);
     if (!result.result) {
-        await openModal(
-            i18n.lookUp("modal_content_fail")[msg].title,
-            i18n.lookUp("modal_content_fail")[msg].message
-        );
+        showBubble(i18n.lookUp("modal_content_fail")[msg].message, 'red', '#fff');
+        return false;
     } else {
         await openModal(
             i18n.lookUp("modal_content_success")[0].title,
             i18n.lookUp("modal_content_success")[0].message
         );
         await loadManageUserList();
+        return true;
     }
 }
 async function banUser(targetUid) {
     if (!targetUid) {
-        return;
+        return false;
     }
-    const a = await openModal(
+    const r = await openModal(
         i18n.lookUp("modal_content_confirm")[5].title,
         i18n.lookUp("modal_content_confirm")[5].message,
     )
-    if (!a) {
-        return;
+    if (!r) {
+        return false;
     }
     const result = await postApi(url + "/api/user/ban_user", {
         uid: targetUid,
@@ -217,24 +209,26 @@ async function banUser(targetUid) {
             i18n.lookUp("modal_content_fail")[msg].title,
             i18n.lookUp("modal_content_fail")[msg].message
         );
+        return false;
     } else {
         await openModal(
             i18n.lookUp("modal_content_success")[0].title,
             i18n.lookUp("modal_content_success")[0].message
         );
         await loadManageUserList();
+        return true;
     }
 }
 async function unbanUser(targetUid) {
     if (!targetUid) {
-        return;
+        return false;
     }
-    const a = await openModal(
+    const r = await openModal(
         i18n.lookUp("modal_content_confirm")[5].title,
         i18n.lookUp("modal_content_confirm")[5].message,
     )
-    if (!a) {
-        return;
+    if (!r) {
+        return false;
     }
     const result = await postApi(url + "/api/user/unban_user", {
         uid: targetUid,
@@ -247,25 +241,62 @@ async function unbanUser(targetUid) {
             i18n.lookUp("modal_content_fail")[msg].title,
             i18n.lookUp("modal_content_fail")[msg].message
         );
+        return false;
     } else {
         await openModal(
             i18n.lookUp("modal_content_success")[0].title,
             i18n.lookUp("modal_content_success")[0].message
         );
         await loadManageUserList();
+        return true;
+    }
+}
+async function setAdmin(targetUid, type) {
+    if (!targetUid) {
+        return false;
+    }
+    if (type !== 0 && type !== 1) {
+        return false;
+    }
+    const r = await openModal(
+        i18n.lookUp("modal_content_confirm")[5].title,
+        i18n.lookUp("modal_content_confirm")[5].message,
+    )
+    if (!r) {
+        return false;
+    }
+    const result = await postApi(url + "/api/user/setAdmin", {
+        uid: targetUid,
+        type: type,
+        adminUid: uid,
+        adminToken: token
+    });
+    const msg = parseInt(result.message, 10);
+    if (!result.result) {
+        await openModal(
+            i18n.lookUp("modal_content_fail")[msg].title,
+            i18n.lookUp("modal_content_fail")[msg].message
+        );
+        return false;
+    } else {
+        await openModal(
+            i18n.lookUp("modal_content_success")[0].title,
+            i18n.lookUp("modal_content_success")[0].message
+        );
+        await loadManageUserList();
+        return true;
     }
 }
 async function deleteUser(targetUid) {
     if (!targetUid) {
-        return;
+        return false;
     }
-    const confirm = await openModal(
+    const r = await openModal(
         i18n.lookUp("modal_content_confirm")[2].title,
-        i18n.lookUp("modal_content_confirm")[2].message,
-        true
+        i18n.lookUp("modal_content_confirm")[2].message
     );
-    if (!confirm) {
-        return;
+    if (!r) {
+        return false;
     }
 
     const result = await postApi(url + "/api/user/delete_user", {
@@ -279,12 +310,14 @@ async function deleteUser(targetUid) {
             i18n.lookUp("modal_content_fail")[msg].title,
             i18n.lookUp("modal_content_fail")[msg].message
         );
+        return false;
     } else {
         await openModal(
             i18n.lookUp("modal_content_success")[0].title,
             i18n.lookUp("modal_content_success")[0].message
         );
         await loadManageUserList();
+        return true;
     }
 }
 
@@ -335,15 +368,18 @@ async function renderUserOpModal(data) {
     renameEl.appendChild(renameBtn);
 
     // 修改用户名
-    renameBtn.addEventListener("click", async () => {
+    const renameAddEventListener = async () => {
         renameBtn.innerHTML;
         const name = document.querySelector('#userOpModalBody input[name="newName"]').value;
         if (!name) {
             return;
         }
-        await renameUsername(data.uid, name);
-        closeModal();
-    });
+        const result = await renameUsername(data.uid, name);
+        if (result) {
+            closeModal();
+        }
+    }
+    bindLoadingButtonEl(renameBtn, renameAddEventListener);
 
     // 用户操作模块
     const opEl = document.createElement("div");
@@ -363,6 +399,17 @@ async function renderUserOpModal(data) {
     const banOrUnbanBtn = document.createElement("button");
     banOrUnbanBtn.classList.add("button-common", "user-op-btn");
     banOrUnbanBtn.innerHTML = data.status === 2 ? i18n.lookUp("unban_user") : i18n.lookUp("ban_user");
+    // 设置/撤去管理员按钮
+    const setOrRemoveAdminBtn = document.createElement("button");
+    setOrRemoveAdminBtn.classList.add("button-common", "user-op-btn");
+    if (data.status === 0) {
+        setOrRemoveAdminBtn.innerHTML = i18n.lookUp("remove_admin");
+    } else if (data.status === 1) {
+        setOrRemoveAdminBtn.innerHTML = i18n.lookUp("set_admin");
+    } else {
+        setOrRemoveAdminBtn.innerHTML = i18n.lookUp("set_admin");
+        setOrRemoveAdminBtn.disabled = true;
+    }
     // 删除用户按钮
     const deleteBtn = document.createElement("button");
     deleteBtn.classList.add("button-common", "user-op-btn", "del");
@@ -370,26 +417,51 @@ async function renderUserOpModal(data) {
     // 添加
     opListEl.appendChild(resetPwdBtn);
     opListEl.appendChild(banOrUnbanBtn);
+    opListEl.appendChild(setOrRemoveAdminBtn);
     opListEl.appendChild(deleteBtn);
     opEl.appendChild(opListEl);
 
     // 添加事件
-    resetPwdBtn.addEventListener("click", async () => {
-        await resetUserPassword(data.uid);
-        closeModal();
-    });
-    banOrUnbanBtn.addEventListener("click", async () => {
-        if (data.status === 2) {
-            await unbanUser(data.uid);
-        } else {
-            await banUser(data.uid);
+    const resetPwdAddEventListener = async () => {
+        const result = await resetUserPassword(data.uid);
+        if (result) {
+            closeModal();
         }
-        closeModal();
-    });
-    deleteBtn.addEventListener("click", async () => {
-        await deleteUser(data.uid);
-        closeModal();
-    })
+    }
+    const banOrUnbanAddEventListener = async () => {
+        let result;
+        if (data.status === 2) {
+            result = await unbanUser(data.uid);
+        } else {
+            result = await banUser(data.uid);
+        }
+        if (result) {
+            closeModal();
+        }
+    }
+    const setAdminAddEventListener = async () => {
+        let result;
+        if (data.status === 0) {
+            result = await setAdmin(data.uid, 1);
+        } else if (data.status === 1) {
+            result = await setAdmin(data.uid, 0);
+        } else {
+            result = false;
+        }
+        if (result) {
+            closeModal();
+        }
+    }
+    const deleteAddEventListener = async () => {
+        const result = await deleteUser(data.uid);
+        if (result) {
+            closeModal();
+        }
+    }
+    bindLoadingButtonEl(resetPwdBtn, resetPwdAddEventListener);
+    bindLoadingButtonEl(banOrUnbanBtn, banOrUnbanAddEventListener);
+    bindLoadingButtonEl(setOrRemoveAdminBtn, setAdminAddEventListener);
+    bindLoadingButtonEl(deleteBtn, deleteAddEventListener);
 
     body.appendChild(renameEl);
     body.appendChild(opEl);

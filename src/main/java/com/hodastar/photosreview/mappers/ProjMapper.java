@@ -6,6 +6,7 @@ import com.hodastar.photosreview.utils.Utilities;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +33,7 @@ public class ProjMapper {
                         rs.getInt("type"),
                         rs.getInt("max"),
                         rs.getString("task"),
+                        rs.getString("recheck"),
                         rs.getString("thumbnail"),
                         rs.getInt("status"),
                         rs.getString("time"),
@@ -56,12 +58,13 @@ public class ProjMapper {
     public Boolean createProj(String projId, String name, int type, int max, String thumbnail) {
         try {
             jdbcTemplate.update(
-                    "INSERT INTO review_proj(projid, name, type, max, task, thumbnail, status, time, display) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO review_proj(projid, name, type, max, task, recheck, thumbnail, status, time, display) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     projId,
                     name,
                     type,
                     max,
                     "{}",
+                    "[]",
                     thumbnail,
                     0,
                     Utilities.nowTimeString(),
@@ -125,6 +128,7 @@ public class ProjMapper {
                                 rs.getInt("type"),
                                 rs.getInt("max"),
                                 rs.getString("task"),
+                                rs.getString("recheck"),
                                 rs.getString("thumbnail"),
                                 rs.getInt("status"),
                                 rs.getString("time"),
@@ -157,6 +161,7 @@ public class ProjMapper {
                                 rs.getInt("type"),
                                 rs.getInt("max"),
                                 rs.getString("task"),
+                                rs.getString("recheck"),
                                 rs.getString("thumbnail"),
                                 rs.getInt("status"),
                                 rs.getString("time"),
@@ -229,11 +234,11 @@ public class ProjMapper {
      * @param task 工程任务
      * @return 修改结果
      */
-    public Boolean updateProjTask(String projId, String task) {
+    public Boolean updateProjTask(String projId, String task, String recheck) {
         try {
             int rowsAffected = jdbcTemplate.update(
-                    "UPDATE review_proj SET task = ? WHERE projid = ?",
-                    task, projId
+                    "UPDATE review_proj SET task = ?, recheck = ?  WHERE projid = ?",
+                    task, recheck, projId
             );
             return rowsAffected > 0;
         } catch (Exception e) {
@@ -320,6 +325,59 @@ public class ProjMapper {
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
+        }
+    }
+
+    public List<HashMap<String, Object>> getRecheckPhotoList(String projId) {
+        return jdbcTemplate.query(
+                """
+                SELECT r.photoid, d.name, d.author, r.value, r.final_score
+                FROM review_recheck r
+                LEFT JOIN review_data d ON d.id = r.photoid AND d.proj = r.proj
+                WHERE r.proj = ?
+                ORDER BY r.photoid ASC
+                """,
+                (rs, rowNum) -> {
+                    HashMap<String, Object> item = new HashMap<>();
+                    item.put("photoid", rs.getInt("photoid"));
+                    item.put("name", rs.getString("name"));
+                    item.put("author", rs.getString("author"));
+                    item.put("value", rs.getString("value"));
+                    item.put("final_score", rs.getDouble("final_score"));
+                    return item;
+                },
+                projId
+        );
+    }
+
+    public Boolean addRecheck(int photoId, String projId) {
+        try {
+            int rowsAffected = jdbcTemplate.update(
+                    """
+                    INSERT INTO review_recheck(photoid, proj, value, final_score)
+                    VALUES (?, ?, ?, ?)
+                    ON CONFLICT(photoid) DO UPDATE SET
+                        proj = excluded.proj
+                    """,
+                    photoId, projId, "{}", -1
+            );
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Boolean deleteRecheck(int photoId, String projId) {
+        try {
+            int rowsAffected = jdbcTemplate.update(
+                    "DELETE FROM review_recheck WHERE photoid = ? AND proj = ?",
+                    photoId, projId
+            );
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }

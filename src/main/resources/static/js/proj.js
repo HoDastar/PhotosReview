@@ -1,4 +1,3 @@
-
 const user_uid = getCookie('review_uid');
 const user_token = getCookie('review_token');
 const mode = getUrlGet('type');
@@ -220,15 +219,59 @@ class classPhotoList {
         const score = this.getScore();
         // 获取评论
         const note = pageView.html_note.value.trim();
-        let Unote = encodeURIComponent(note)
-        console.log(note);
         // 检查评分
         if (score === 0) {
             showBubble(i18n.lookUp("score_empty"), 'red', '#fff');
             return;
         }
+        // 批注检测
+        if (note.length > 500) {
+            showBubble(i18n.lookUp("modal_content_fail")[6].message, 'red', '#fff');
+        }
         // 正则表达式
         const regex = /^\d+(,\d+)*$/;
+
+        // 复审
+        if (mode === 'recheck') {
+            // 批注检测
+            if (note.length === 0) {
+                showBubble(i18n.lookUp("modal_content_fail")[32].message, 'red', '#fff');
+                return;
+            }
+            // 获取当前page图片数据
+            const this_photoid = this.photoList[this.page].photoid;
+            let param = {
+                uid: parseInt(user_uid),
+                token: user_token,
+                photoid: this_photoid,
+                score: score,
+                note: note
+            }
+            // 提交
+            let obj = await postApi(url + "/api/review/recheck?proj=" + proj, param);
+            // 判断结果
+            if (!obj.result) {
+                const msg = parseInt(obj.message);
+                await openModal(
+                    i18n.lookUp("modal_content_fail")[msg].title,
+                    i18n.lookUp("modal_content_fail")[msg].message
+                );
+                return;
+            }
+            showBubble(i18n.lookUp("affected_rows") + "1", 'blue', '#fff');
+            // 减少剩余
+            if (!this.photoList[this.page].status) {
+                this.remaining -= 1;
+            }
+            // 更新当前页面数据
+            this.updateArray(this.page, score, note);
+            // 自动切换下一张
+            if (settings.autoNext) {
+                pageView.nextPage();
+            }
+            this.updatePhoto();
+            return;
+        }
 
         // 批量提交（列表）
         if (settings.batchOperationList) {
@@ -254,7 +297,6 @@ class classPhotoList {
                 }
                 this_photoid_list.push(this.photoList[tempid].photoid);
             }
-            let json_photoid_list = JSON.stringify(this_photoid_list);
             let param = {
                 uid: parseInt(user_uid),
                 token: user_token,
@@ -352,7 +394,6 @@ class classPhotoList {
 
         // 单次提交
         else {
-
             // 获取当前page图片数据
             const this_photoid = this.photoList[this.page].photoid;
             let param = {
@@ -403,7 +444,13 @@ class classPhotoList {
 
     // 首次加载
     async fetchList() {
-        const obj = await getApi(url + '/api/review/fetch_photo_list?uid=' + user_uid + '&token=' + user_token + '&proj=' + getUrlGet('proj'));
+        let obj;
+        // 复审
+        if (mode === 'recheck') {
+            obj = await getApi(url + '/api/review/fetch_recheck_list?uid=' + user_uid + '&token=' + user_token + '&proj=' + proj);
+        } else {
+            obj = await getApi(url + '/api/review/fetch_photo_list?uid=' + user_uid + '&token=' + user_token + '&proj=' + proj);
+        }
 
         if (!obj.result) {
             const msg = parseInt(obj.message);
@@ -416,7 +463,7 @@ class classPhotoList {
         }
 
         // 获取工程mode
-        switch (getUrlGet('type')) {
+        switch (mode) {
 
             case 'project':
                 this.type = 'project';
@@ -452,6 +499,21 @@ class classPhotoList {
                     return;
                 }
                 pageView.html_mode.innerHTML = i18n.lookUp("history");
+                break;
+
+            case 'recheck':
+                this.type = 'recheck';
+                // 列表
+                this.photoList = obj.data.list;
+                // 判断
+                if (this.photoList.length === 0) {
+                    pageView.rightPane.innerHTML = `
+                            <h1>${i18n.lookUp('no_history_record')}</h1>
+                        `;
+                    return;
+                }
+                pageView.html_mode.innerHTML = i18n.lookUp("recheck");
+                pageView.hideBatchOperation();
                 break;
 
             default:
@@ -633,6 +695,12 @@ class classPageView {
         this.html_img.style.transform = `rotate(${rotation}deg)`;
     }
 
+    // 隐藏批量操作
+    hideBatchOperation() {
+        document.getElementById("batch_widget").style.display = "none";
+        document.getElementById('batchOperationList').disabled = true;
+        document.getElementById('batchOperationRange').disabled = true;
+    }
 }
 
 // 快捷键类

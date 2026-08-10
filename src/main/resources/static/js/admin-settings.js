@@ -24,6 +24,7 @@ async function saveSystemSettings() {
     };
     const result = await postApiWithFile(url + "/api/system/update_website_info", body, fileInput);
     if (!result || !result.result) {
+        const msg = parseInt(result.message, 10);
         await openModal(
             i18n.lookUp("modal_content_fail")[msg].title,
             i18n.lookUp("modal_content_fail")[msg].message
