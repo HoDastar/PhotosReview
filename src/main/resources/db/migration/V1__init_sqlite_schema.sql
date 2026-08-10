@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS review_config (
 );
 
 INSERT INTO review_config(id, name, value)
-SELECT 0, 'website_name', 'DemoReview System'
+SELECT 0, 'website_name', 'DemoB'
 WHERE NOT EXISTS (
     SELECT 1 FROM review_config WHERE id = 0
 );
