@@ -278,6 +278,8 @@ function bindLoadingButton(id, handler) {
     bindLoadingButton("buildFinalResult", buildFinalResultData);
     bindLoadingButton("exportPhotosByScoreRange", exportPhotosByScoreRange);
     bindLoadingButton("downloadProjectData", downloadProjectData);
+    bindLoadingButton("inputProjectData", importProjectData);
+    document.getElementById("inputProjectArchive").addEventListener("change", updateProjectArchiveDisplay);
     document.getElementById("previewFinalResult")?.addEventListener("click", () => {
         void previewFinalResultPage();
     });

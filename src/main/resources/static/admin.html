@@ -86,6 +86,8 @@
                     data-i18n="view_progress">View Progress</span></button>
             <button class="panel-btn" data-page="outputData"><i class="fa-solid fa-file-export"></i> <span
                     data-i18n="output">Output</span></button>
+            <button class="panel-btn" data-page="inputData"><i class="fa-solid fa-file-import"></i> <span
+                    data-i18n="input">Input</span></button>
             <button class="panel-btn" data-page="systemSettings"><i class="fa-solid fa-gear"></i> <span data-i18n="settings"></span></button>
             <div class="icon-toggle-group">
                 <button class="icon-toggle" id="darkToggle" data-i18n-title="switch_theme">
@@ -600,7 +602,7 @@
             </div>
             <hr>
 
-            <h3 class="subtitle"><span data-i18n="build_final_result"></span></h3>
+            <h3 class="subtitle"><span data-i18n="generate"></span></h3>
             <div class="result-fetch-toolbar">
                 <button type="button" class="button-common" id="buildFinalResult">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
@@ -741,6 +743,35 @@
             <div id="singleProjProgressList" class="progress-list"></div>
         </section>
 
+        <section class="viewer" id="inputData" style="display: none;">
+            <h2><i class="fa-solid fa-file-import"></i> <span data-i18n="input">Input</span></h2>
+
+            <h3 class="subtitle"><span data-i18n="import_project">Import Project</span></h3>
+            <div class="form-row">
+                <div class="form-label">
+                    <label class="title" for="inputProjectArchive" data-i18n="project_archive">Project Archive</label>
+                    <div class="desc" data-i18n="description_import_project"></div>
+                </div>
+                <div class="form-control">
+                    <div class="file-upload">
+                        <input type="file" id="inputProjectArchive" accept=".zip,application/zip"/>
+                        <label for="inputProjectArchive" class="file-btn">
+                            <i class="fa-solid fa-file-zipper"></i>
+                            <span data-i18n="choose_a_zip">Choose a ZIP Archive</span>
+                        </label>
+                        <div class="file-display" id="inputProjectArchiveDisplay">
+                            <span data-i18n="you_havent_chosen">You haven't chosen</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-submit">
+                <button type="button" class="button-common" id="inputProjectData">
+                    <span data-i18n="import_project">Import Project</span>
+                </button>
+            </div>
+        </section>
+
         <section class="viewer" id="outputData" style="display: none;">
             <h2><i class="fa-solid fa-file-export"></i> <span data-i18n="output">Output</span></h2>
 
@@ -793,6 +824,7 @@
 <script src="./js/admin-manage-proj.js"></script>
 <script src="js/admin-manage-gallery.js"></script>
 <script src="js/admin-output.js"></script>
+<script src="js/admin-input.js"></script>
 <script src="js/admin-result.js"></script>
 <script src="./js/admin-user.js"></script>
 <script src="./js/admin-settings.js"></script>

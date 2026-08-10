@@ -510,7 +510,7 @@ hr {
 /* Manage User Table (new style) */
 .common-table {
     width: 100%;
-    max-width: 980px;
+    max-width: 1000px;
     margin: 30px 0;
     border-collapse: separate;
     border-spacing: 0;

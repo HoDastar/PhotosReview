@@ -128,8 +128,7 @@ public class FileUtil {
         String rootDirName = sourceDir.getFileName().toString();
 
         try (Stream<Path> stream = Files.walk(sourceDir)) {
-            stream.filter(Files::isRegularFile)
-                .forEach(path -> {
+            stream.forEach(path -> {
                     try {
                         // 保留最外层目录名
                         String entryName =
@@ -138,10 +137,16 @@ public class FileUtil {
                                         .toString()
                                         .replace("\\", "/");
 
+                        if (Files.isDirectory(path) && !entryName.endsWith("/")) {
+                            entryName += "/";
+                        }
+
                         ZipEntry entry =
                                 new ZipEntry(entryName);
                         zos.putNextEntry(entry);
-                        Files.copy(path, zos);
+                        if (Files.isRegularFile(path)) {
+                            Files.copy(path, zos);
+                        }
                         zos.closeEntry();
                     } catch (IOException e) {
                         throw new UncheckedIOException(e);
