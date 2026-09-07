@@ -146,6 +146,7 @@ async function uploadImages() {
     // 添加完成事件
     queue.addFinalTask(() => {
         loadManagePhotosList();
+        refreshManageProjectInfo();
         showBubble(i18n.lookUp("successful_rows") + successCount, "blue", "#fff");
     });
     // 添加任务

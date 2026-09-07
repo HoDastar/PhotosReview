@@ -45,15 +45,15 @@ CREATE TABLE IF NOT EXISTS review_config (
 );
 
 INSERT INTO review_config(id, name, value)
-SELECT 0, 'website_name', 'DemoB'
+SELECT 1, 'website_name', 'DemoB'
 WHERE NOT EXISTS (
-    SELECT 1 FROM review_config WHERE id = 0
+    SELECT 1 FROM review_config WHERE id = 1
 );
 
 INSERT INTO review_config(id, name, value)
-SELECT 1, 'website_icon', 'data/icon/default_icon.png'
+SELECT 2, 'website_icon', 'data/icon/default_icon.png'
 WHERE NOT EXISTS (
-    SELECT 1 FROM review_config WHERE id = 1
+    SELECT 1 FROM review_config WHERE id = 2
 );
 
 CREATE TABLE IF NOT EXISTS review_recheck (

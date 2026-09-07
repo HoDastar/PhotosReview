@@ -13,18 +13,6 @@ public class SystemMapper {
     }
 
     /**
-     * 数据库版本
-     * @return 数据库版本
-     */
-    public int getDatabaseVersion() {
-        Integer version = jdbcTemplate.queryForObject(
-                "SELECT value FROM review_config WHERE id = 0",
-                Integer.class
-        );
-        return version != null ? version : 0;
-    }
-
-    /**
      * 获取网站名称
      * @return 网站名称
      */

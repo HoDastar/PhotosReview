@@ -463,17 +463,11 @@ async function loadManageDist(index, id) {
             const first = parseInt(addFirstInputEl.value, 10);
             const last = parseInt(addLastInputEl.value, 10);
             if (isNaN(uid) || isNaN(first) || isNaN(last) || uid <= 0 || first < 0 || last < 0 || first > last) {
-                openModal(
-                    i18n.lookUp("modal_content_fail")[17].title,
-                    i18n.lookUp("modal_content_fail")[17].message
-                );
+                showBubble(i18n.lookUp("modal_content_fail")[17].message, 'red', '#fff');
                 return;
             }
             if (last >= total) {
-                openModal(
-                    i18n.lookUp("modal_content_fail")[18].title,
-                    i18n.lookUp("modal_content_fail")[18].message
-                );
+                showBubble(i18n.lookUp("modal_content_fail")[18].message, 'red', '#fff');
                 return;
             }
             addTask(uid, first, last);
@@ -513,10 +507,7 @@ async function loadManageDist(index, id) {
         addBtnEl.addEventListener("click", () => {
             const uid = parseInt(addUidInputEl.value, 10);
             if (isNaN(uid) || uid <= 0) {
-                openModal(
-                    i18n.lookUp("modal_content_fail")[17].title,
-                    i18n.lookUp("modal_content_fail")[17].message
-                );
+                showBubble(i18n.lookUp("modal_content_fail")[17].message, 'red', '#fff');
                 return;
             }
             addTask(uid, 0, 0, 1);
@@ -592,19 +583,13 @@ async function saveManageProj() {
 
     // 非空
     if (!projName || projName.trim() === "" || !reviewStatusInput || !reviewDisplayInput) {
-        openModal(
-            i18n.lookUp("modal_content_fail")[11].title,
-            i18n.lookUp("modal_content_fail")[11].message
-        );
+        showBubble(i18n.lookUp("modal_content_fail")[11].message, 'red', '#fff');
         return;
     }
 
     // 长度超过限制
     if (projName.length > 100) {
-        openModal(
-            i18n.lookUp("modal_content_fail")[6].title,
-            i18n.lookUp("modal_content_fail")[6].message
-        );
+        showBubble(i18n.lookUp("modal_content_fail")[6].message, 'red', '#fff');
         return;
     }
 
