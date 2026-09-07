@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.hodastar</groupId>
     <artifactId>PhotosReview</artifactId>
-    <version>0.0.0-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version>
     <name>PhotosReview</name>
     <description>PhotosReview</description>
     <url/>
