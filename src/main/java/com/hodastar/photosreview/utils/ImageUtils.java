@@ -138,6 +138,8 @@ public class ImageUtils {
             );
         } catch (Exception e) {
             throw new Exception("WebP 转换失败: " + e.getMessage(), e);
+        } catch (Error e) {
+            throw new Exception("WebP 转换失败: " + e.getMessage(), e);
         } finally {
             assert writer != null;
             writer.dispose();

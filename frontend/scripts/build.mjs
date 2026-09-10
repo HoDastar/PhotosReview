@@ -1,4 +1,4 @@
-import { cp, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { cp, mkdtemp, readdir, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { extname, join, resolve } from 'node:path'
 import { minify } from 'terser'
@@ -7,7 +7,7 @@ import { build as viteBuild } from 'vite'
 const frontendRoot = resolve(import.meta.dirname, '..')
 const publicRoot = resolve(frontendRoot, 'public')
 const outputRoot = resolve(frontendRoot, '../src/main/resources/static')
-const temporaryRoot = await mkdtemp(join(tmpdir(), 'photos-review-vite-'))
+const temporaryRoot = await realpath(await mkdtemp(join(tmpdir(), 'photos-review-vite-')))
 const temporaryPublicRoot = resolve(temporaryRoot, 'public')
 const temporaryOutputRoot = resolve(temporaryRoot, 'dist')
 const temporaryEntry = resolve(temporaryRoot, 'vite-entry.html')
