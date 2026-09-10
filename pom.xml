@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.hodastar</groupId>
     <artifactId>PhotosReview</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <name>PhotosReview</name>
     <description>PhotosReview</description>
     <url/>
@@ -68,9 +68,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.sejda.imageio</groupId>
+            <groupId>com.github.usefulness</groupId>
             <artifactId>webp-imageio</artifactId>
-            <version>0.1.6</version>
+            <version>0.10.2</version>
         </dependency>
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
