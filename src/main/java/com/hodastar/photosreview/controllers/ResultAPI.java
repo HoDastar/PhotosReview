@@ -642,10 +642,8 @@ public class ResultAPI {
         resultData.put("metrics", metrics);
         resultData.put("scoreHistogram", scoreHistogram);
         resultData.put("disputeReasonHistogram", disputeReasonHistogram);
-        // 取前 n 名作者的均分和总分
-        int topN = 10;
-        resultData.put("topAverageAuthors", sortedAverageAuthors.stream().limit(topN).toList());
-        resultData.put("topSumAuthors", sortedSumAuthors.stream().limit(topN).toList());
+        resultData.put("topAverageAuthors", sortedAverageAuthors.stream().toList());
+        resultData.put("topSumAuthors", sortedSumAuthors.stream().toList());
         String resultJson = jsonMapper.writeValueAsString(resultData);
 
         Boolean result = resultMapper.insertResult(projId, resultJson);
