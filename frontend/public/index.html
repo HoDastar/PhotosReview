@@ -179,7 +179,7 @@
     }
     // 获取工程列表
     async function get_proj(){
-        let obj = await getApi(url + "/api/proj/get_proj_list");
+        let obj = await getApi(url + `/api/proj/get_proj_list?uid=${uid}&token=${token}`);
         let cardContent = document.getElementById('cardContent');
         cardContent.innerHTML = '';
         // foreach循环
