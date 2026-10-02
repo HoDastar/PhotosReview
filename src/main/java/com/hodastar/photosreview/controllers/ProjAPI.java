@@ -357,7 +357,15 @@ public class ProjAPI {
 
     // 获取工程列表
     @GetMapping("/get_proj_list")
-    public Respond<List<HashMap<String, Object>>> get_proj_list() {
+    public Respond<List<HashMap<String, Object>>> get_proj_list(
+            @RequestParam("uid") int uid,
+            @RequestParam("token") String token
+    ) {
+        // 检查token
+        if (!userMapper.checkToken(uid, token)) {
+            return new Respond<>(false, "4", null);
+        }
+
         List<EntityReviewProj> projListOrigin = projMapper.getProjList();
         List<HashMap<String, Object>> projList = projListOrigin.stream()
                 .filter(proj -> proj.display == 1)
@@ -387,7 +395,7 @@ public class ProjAPI {
 
         // 获取工程
         List<EntityReviewProj> projList = projMapper.getProjList();
-        return new Respond<>(true, "succeess", projList);
+        return new Respond<>(true, "success", projList);
     }
 
     // 获取工程总量
